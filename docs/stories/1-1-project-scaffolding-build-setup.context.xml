@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>1.1</story-id>
+    <story-key>1-1-project-scaffolding-build-setup</story-key>
+    <story-title>Project Scaffolding & Build Setup</story-title>
+    <epic-id>1</epic-id>
+    <epic-title>Foundation & Core Infrastructure</epic-title>
+    <generated-date>2025-01-30</generated-date>
+    <status>drafted</status>
+  </metadata>
+
+  <user-story>
+    <as-a>desenvolvedor</as-a>
+    <i-want>estrutura de monorepo Maven multi-module com backend Spring Boot e frontend Angular</i-want>
+    <so-that>eu tenha ambiente de desenvolvimento consistente com builds automatizados</so-that>
+  </user-story>
+
+  <acceptance-criteria>
+    <criterion id="AC1" title="Projeto Maven Single Module Criado">
+      <requirement>Projeto Maven single module criado com estrutura base</requirement>
+      <requirement>Spring Modulith configurado para separação de bounded contexts via packages</requirement>
+      <requirement>Módulos Spring Modulith identificados: auth, produtos, vendas, estoque, compras, fiscal, integracoes, shared</requirement>
+      <requirement>pom.xml contém dependências principais: Spring Boot 3.5+, Spring Modulith 1.1+, Spring Data JDBC 3.5+</requirement>
+      <validation>mvn clean compile executa sem erros</validation>
+    </criterion>
+
+    <criterion id="AC2" title="Backend Configurado com Tecnologias Corretas">
+      <requirement>Java 21 LTS configurado em pom.xml</requirement>
+      <requirement>Spring Boot 3.5+ parent configurado</requirement>
+      <requirement>Spring Modulith 1.1+ incluído</requirement>
+      <requirement>Spring Data JDBC 3.5+ configurado (não Hibernate/JPA)</requirement>
+      <requirement>Spring Security 6.3+ incluído</requirement>
+      <requirement>Dependências de testes: JUnit 5.10+, Mockito 5.8+, Testcontainers 1.19+, ArchUnit 1.2+</requirement>
+      <requirement>Flyway 10+ configurado</requirement>
+      <requirement>PostgreSQL driver incluído</requirement>
+      <requirement>Redisson 3.25+ para Redis client</requirement>
+      <validation>Todas as dependências resolvem corretamente no mvn dependency:tree</validation>
+    </criterion>
+
+    <criterion id="AC3" title="Frontend Angular Standalone Criado">
+      <requirement>Projeto Angular 19+ (LTS) criado usando standalone components (sem NgModules)</requirement>
+      <requirement>Angular Material 19+ configurado</requirement>
+      <requirement>Tailwind CSS 3.4+ integrado</requirement>
+      <requirement>TypeScript 5.8+ configurado</requirement>
+      <requirement>Estrutura feature-based criada em src/app/features/</requirement>
+      <requirement>Pastas core e shared criadas conforme arquitetura</requirement>
+      <requirement>Angular Signals habilitado (nativo em Angular 19+)</requirement>
+      <requirement>Routing configurado em app.routes.ts (standalone routing)</requirement>
+      <validation>npm install && npm run build executa sem erros</validation>
+    </criterion>
+
+    <criterion id="AC4" title="Build Maven Integrado com Frontend">
+      <requirement>Plugin frontend-maven-plugin configurado no pom.xml</requirement>
+      <requirement>Build Maven executa: npm install → npm run build → copia dist/ para target/classes/static/</requirement>
+      <requirement>Comando mvn clean install compila backend + frontend em um único artefato</requirement>
+      <requirement>Artefato final .jar contém frontend buildado em /static/</requirement>
+      <validation>jar tf target/*.jar | grep static mostra arquivos Angular</validation>
+    </criterion>
+
+    <criterion id="AC5" title="Script de Inicialização de Ambiente">
+      <requirement>Script scripts/dev-setup.sh criado</requirement>
+      <requirement>Script verifica instalação de: Java 21, Maven 3.9+, Node.js 22 LTS ou 24 LTS, npm 10+</requirement>
+      <requirement>Script instala dependências Maven e npm</requirement>
+      <requirement>Script cria arquivo .env.template com variáveis necessárias</requirement>
+      <requirement>Script exibe instruções de próximos passos</requirement>
+      <validation>./scripts/dev-setup.sh executa sem erros em ambiente limpo</validation>
+    </criterion>
+
+    <criterion id="AC6" title="Configuração de .gitignore">
+      <requirement>.gitignore na raiz ignora: target/, *.log, .env, .DS_Store</requirement>
+      <requirement>.gitignore no frontend/ ignora: node_modules/, dist/, .angular/</requirement>
+      <validation>git status não mostra arquivos de build ou dependências</validation>
+    </criterion>
+
+    <criterion id="AC7" title="README.md com Documentação de Setup">
+      <requirement>README.md criado na raiz do projeto</requirement>
+      <requirement>Seção "Pré-requisitos" lista: Java 21, Maven 3.9+, Node.js 22/24 LTS, npm 10+</requirement>
+      <requirement>Seção "Setup Inicial" documenta uso de ./scripts/dev-setup.sh</requirement>
+      <requirement>Seção "Build" documenta comando mvn clean install</requirement>
+      <requirement>Seção "Estrutura do Projeto" descreve organização de módulos Spring Modulith</requirement>
+      <validation>README contém todas as seções listadas</validation>
+    </criterion>
+  </acceptance-criteria>
+
+  <tasks>
+    <task id="T1" title="Inicializar Backend com Spring Initializr">
+      <subtask>Acessar start.spring.io</subtask>
+      <subtask>Configurar project metadata: Group com.estoquecentral, Artifact estoque-central-backend, Java 21</subtask>
+      <subtask>Adicionar dependencies iniciais: Spring Web, Spring Data JDBC, Spring Security, PostgreSQL Driver, Flyway, Actuator</subtask>
+      <subtask>Gerar e baixar projeto</subtask>
+      <subtask>Extrair para backend/ na raiz do repositório</subtask>
+    </task>
+
+    <task id="T2" title="Configurar Spring Modulith no Backend">
+      <subtask>Adicionar dependência Spring Modulith ao pom.xml</subtask>
+      <subtask>Criar estrutura de packages conforme arquitetura hexagonal: produtos/, vendas/, estoque/, compras/, fiscal/, integracoes/, shared/</subtask>
+      <subtask>Criar arquivo package-info.java em cada módulo raiz marcando como Spring Modulith module</subtask>
+      <subtask>Adicionar ArchUnit test para validar boundaries hexagonais</subtask>
+    </task>
+
+    <task id="T3" title="Atualizar Dependências do Backend">
+      <subtask>Atualizar versão Spring Boot para 3.5+ no pom.xml</subtask>
+      <subtask>Adicionar Redisson para Redis</subtask>
+      <subtask>Adicionar dependências de testes: Testcontainers, ArchUnit</subtask>
+      <subtask>Adicionar Springdoc OpenAPI para documentação automática</subtask>
+    </task>
+
+    <task id="T4" title="Inicializar Frontend Angular">
+      <subtask>Executar npx @angular/cli@19 new frontend --standalone --routing --style=scss</subtask>
+      <subtask>Configurar TypeScript 5.8+ em frontend/tsconfig.json</subtask>
+      <subtask>Adicionar Angular Material 19+</subtask>
+      <subtask>Adicionar Tailwind CSS</subtask>
+      <subtask>Instalar dependências adicionais: date-fns, playwright</subtask>
+    </task>
+
+    <task id="T5" title="Criar Estrutura de Pastas Frontend">
+      <subtask>Criar estrutura conforme 12-unified-project-structure.md: core/, shared/, features/, layout/</subtask>
+      <subtask>Criar arquivos .gitkeep em pastas vazias</subtask>
+    </task>
+
+    <task id="T6" title="Integrar Build Frontend no Maven">
+      <subtask>Adicionar frontend-maven-plugin ao pom.xml</subtask>
+      <subtask>Configurar maven-resources-plugin para copiar frontend/dist/ para target/classes/static/</subtask>
+      <subtask>Testar build completo: mvn clean install</subtask>
+    </task>
+
+    <task id="T7" title="Criar Script dev-setup.sh">
+      <subtask>Criar scripts/dev-setup.sh com validações de pré-requisitos</subtask>
+      <subtask>Script verifica versões instaladas de Java, Maven, Node, npm</subtask>
+      <subtask>Script executa mvn clean install -DskipTests e npm install</subtask>
+      <subtask>Script cria .env.template com variáveis de exemplo</subtask>
+    </task>
+
+    <task id="T8" title="Configurar .gitignore">
+      <subtask>Criar .gitignore na raiz: target/, *.log, .env, .DS_Store</subtask>
+      <subtask>Adicionar ao .gitignore do frontend: node_modules/, dist/, .angular/</subtask>
+    </task>
+
+    <task id="T9" title="Criar README.md">
+      <subtask>Criar README.md com estrutura completa</subtask>
+      <subtask>Seção "Pré-requisitos" com versões específicas</subtask>
+      <subtask>Seção "Setup Inicial" referenciando dev-setup.sh</subtask>
+      <subtask>Seção "Build" com comando Maven</subtask>
+      <subtask>Seção "Estrutura do Projeto" explicando organização de módulos</subtask>
+    </task>
+
+    <task id="T10" title="Testes de Validação">
+      <subtask>Criar teste ArchUnit básico em backend/src/test/java/.../ArchitectureTests.java</subtask>
+      <subtask>Teste valida que domain não depende de adapters</subtask>
+      <subtask>Teste valida que packages seguem convenção hexagonal</subtask>
+      <subtask>Executar mvn clean install e verificar sucesso</subtask>
+    </task>
+  </tasks>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture/01-introducao.md</path>
+        <title>Architectural Introduction</title>
+        <section>1.1. Starter Template ou Projeto Existente</section>
+        <snippet>Projeto greenfield com scaffolding customizado: Spring Initializr + Angular CLI. Single Maven Module + Spring Modulith para boundaries. Monorepo híbrido (Maven + npm no mesmo repositório). Schema-per-tenant para isolamento total.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/01-introducao.md</path>
+        <title>Architectural Decisions Summary</title>
+        <section>1.3. Core Architecture Decisions</section>
+        <snippet>Spring Boot 3.5+ com Java 21 LTS. Angular 19+ (LTS) standalone components. PostgreSQL 17+ com schema-per-tenant. Spring Modulith 1.1+ para modularidade. Spring Data JDBC (não Hibernate). Redis 8.0+ com Redisson. JWT + RBAC para autorização.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/03-tech-stack.md</path>
+        <title>Technology Matrix</title>
+        <section>3.1. Technology Matrix</section>
+        <snippet>Frontend: Angular 19+ standalone, TypeScript 5.8+, Angular Material 19+, Tailwind CSS 3.4+, Signals. Backend: Spring Boot 3.5+, Spring Modulith 1.1+, Spring Data JDBC 3.5+, Java 21 LTS. Database: PostgreSQL 17+, Redis 8.0+. Build: Maven 3.9+, npm 10+, Node.js 22/24 LTS. Testing: JUnit 5.10+, Mockito 5.8+, Testcontainers 1.19+, ArchUnit 1.2+, Playwright 1.40+.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/12-unified-project-structure.md</path>
+        <title>Unified Project Structure</title>
+        <section>12.1. Complete Monorepo Structure</section>
+        <snippet>Monorepo com backend/ (Maven single module) e frontend/ (Angular npm). Backend estruturado em Spring Modulith modules: auth/, produtos/, vendas/, estoque/, compras/, fiscal/, integracoes/, shared/. Cada módulo segue hexagonal architecture: domain/model/, domain/port/in/, domain/port/out/, application/service/, adapter/in/web/, adapter/out/persistence/. Frontend estruturado em: core/, shared/, features/, layout/.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/11-backend-architecture.md</path>
+        <title>Backend Architecture</title>
+        <section>Hexagonal Architecture (Ports & Adapters)</section>
+        <snippet>Domain no centro, adapters isolados. Repositories como Port Out (interfaces em domain.port.out, implementações em adapter.out.persistence). Controllers em adapter.in.web. Use Cases como Port In (interfaces em domain.port.in, implementações em application.service). Spring Modulith enforça boundaries entre módulos. ArchUnit testa violations.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/10-frontend-architecture.md</path>
+        <title>Frontend Architecture</title>
+        <section>Angular Standalone Components</section>
+        <snippet>Sem NgModules - cada component importa suas próprias dependências. Routing via app.routes.ts (array de Routes). Config via app.config.ts (ApplicationConfig). Feature-based structure com lazy loading. Signals para state management reativo.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/17-coding-standards.md</path>
+        <title>Coding Standards</title>
+        <section>⚠️ CRITICAL: Rules for AI Agents</section>
+        <snippet>MANDATORY hexagonal architecture layers. MANDATORY value objects (Money, strongly-typed IDs). MANDATORY Spring Modulith boundaries (ArchUnit enforced). NO Hibernate/JPA - usar Spring Data JDBC. NO NgModules - usar standalone components. Repository interfaces em domain.port.out, implementations em adapter.out.persistence. Controllers em adapter.in.web.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/architecture/16-testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Testing Pyramid & Frameworks</section>
+        <snippet>Backend: JUnit 5 + Mockito para unit tests. Testcontainers para integration tests (PostgreSQL + Redis reais). ArchUnit para architectural rules. Frontend: Jasmine + Karma para unit tests. Playwright para E2E tests. Tests em src/test/java/ para backend, *.spec.ts para frontend.</snippet>
+      </doc>
+
+      <doc>
+        <path>docs/prd/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>Goals and Background Context</section>
+        <snippet>Sistema ERP omnichannel para PMEs brasileiras. Gestão unificada de estoque multi-depósito. Integração com marketplaces (Mercado Livre). PDV touchscreen para varejo. Ordem de Venda para B2B. Emissão fiscal NFCe automática. Multi-tenancy com schema-per-tenant.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- Nenhum código existente - projeto greenfield -->
+    </code>
+
+    <dependencies>
+      <backend type="Maven (pom.xml)">
+        <dependency>Spring Boot 3.5+</dependency>
+        <dependency>Spring Modulith 1.1+</dependency>
+        <dependency>Spring Data JDBC 3.5+</dependency>
+        <dependency>Spring Security 6.3+</dependency>
+        <dependency>Spring Boot Actuator</dependency>
+        <dependency>PostgreSQL Driver (latest)</dependency>
+        <dependency>Flyway 10+</dependency>
+        <dependency>Redisson 3.25+</dependency>
+        <dependency>Springdoc OpenAPI 2.3+</dependency>
+        <dependency>JUnit 5.10+</dependency>
+        <dependency>Mockito 5.8+</dependency>
+        <dependency>Testcontainers 1.19+ (PostgreSQL + Redis modules)</dependency>
+        <dependency>ArchUnit 1.2+</dependency>
+      </backend>
+
+      <frontend type="npm (package.json)">
+        <dependency>@angular/core 19+</dependency>
+        <dependency>@angular/material 19+</dependency>
+        <dependency>tailwindcss 3.4+</dependency>
+        <dependency>typescript 5.8+</dependency>
+        <dependency>rxjs 7.8+</dependency>
+        <dependency>date-fns 3.0+</dependency>
+        <dependency>@playwright/test 1.40+ (devDependency)</dependency>
+      </frontend>
+
+      <build-tools>
+        <tool>Maven 3.9+</tool>
+        <tool>npm 10+</tool>
+        <tool>Node.js 22 LTS ou 24 LTS</tool>
+        <tool>Java 21 LTS</tool>
+        <tool>frontend-maven-plugin 1.15+</tool>
+      </build-tools>
+    </dependencies>
+  </artifacts>
+
+  <interfaces>
+    <!-- Nenhuma interface existente ainda - será criada nesta story -->
+  </interfaces>
+
+  <constraints>
+    <architectural>
+      <constraint priority="MANDATORY">
+        <rule>Hexagonal Architecture: domain no centro, adapters isolados</rule>
+        <reference>docs/architecture/11-backend-architecture.md</reference>
+      </constraint>
+
+      <constraint priority="MANDATORY">
+        <rule>Spring Modulith: módulos separados por packages (auth, produtos, vendas, estoque, compras, fiscal, integracoes, shared)</rule>
+        <reference>docs/architecture/01-introducao.md:36-40</reference>
+      </constraint>
+
+      <constraint priority="MANDATORY">
+        <rule>Spring Data JDBC (NÃO Hibernate/JPA) - queries explícitas, sem ORM magic</rule>
+        <reference>docs/architecture/01-introducao.md:40</reference>
+      </constraint>
+
+      <constraint priority="MANDATORY">
+        <rule>Angular Standalone Components (NÃO NgModules) - component-level imports</rule>
+        <reference>docs/architecture/01-introducao.md:39</reference>
+      </constraint>
+
+      <constraint priority="MANDATORY">
+        <rule>Value Objects obrigatórios: Money (centavos em Long), strongly-typed IDs (ProdutoId, ClienteId, TenantId)</rule>
+        <reference>docs/architecture/04-data-models.md:127-176</reference>
+      </constraint>
+
+      <constraint priority="HIGH">
+        <rule>ArchUnit tests para validar hexagonal boundaries (domain não depende de adapters)</rule>
+        <reference>docs/architecture/16-testing-strategy.md, docs/architecture/17-coding-standards.md</reference>
+      </constraint>
+
+      <constraint priority="HIGH">
+        <rule>Single Maven Module (não multi-module) - Spring Modulith suficiente para MVP</rule>
+        <reference>docs/architecture/01-introducao.md:36</reference>
+      </constraint>
+
+      <constraint priority="MEDIUM">
+        <rule>frontend-maven-plugin cacheia Node.js local - não precisa instalação global</rule>
+        <reference>Story 1.1 Dev Notes</reference>
+      </constraint>
+    </architectural>
+
+    <coding-standards>
+      <standard>Package structure: com.estoquecentral.{module}/domain/model/, domain/port/in/, domain/port/out/, application/service/, adapter/in/web/, adapter/out/persistence/</standard>
+      <standard>Repository interfaces em domain.port.out, implementations em adapter.out.persistence</standard>
+      <standard>Controllers em adapter.in.web (REST endpoints)</standard>
+      <standard>Frontend feature-based structure: src/app/features/{feature}/, core/, shared/, layout/</standard>
+      <standard>Frontend routing via app.routes.ts (Routes array), config via app.config.ts (ApplicationConfig)</standard>
+    </coding-standards>
+
+    <testing>
+      <requirement>Backend unit tests em src/test/java/ usando JUnit 5 + Mockito</requirement>
+      <requirement>Backend integration tests usando Testcontainers (PostgreSQL + Redis reais)</requirement>
+      <requirement>Backend ArchUnit tests validando hexagonal boundaries</requirement>
+      <requirement>Frontend unit tests em *.spec.ts usando Jasmine + Karma</requirement>
+      <requirement>Frontend E2E tests usando Playwright</requirement>
+    </testing>
+
+    <performance>
+      <target>Build Maven completo (backend + frontend) deve completar em &lt; 5 minutos em máquina dev típica</target>
+      <target>dev-setup.sh deve executar em &lt; 10 minutos (incluindo downloads de dependências)</target>
+    </performance>
+  </constraints>
+
+  <tests>
+    <standards>
+      Backend usa JUnit 5 + Mockito para unit tests, Testcontainers para integration tests (PostgreSQL e Redis reais, não mocks), e ArchUnit para validação de regras arquiteturais. Frontend usa Jasmine + Karma para unit tests e Playwright para E2E tests. Tests devem ser escritos para cada AC, validando comportamento esperado. ArchUnit tests são MANDATORY para validar hexagonal boundaries (domain não depende de adapters, modules respeitam boundaries Spring Modulith).
+    </standards>
+
+    <locations>
+      <location>backend/src/test/java/com/estoquecentral/</location>
+      <location>frontend/src/app/**/*.spec.ts</location>
+      <location>backend/src/test/java/com/estoquecentral/ArchitectureTests.java (ArchUnit)</location>
+    </locations>
+
+    <ideas>
+      <test-idea ac="AC1" task="T10">
+        <description>ArchUnit test validando que packages domain/ não dependem de packages adapter/</description>
+        <framework>ArchUnit</framework>
+      </test-idea>
+
+      <test-idea ac="AC1" task="T10">
+        <description>ArchUnit test validando que cada Spring Modulith module (produtos, vendas, etc.) não acessa diretamente classes de outros modules</description>
+        <framework>ArchUnit</framework>
+      </test-idea>
+
+      <test-idea ac="AC2" task="T3">
+        <description>Test validando que pom.xml contém todas as dependências requeridas com versões corretas</description>
+        <framework>Maven Enforcer Plugin ou Unit Test customizado</framework>
+      </test-idea>
+
+      <test-idea ac="AC4" task="T6">
+        <description>Integration test validando que mvn clean install gera .jar contendo frontend buildado em BOOT-INF/classes/static/</description>
+        <framework>Maven Failsafe Plugin ou custom test</framework>
+      </test-idea>
+
+      <test-idea ac="AC5" task="T7">
+        <description>Smoke test executando dev-setup.sh em container Docker limpo e validando sucesso</description>
+        <framework>Shell script test ou Testcontainers</framework>
+      </test-idea>
+    </ideas>
+  </tests>
+
+  <definition-of-done>
+    <criterion>Código buildado sem erros ou warnings</criterion>
+    <criterion>Comando mvn clean install executa com sucesso</criterion>
+    <criterion>Comando ./scripts/dev-setup.sh executa com sucesso em ambiente limpo</criterion>
+    <criterion>Estrutura de pastas segue docs/architecture/12-unified-project-structure.md</criterion>
+    <criterion>ArchUnit tests passando (validando hexagonal boundaries)</criterion>
+    <criterion>README.md completo e preciso</criterion>
+    <criterion>.gitignore configurado corretamente</criterion>
+    <criterion>Sem node_modules/, target/ ou .env commitados no Git</criterion>
+    <criterion>Code review aprovado pelo SM</criterion>
+  </definition-of-done>
+
+  <notes>
+    <note priority="CRITICAL">
+      Esta é a PRIMEIRA story do projeto (greenfield). Não há código existente para reusar. Toda a estrutura será criada do zero seguindo rigorosamente as decisões arquiteturais documentadas.
+    </note>
+
+    <note priority="HIGH">
+      Hexagonal Architecture é MANDATORY e será enforçada por ArchUnit tests. Developer Agent DEVE criar package structure correta desde o início: domain/model/, domain/port/in/, domain/port/out/, application/service/, adapter/in/web/, adapter/out/persistence/.
+    </note>
+
+    <note priority="HIGH">
+      Spring Modulith boundaries são MANDATORY. Cada módulo (produtos, vendas, estoque, compras, fiscal, integracoes, shared) DEVE ter package-info.java marcando como Spring Modulith module. Comunicação entre módulos APENAS via Events, não chamadas diretas.
+    </note>
+
+    <note priority="HIGH">
+      Value Objects são MANDATORY. Developer Agent DEVE criar Money, ProdutoId, ClienteId, TenantId, etc. em shared/domain/valueobject/. NUNCA usar BigDecimal raw ou UUID raw para esses conceitos.
+    </note>
+
+    <note priority="MEDIUM">
+      Angular Standalone Components (sem NgModules) é a abordagem escolhida. Routing via app.routes.ts (Routes array), config via app.config.ts (ApplicationConfig). Cada component importa suas próprias dependências.
+    </note>
+
+    <note priority="MEDIUM">
+      frontend-maven-plugin cacheia Node.js localmente no projeto (não requer instalação global). Build frontend só executa se código frontend mudou (via Maven lifecycle incremental build).
+    </note>
+
+    <note priority="LOW">
+      README.md deve referenciar docs/architecture/03-tech-stack.md para lista completa de tecnologias ao invés de duplicar informação.
+    </note>
+  </notes>
+</story-context>

@@ -1,0 +1,103 @@
+# Docker Compose configuration for Estoque Central
+# Development environment only - Production uses Azure Container Apps
+
+version: '3.9'
+
+services:
+  # Backend Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+      args:
+        VERSION: 0.0.1-SNAPSHOT
+    image: estoque-central:latest
+    container_name: estoque-central-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: dev
+      # Database configuration (using service name for Docker networking)
+      DATABASE_URL: jdbc:postgresql://postgres:5432/estoque_central
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # OAuth 2.0 configuration
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-your-client-id.apps.googleusercontent.com}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-your-client-secret}
+      # JWT configuration
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production-min-256-bits}
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - estoque-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: estoque-central-postgres
+    environment:
+      POSTGRES_DB: estoque_central
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      # Performance tuning for development
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - estoque-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d estoque_central"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:8-alpine
+    container_name: estoque-central-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - estoque-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+# Named volumes for data persistence
+volumes:
+  postgres-data:
+    name: estoque-central-postgres-data
+  redis-data:
+    name: estoque-central-redis-data
+
+# Bridge network for service communication
+networks:
+  estoque-network:
+    name: estoque-central-network
+    driver: bridge

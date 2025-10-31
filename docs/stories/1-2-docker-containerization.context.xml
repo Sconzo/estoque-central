@@ -1,0 +1,346 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.2</storyId>
+    <title>Docker Containerization</title>
+    <status>drafted</status>
+    <generatedAt>2025-01-30</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-2-docker-containerization.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>engenheiro DevOps</asA>
+    <iWant>Dockerfile multi-stage para build e runtime otimizado</iWant>
+    <soThat>a aplicação possa ser deployada consistentemente em qualquer ambiente</soThat>
+    <tasks>
+      <!-- Task 1: Criar Dockerfile Multi-Stage para Backend -->
+      <task id="1" title="Criar Dockerfile Multi-Stage para Backend">
+        <subtask>Criar arquivo docker/backend.Dockerfile</subtask>
+        <subtask>Stage 1 - Build: FROM eclipse-temurin:21-jdk AS builder, instalar Maven 3.9+, COPY pom.xml e backend/src/, RUN mvn clean package -DskipTests</subtask>
+        <subtask>Stage 2 - Runtime: FROM eclipse-temurin:21-jre-alpine, criar usuário não-root, EXPOSE 8080, HEALTHCHECK, ENTRYPOINT</subtask>
+      </task>
+
+      <!-- Task 2: Otimizar Layers do Dockerfile -->
+      <task id="2" title="Otimizar Layers do Dockerfile">
+        <subtask>Separar COPY de dependências Maven do COPY de código-fonte</subtask>
+        <subtask>Aproveitar cache de layers Docker</subtask>
+        <subtask>Adicionar argumentos de build para controlar versão</subtask>
+        <subtask>Validar que imagem final &lt; 300MB</subtask>
+      </task>
+
+      <!-- Task 3: Criar docker-compose.yml -->
+      <task id="3" title="Criar docker-compose.yml">
+        <subtask>Criar docker-compose.yml na raiz do projeto</subtask>
+        <subtask>Definir serviço app (Backend Spring Boot, porta 8080)</subtask>
+        <subtask>Definir serviço postgres (PostgreSQL 17+, porta 5432, volume)</subtask>
+        <subtask>Definir serviço redis (Redis 8+, porta 6379, volume)</subtask>
+        <subtask>Definir volumes e networks</subtask>
+      </task>
+
+      <!-- Task 4: Configurar Variáveis de Ambiente -->
+      <task id="4" title="Configurar Variáveis de Ambiente">
+        <subtask>Criar arquivo .env.example na raiz</subtask>
+        <subtask>Atualizar backend/src/main/resources/application.properties</subtask>
+        <subtask>Adicionar .env ao .gitignore</subtask>
+      </task>
+
+      <!-- Task 5: Implementar Health Check Endpoint -->
+      <task id="5" title="Implementar Health Check Endpoint">
+        <subtask>Adicionar dependência Spring Boot Actuator ao pom.xml</subtask>
+        <subtask>Configurar actuator em application.properties</subtask>
+        <subtask>Testar endpoint /actuator/health</subtask>
+        <subtask>Adicionar HEALTHCHECK ao Dockerfile e docker-compose.yml</subtask>
+      </task>
+
+      <!-- Task 6: Criar .dockerignore -->
+      <task id="6" title="Criar .dockerignore">
+        <subtask>Criar .dockerignore na raiz excluindo .git, target/, node_modules/, etc.</subtask>
+        <subtask>Validar que build não copia arquivos desnecessários</subtask>
+      </task>
+
+      <!-- Task 7: Atualizar README.md -->
+      <task id="7" title="Atualizar README.md">
+        <subtask>Adicionar seção "Executar com Docker" ao README.md</subtask>
+        <subtask>Atualizar seção "Pré-requisitos" incluindo Docker 24+ e Docker Compose V2</subtask>
+      </task>
+
+      <!-- Task 8: Testes de Validação -->
+      <task id="8" title="Testes de Validação">
+        <subtask>Limpar ambiente: docker-compose down -v</subtask>
+        <subtask>Build da imagem e verificar tamanho &lt; 300MB</subtask>
+        <subtask>Iniciar ambiente: docker-compose up -d</subtask>
+        <subtask>Verificar health checks e conectividade PostgreSQL/Redis</subtask>
+        <subtask>Simular falha e verificar health check HTTP 503</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="AC1" title="Dockerfile Multi-Stage Criado">
+      <criterion>Dockerfile multi-stage criado em docker/backend.Dockerfile</criterion>
+      <criterion>Stage 1 (build): Usa imagem eclipse-temurin:21-jdk com Maven 3.9+ para compilar backend e frontend</criterion>
+      <criterion>Stage 2 (runtime): Usa imagem eclipse-temurin:21-jre-alpine contendo apenas o .jar compilado</criterion>
+      <criterion>Imagem final não contém código-fonte, ferramentas de build ou dependências de compilação</criterion>
+      <validation>docker build -f docker/backend.Dockerfile -t estoque-central:latest . executa sem erros</validation>
+    </ac>
+
+    <ac id="AC2" title="Imagem Docker Otimizada (&lt; 300MB)">
+      <criterion>Imagem final tem tamanho &lt; 300MB</criterion>
+      <criterion>Base image Alpine Linux utilizada para runtime</criterion>
+      <criterion>Apenas dependências de runtime incluídas (JRE 21, não JDK)</criterion>
+      <criterion>Layers otimizadas (COPY de dependências antes de código para cache)</criterion>
+      <validation>docker images estoque-central:latest mostra SIZE &lt; 300MB</validation>
+    </ac>
+
+    <ac id="AC3" title="Docker Compose para Ambiente Local">
+      <criterion>Arquivo docker-compose.yml criado na raiz do projeto</criterion>
+      <criterion>Serviço app: Backend Spring Boot (porta 8080)</criterion>
+      <criterion>Serviço postgres: PostgreSQL 17+ (porta 5432, volume para persistência)</criterion>
+      <criterion>Serviço redis: Redis 8+ (porta 6379)</criterion>
+      <criterion>Networks configuradas para comunicação entre serviços</criterion>
+      <criterion>Volumes nomeados para persistência de dados</criterion>
+      <validation>docker-compose up -d inicia todos os serviços sem erros</validation>
+    </ac>
+
+    <ac id="AC4" title="Variáveis de Ambiente Configuráveis">
+      <criterion>Arquivo .env.example criado com template de variáveis</criterion>
+      <criterion>docker-compose.yml carrega variáveis de .env</criterion>
+      <criterion>Variáveis incluídas: DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD, REDIS_URL, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, JWT_SECRET</criterion>
+      <criterion>Backend lê variáveis via application.properties ou application.yml</criterion>
+      <validation>Alterar .env e reiniciar container reflete novas configurações</validation>
+    </ac>
+
+    <ac id="AC5" title="Health Check Endpoint Funcionando">
+      <criterion>Endpoint /actuator/health implementado via Spring Boot Actuator</criterion>
+      <criterion>Health check verifica conectividade com PostgreSQL e Redis</criterion>
+      <criterion>Retorna HTTP 200 com JSON {"status": "UP"} quando todos os serviços estão operacionais</criterion>
+      <criterion>Retorna HTTP 503 com JSON {"status": "DOWN"} se algum serviço estiver indisponível</criterion>
+      <criterion>Docker health check configurado no docker-compose.yml</criterion>
+      <validation>curl http://localhost:8080/actuator/health retorna {"status":"UP"}</validation>
+    </ac>
+
+    <ac id="AC6" title="Dockerfile Segue Boas Práticas">
+      <criterion>Usuário não-root criado e utilizado para executar aplicação</criterion>
+      <criterion>.dockerignore criado para excluir arquivos desnecessários</criterion>
+      <criterion>EXPOSE documentado para porta 8080</criterion>
+      <criterion>HEALTHCHECK instruction incluída no Dockerfile</criterion>
+      <criterion>Imagem taggeada com versão</criterion>
+      <validation>docker scan estoque-central:latest não reporta vulnerabilidades críticas</validation>
+    </ac>
+
+    <ac id="AC7" title="README Atualizado com Instruções Docker">
+      <criterion>Seção "Executar com Docker" adicionada ao README.md</criterion>
+      <criterion>Documentação de comandos: docker-compose up, docker-compose down, docker-compose logs</criterion>
+      <criterion>Instrução para copiar .env.example para .env e configurar variáveis</criterion>
+      <criterion>Troubleshooting básico (portas em uso, volumes órfãos)</criterion>
+      <validation>Seguir instruções do README permite iniciar ambiente completo</validation>
+    </ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture/14-deployment-architecture.md</path>
+        <title>Deployment Architecture</title>
+        <section>14.2 - Azure Container Apps Configuration</section>
+        <snippet>Define container app settings com resources (1.0 CPU, 2Gi memory), scale (2-10 replicas), ingress (porta 8080), secrets integration com Azure Key Vault, e environment variables para Spring Boot.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/14-deployment-architecture.md</path>
+        <title>Deployment Architecture</title>
+        <section>14.3 - CI/CD Pipeline (GitHub Actions)</section>
+        <snippet>Backend deploy workflow: setup Java 21, run tests, build JAR com Maven, build e push Docker image multi-stage para GHCR, deploy para Azure Container Apps.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/14-deployment-architecture.md</path>
+        <title>Deployment Architecture</title>
+        <section>14.9 - Health Checks</section>
+        <snippet>Backend health endpoint em /health verifica database e Redis connectivity, retorna HTTP 200 (UP) ou 503 (DOWN). Container Apps usa liveness/readiness probes com initialDelaySeconds, periodSeconds, failureThreshold.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/03-tech-stack.md</path>
+        <title>Tech Stack</title>
+        <section>3.1 - Technology Matrix</section>
+        <snippet>Containerization: Docker 24+, Docker Compose 2.20+ para desenvolvimento local. Cloud: Azure Container Apps para managed container hosting. Base image: Eclipse Temurin JRE 21-alpine.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/03-tech-stack.md</path>
+        <title>Tech Stack</title>
+        <section>3.3 - Backend Stack Details</section>
+        <snippet>Principais dependências Spring Boot 3.5+: spring-boot-starter-web, spring-boot-starter-data-jdbc, spring-boot-starter-security, spring-boot-starter-oauth2-client, spring-boot-starter-validation, spring-boot-starter-actuator. Database: PostgreSQL driver, Flyway. Redis: Redisson 3.25+.</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>Containerization</section>
+        <snippet>Docker multi-stage builds (build Maven + runtime JRE slim). Docker Compose para orquestração local (app + PostgreSQL + Redis). Base image: Eclipse Temurin JRE 21-alpine (oficial, segura, otimizada).</snippet>
+      </doc>
+      <doc>
+        <path>docs/prd/prd.md</path>
+        <title>Product Requirements Document</title>
+        <section>Deployment - Azure</section>
+        <snippet>Azure Container Apps para compute, ACR para container registry, Azure Database for PostgreSQL Flexible Server, Azure Cache for Redis, CI/CD com GitHub Actions (build Maven, test, build Docker image, push ACR, deploy).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>backend/pom.xml</path>
+        <kind>build-config</kind>
+        <symbol>maven-configuration</symbol>
+        <lines>all</lines>
+        <reason>Configuração Maven necessária para build multi-stage. Contém dependências Spring Boot, Spring Modulith, PostgreSQL, Redis (Redisson), Actuator para health checks. Frontend-maven-plugin integra build Angular.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/package.json</path>
+        <kind>build-config</kind>
+        <symbol>npm-configuration</symbol>
+        <lines>all</lines>
+        <reason>Configuração npm para build frontend Angular 19+. Necessário para Stage 1 do Dockerfile quando frontend-maven-plugin executar npm install e npm run build.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/main/resources/application.properties</path>
+        <kind>config</kind>
+        <symbol>spring-configuration</symbol>
+        <lines>all</lines>
+        <reason>Configuração Spring Boot que deve ler variáveis de ambiente (DATABASE_URL, REDIS_HOST, etc.) para permitir configuração via .env no docker-compose.</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/dev-setup.sh</path>
+        <kind>script</kind>
+        <symbol>development-setup</symbol>
+        <lines>all</lines>
+        <reason>Script existente de setup que pode fornecer insights sobre comandos e configurações necessárias. Lógica similar pode ser aplicada no Dockerfile.</reason>
+      </artifact>
+      <artifact>
+        <path>README.md</path>
+        <kind>documentation</kind>
+        <symbol>project-readme</symbol>
+        <lines>all</lines>
+        <reason>README principal que será atualizado com seção "Executar com Docker" (AC7). Deve documentar comandos docker-compose e troubleshooting.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <backend>
+        <framework>Spring Boot 3.5+</framework>
+        <framework>Spring Modulith 1.1.6+</framework>
+        <dependency>spring-boot-starter-web</dependency>
+        <dependency>spring-boot-starter-actuator (para health checks)</dependency>
+        <dependency>spring-boot-starter-data-jdbc</dependency>
+        <dependency>spring-boot-starter-security</dependency>
+        <dependency>spring-boot-starter-oauth2-client</dependency>
+        <dependency>postgresql (driver JDBC)</dependency>
+        <dependency>redisson-spring-boot-starter 3.25+</dependency>
+        <dependency>flyway-core 10+</dependency>
+        <build-tool>Maven 3.9+</build-tool>
+        <runtime>Java 21 (Eclipse Temurin)</runtime>
+      </backend>
+      <frontend>
+        <framework>Angular 19+</framework>
+        <framework>Angular Material 19+</framework>
+        <framework>Tailwind CSS 3.4+</framework>
+        <runtime>Node.js 22 LTS ou 24 LTS (para build apenas)</runtime>
+        <build-tool>npm 10+</build-tool>
+      </frontend>
+      <infrastructure>
+        <container-runtime>Docker 24+</container-runtime>
+        <orchestration>Docker Compose V2 2.20+</orchestration>
+        <base-image-build>eclipse-temurin:21-jdk (Stage 1)</base-image-build>
+        <base-image-runtime>eclipse-temurin:21-jre-alpine (Stage 2)</base-image-runtime>
+        <database>PostgreSQL 17+ (container: postgres:17-alpine)</database>
+        <cache>Redis 8+ (container: redis:8-alpine)</cache>
+      </infrastructure>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="multi-stage-mandatory" critical="true">
+      OBRIGATÓRIO usar multi-stage Dockerfile. Stage 1 (build) com JDK + Maven para compilação. Stage 2 (runtime) com JRE Alpine + JAR apenas. Nunca incluir código-fonte, ferramentas de build ou dependências de compilação na imagem final.
+    </constraint>
+    <constraint id="image-size-limit" critical="true">
+      Imagem final Docker DEVE ter menos de 300MB. Use Alpine Linux como base, JRE (não JDK), e otimize layers separando dependências de código-fonte para aproveitar cache.
+    </constraint>
+    <constraint id="non-root-user" critical="true">
+      Container DEVE executar como usuário não-root (princípio de menor privilégio). Criar usuário spring:spring no Dockerfile e usar USER spring:spring antes do ENTRYPOINT.
+    </constraint>
+    <constraint id="health-check-required" critical="true">
+      Health check endpoint /actuator/health é OBRIGATÓRIO. Deve verificar conectividade PostgreSQL e Redis. Retornar HTTP 200 quando UP, HTTP 503 quando DOWN. Configurar HEALTHCHECK no Dockerfile e docker-compose.yml.
+    </constraint>
+    <constraint id="env-vars-external" critical="true">
+      NUNCA hardcode credentials ou configurações sensíveis. Usar variáveis de ambiente carregadas via .env (git-ignored). Arquivo .env.example deve servir como template.
+    </constraint>
+    <constraint id="build-context-root" critical="true">
+      Build context do Docker deve ser a raiz do projeto (não backend/), pois frontend-maven-plugin precisa acessar ../frontend/. Comando: docker build -f docker/backend.Dockerfile -t estoque-central:latest .
+    </constraint>
+    <constraint id="network-naming" critical="true">
+      Dentro de containers Docker Compose, serviços se comunicam via nome do serviço (não localhost). Exemplo: DATABASE_URL=jdbc:postgresql://postgres:5432/estoque_central, REDIS_HOST=redis.
+    </constraint>
+    <constraint id="compose-dev-only" critical="false">
+      Docker Compose é apenas para desenvolvimento local. Produção usará Azure Container Apps (Story 1.7). Não otimizar docker-compose.yml para produção.
+    </constraint>
+    <constraint id="layer-caching" critical="false">
+      Otimizar layers do Dockerfile: COPY dependências (pom.xml) antes de código-fonte. Dependências mudam menos frequentemente, permitindo cache de layers e builds mais rápidos.
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>/actuator/health</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /actuator/health → HTTP 200 {"status":"UP"} | HTTP 503 {"status":"DOWN"}</signature>
+      <path>Implementado via Spring Boot Actuator (spring-boot-starter-actuator)</path>
+    </interface>
+    <interface>
+      <name>Docker Build</name>
+      <kind>command-line</kind>
+      <signature>docker build -f docker/backend.Dockerfile -t estoque-central:latest .</signature>
+      <path>docker/backend.Dockerfile</path>
+    </interface>
+    <interface>
+      <name>Docker Compose</name>
+      <kind>command-line</kind>
+      <signature>docker-compose up -d → Inicia app + postgres + redis</signature>
+      <path>docker-compose.yml (raiz do projeto)</path>
+    </interface>
+    <interface>
+      <name>Environment Variables</name>
+      <kind>configuration</kind>
+      <signature>DATABASE_URL, DATABASE_USER, DATABASE_PASSWORD, REDIS_HOST, REDIS_PORT, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, JWT_SECRET</signature>
+      <path>.env (git-ignored), .env.example (template commitado)</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Testing strategy segue pirâmide: Unit tests (JUnit 5 + Mockito), Integration tests (Testcontainers para PostgreSQL/Redis reais), E2E tests (Playwright). Coverage targets: 80%+ unit, 70%+ integration, 100% E2E critical paths. JaCoCo para code coverage. ArchUnit para validar regras arquiteturais. Para esta story: testes de integração com Testcontainers validam que containers Docker iniciam corretamente, health checks funcionam, e conectividade database/redis está estabelecida.
+    </standards>
+    <locations>
+      backend/src/test/java/ - Unit e integration tests
+      backend/src/test/resources/ - Test configurations
+      frontend/src/app/**/*.spec.ts - Frontend unit tests (Jasmine + Karma)
+      e2e/ - End-to-end tests (Playwright)
+    </locations>
+    <ideas>
+      <test-idea ac="AC1">
+        Teste de integração: Build Dockerfile multi-stage com Testcontainers, verificar que imagem é criada sem erros, validar que Stage 1 contém build artifacts e Stage 2 contém apenas runtime.
+      </test-idea>
+      <test-idea ac="AC2">
+        Teste automatizado: Após build, verificar tamanho da imagem via docker images estoque-central:latest, assert que SIZE &lt; 300MB.
+      </test-idea>
+      <test-idea ac="AC3">
+        Teste de integração: docker-compose up -d, verificar que 3 containers estão running (app, postgres, redis), verificar health status de cada serviço via docker-compose ps.
+      </test-idea>
+      <test-idea ac="AC4">
+        Teste de configuração: Alterar .env com valores custom, docker-compose restart, verificar que backend lê novas variáveis (via logs ou endpoint de configuração).
+      </test-idea>
+      <test-idea ac="AC5">
+        Teste de integração: GET /actuator/health com containers up retorna HTTP 200 {"status":"UP"}. Parar container postgres, verificar que /actuator/health retorna HTTP 503 {"status":"DOWN"}. Reiniciar postgres, verificar retorno para HTTP 200.
+      </test-idea>
+      <test-idea ac="AC6">
+        Teste de segurança: docker scan estoque-central:latest, verificar que não há vulnerabilidades HIGH/CRITICAL. Inspecionar container running, verificar que processo roda como usuário não-root (UID != 0).
+      </test-idea>
+      <test-idea ac="AC7">
+        Teste manual: Seguir instruções do README.md "Executar com Docker" do zero em ambiente limpo, verificar que todos os comandos funcionam e ambiente completo inicia sem erros.
+      </test-idea>
+    </ideas>
+  </tests>
+</story-context>

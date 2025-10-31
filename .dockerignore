@@ -1,0 +1,86 @@
+# Docker Build Context Exclusions
+# Prevents unnecessary files from being copied to Docker build context
+# Reduces build time and image size
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# IDE and Editor Files
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+
+# Build Artifacts (already built in Docker container)
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/node/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Environment Files (sensitive data)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Documentation (not needed for runtime)
+README.md
+docs/
+*.md
+!backend/README.md
+
+# CI/CD and Tooling
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Database Files (local dev only)
+*.db
+*.sqlite
+*.sqlite3
+
+# BMAD Framework (not needed in container)
+bmad/
+.claude/
+
+# Scripts (not needed in runtime container)
+scripts/

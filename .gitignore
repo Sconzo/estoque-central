@@ -1,0 +1,62 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+
+# Frontend build artifacts (will be in frontend/.gitignore too)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Backend compiled classes
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
