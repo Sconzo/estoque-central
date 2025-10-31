@@ -45,4 +45,4 @@ workflow_status:
   solutioning-gate-check: docs/output/implementation-readiness-report-2025-01-30.md
 
   # Phase 4: Implementation
-  sprint-planning: required
+  sprint-planning: docs/output/sprint-status.yaml
