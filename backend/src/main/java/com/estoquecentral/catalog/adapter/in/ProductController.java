@@ -6,7 +6,7 @@ import com.estoquecentral.catalog.adapter.in.dto.ProductUpdateRequest;
 import com.estoquecentral.catalog.application.ProductService;
 import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.catalog.domain.ProductStatus;
-import com.estoquecentral.shared.multitenancy.TenantContext;
+import com.estoquecentral.shared.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -101,7 +101,7 @@ public class ProductController {
     @GetMapping("/sku/{sku}")
     @Operation(summary = "Get product by SKU", description = "Returns product by SKU (tenant-scoped)")
     public ResponseEntity<ProductDTO> getBySku(@PathVariable String sku) {
-        UUID tenantId = TenantContext.getCurrentTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         Product product = productService.getBySku(tenantId, sku)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with SKU: " + sku));
         return ResponseEntity.ok(ProductDTO.fromEntity(product));
@@ -116,7 +116,7 @@ public class ProductController {
     @GetMapping("/barcode/{barcode}")
     @Operation(summary = "Get product by barcode", description = "Returns product by barcode (tenant-scoped)")
     public ResponseEntity<ProductDTO> getByBarcode(@PathVariable String barcode) {
-        UUID tenantId = TenantContext.getCurrentTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         Product product = productService.getByBarcode(tenantId, barcode)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with barcode: " + barcode));
         return ResponseEntity.ok(ProductDTO.fromEntity(product));
@@ -207,7 +207,7 @@ public class ProductController {
             @Valid @RequestBody ProductCreateRequest request,
             Authentication authentication) {
 
-        UUID tenantId = TenantContext.getCurrentTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         UUID userId = UUID.fromString(authentication.getName());
 
         Product product = productService.create(

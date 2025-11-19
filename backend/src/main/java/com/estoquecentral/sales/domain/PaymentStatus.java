@@ -6,5 +6,7 @@ public enum PaymentStatus {
     CAPTURED,             // Payment successfully captured
     FAILED,               // Payment failed
     REFUNDED,             // Full refund issued
-    PARTIALLY_REFUNDED    // Partial refund issued
+    PARTIALLY_REFUNDED,   // Partial refund issued
+    CANCELLED,
+    EXPIRED
 }

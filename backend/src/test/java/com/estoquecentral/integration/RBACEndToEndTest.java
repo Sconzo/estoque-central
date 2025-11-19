@@ -76,7 +76,7 @@ class RBACEndToEndTest extends BaseIntegrationTest {
                 UUID.randomUUID(),
                 "test-tenant-" + System.currentTimeMillis(),
                 "Test Tenant LTDA",
-                true
+                "@POLY"
         );
         tenant = tenantRepository.save(tenant);
         assertThat(tenant.getId()).isNotNull();
@@ -235,7 +235,7 @@ class RBACEndToEndTest extends BaseIntegrationTest {
                 UUID.randomUUID(),
                 "test-tenant-no-profile",
                 "Test Tenant",
-                true
+                "@POLY"
         );
         tenant = tenantRepository.save(tenant);
         TenantContext.setTenantId(tenant.getId().toString());
@@ -265,7 +265,7 @@ class RBACEndToEndTest extends BaseIntegrationTest {
                 UUID.randomUUID(),
                 "test-tenant-multi-users",
                 "Test Tenant",
-                true
+                "@POLY"
         );
         tenant = tenantRepository.save(tenant);
         TenantContext.setTenantId(tenant.getId().toString());

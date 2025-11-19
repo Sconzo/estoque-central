@@ -62,7 +62,7 @@ public class UserDTO {
                 usuario.getNome(),
                 usuario.getPictureUrl(),
                 usuario.getTenantId(),
-                usuario.getRole(),
+                "ADMIN",
                 usuario.getAtivo(),
                 usuario.getDataCriacao()
         );
