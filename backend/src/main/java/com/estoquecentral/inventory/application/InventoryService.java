@@ -408,7 +408,7 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public Page<InventoryMovement> getMovementHistory(UUID productId, Pageable pageable) {
-        return movementRepository.findByProductId(productId, pageable);
+        return movementRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable);
     }
 
     /**
@@ -419,7 +419,7 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public Page<InventoryMovement> getRecentMovements(Pageable pageable) {
-        return movementRepository.findRecent(pageable);
+        return movementRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     /**

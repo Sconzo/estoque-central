@@ -50,7 +50,7 @@ class RoleServiceIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should list all default roles from migration")
     void shouldListAllDefaultRolesFromMigration() {
         // Given
-        // Default roles from V004__create_rbac_tables.sql
+        // Default roles from V027__create_rbac_tables.sql
 
         // When
         List<Role> roles = roleService.listAll();

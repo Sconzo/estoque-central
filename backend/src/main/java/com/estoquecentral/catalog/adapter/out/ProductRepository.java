@@ -41,12 +41,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of active products
      */
-    @Query("""
-        SELECT * FROM products
-        WHERE ativo = true
-        ORDER BY name
-        """)
-    Page<Product> findAllActive(Pageable pageable);
+    Page<Product> findByAtivoTrue(Pageable pageable);
 
     /**
      * Finds product by ID and active status
@@ -90,10 +85,10 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
 
     /**
      * Searches products by name, SKU, or barcode (case-insensitive)
+     * Returns List instead of Page due to Spring Data JDBC limitations
      *
      * @param query search query
-     * @param pageable pagination parameters
-     * @return page of matching products
+     * @return list of matching products
      */
     @Query("""
         SELECT * FROM products
@@ -105,7 +100,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
           )
         ORDER BY name
         """)
-    Page<Product> search(@Param("query") String query, Pageable pageable);
+    List<Product> search(@Param("query") String query);
 
     /**
      * Finds products by category ID with pagination
@@ -114,20 +109,15 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products in category
      */
-    @Query("""
-        SELECT * FROM products
-        WHERE category_id = :categoryId AND ativo = true
-        ORDER BY name
-        """)
-    Page<Product> findByCategoryId(@Param("categoryId") UUID categoryId, Pageable pageable);
+    Page<Product> findByCategoryIdAndAtivoTrue(UUID categoryId, Pageable pageable);
 
     /**
-     * Finds products by category ID and all its descendants with pagination
+     * Finds products by category ID and all its descendants
      * Uses recursive CTE to traverse category tree
+     * Returns List instead of Page due to Spring Data JDBC limitations
      *
      * @param categoryId root category ID
-     * @param pageable pagination parameters
-     * @return page of products in category and subcategories
+     * @return list of products in category and subcategories
      */
     @Query("""
         WITH RECURSIVE category_tree AS (
@@ -142,8 +132,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
           AND p.ativo = true
         ORDER BY p.name
         """)
-    Page<Product> findByCategoryIdIncludingDescendants(@Param("categoryId") UUID categoryId,
-                                                         Pageable pageable);
+    List<Product> findByCategoryIdIncludingDescendants(@Param("categoryId") UUID categoryId);
 
     /**
      * Finds products by status with pagination
@@ -152,12 +141,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products with status
      */
-    @Query("""
-        SELECT * FROM products
-        WHERE status = :status AND ativo = true
-        ORDER BY name
-        """)
-    Page<Product> findByStatus(@Param("status") String status, Pageable pageable);
+    Page<Product> findByStatusAndAtivoTrue(ProductStatus status, Pageable pageable);
 
     /**
      * Finds products by type with pagination
@@ -166,12 +150,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products with type
      */
-    @Query("""
-        SELECT * FROM products
-        WHERE type = :type AND ativo = true
-        ORDER BY name
-        """)
-    Page<Product> findByType(@Param("type") String type, Pageable pageable);
+    Page<Product> findByTypeAndAtivoTrue(ProductType type, Pageable pageable);
 
     /**
      * Checks if SKU exists for another product (used for validation on update)

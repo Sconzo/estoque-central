@@ -85,7 +85,7 @@ class ProductServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 20);
         Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findAllActive(pageable)).thenReturn(page);
+        when(productRepository.findByAtivoTrue(pageable)).thenReturn(page);
 
         // When
         Page<Product> result = productService.listAll(pageable);
@@ -94,7 +94,7 @@ class ProductServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getName()).isEqualTo("Notebook Dell");
-        verify(productRepository, times(1)).findAllActive(pageable);
+        verify(productRepository, times(1)).findByAtivoTrue(pageable);
     }
 
     @Test
@@ -165,8 +165,8 @@ class ProductServiceTest {
         // Given
         String query = "Dell";
         Pageable pageable = PageRequest.of(0, 20);
-        Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.search(query, pageable)).thenReturn(page);
+        List<Product> productList = List.of(product);
+        when(productRepository.search(query)).thenReturn(productList);
 
         // When
         Page<Product> result = productService.search(query, pageable);
@@ -174,7 +174,7 @@ class ProductServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        verify(productRepository, times(1)).search(query, pageable);
+        verify(productRepository, times(1)).search(query);
     }
 
     @Test
@@ -183,7 +183,7 @@ class ProductServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 20);
         Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findByCategoryId(categoryId, pageable)).thenReturn(page);
+        when(productRepository.findByCategoryIdAndAtivoTrue(categoryId, pageable)).thenReturn(page);
 
         // When
         Page<Product> result = productService.findByCategory(categoryId, false, pageable);
@@ -191,7 +191,7 @@ class ProductServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        verify(productRepository, times(1)).findByCategoryId(categoryId, pageable);
+        verify(productRepository, times(1)).findByCategoryIdAndAtivoTrue(categoryId, pageable);
     }
 
     @Test
@@ -199,8 +199,8 @@ class ProductServiceTest {
     void shouldFindProductsByCategoryIncludingSubcategories() {
         // Given
         Pageable pageable = PageRequest.of(0, 20);
-        Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findByCategoryIdIncludingDescendants(categoryId, pageable)).thenReturn(page);
+        List<Product> productList = List.of(product);
+        when(productRepository.findByCategoryIdIncludingDescendants(categoryId)).thenReturn(productList);
 
         // When
         Page<Product> result = productService.findByCategory(categoryId, true, pageable);
@@ -208,7 +208,7 @@ class ProductServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        verify(productRepository, times(1)).findByCategoryIdIncludingDescendants(categoryId, pageable);
+        verify(productRepository, times(1)).findByCategoryIdIncludingDescendants(categoryId);
     }
 
     @Test

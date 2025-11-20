@@ -7,6 +7,9 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+// import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import java.util.Map;
  * @see com.estoquecentral.shared.tenant.TenantContext
  */
 @Configuration
+// @EnableJdbcRepositories(basePackages = "com.estoquecentral")
 public class DataSourceConfig {
 
     private final DataSourceProperties dataSourceProperties;
@@ -108,5 +112,20 @@ public class DataSourceConfig {
         routingDataSource.afterPropertiesSet();
 
         return routingDataSource;
+    }
+
+    /**
+     * Creates the NamedParameterJdbcOperations bean required by Spring Data JDBC.
+     *
+     * <p>This bean uses the tenant routing DataSource, allowing repositories
+     * to automatically route queries to the correct tenant schema.
+     *
+     * @param dataSource the tenant routing DataSource
+     * @return NamedParameterJdbcTemplate configured with routing DataSource
+     */
+    @Primary
+    @Bean
+    public NamedParameterJdbcOperations namedParameterJdbcOperations(DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

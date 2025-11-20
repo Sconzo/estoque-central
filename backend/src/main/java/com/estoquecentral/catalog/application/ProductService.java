@@ -8,11 +8,13 @@ import com.estoquecentral.catalog.domain.ProductStatus;
 import com.estoquecentral.catalog.domain.ProductType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,7 +57,7 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> listAll(Pageable pageable) {
-        return productRepository.findAllActive(pageable);
+        return productRepository.findByAtivoTrue(pageable);
     }
 
     /**
@@ -97,14 +99,16 @@ public class ProductService {
 
     /**
      * Searches products by query (name, SKU, barcode)
+     * Note: Returns all results without pagination due to Spring Data JDBC limitations
      *
      * @param query search query
-     * @param pageable pagination parameters
+     * @param pageable pagination parameters (ignored for now)
      * @return page of matching products
      */
     @Transactional(readOnly = true)
     public Page<Product> search(String query, Pageable pageable) {
-        return productRepository.search(query, pageable);
+        List<Product> results = productRepository.search(query);
+        return new PageImpl<>(results, pageable, results.size());
     }
 
     /**
@@ -119,9 +123,10 @@ public class ProductService {
     public Page<Product> findByCategory(UUID categoryId, boolean includeSubcategories,
                                          Pageable pageable) {
         if (includeSubcategories) {
-            return productRepository.findByCategoryIdIncludingDescendants(categoryId, pageable);
+            List<Product> results = productRepository.findByCategoryIdIncludingDescendants(categoryId);
+            return new PageImpl<>(results, pageable, results.size());
         } else {
-            return productRepository.findByCategoryId(categoryId, pageable);
+            return productRepository.findByCategoryIdAndAtivoTrue(categoryId, pageable);
         }
     }
 
@@ -134,7 +139,7 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> findByStatus(ProductStatus status, Pageable pageable) {
-        return productRepository.findByStatus(status.name(), pageable);
+        return productRepository.findByStatusAndAtivoTrue(status, pageable);
     }
 
     /**

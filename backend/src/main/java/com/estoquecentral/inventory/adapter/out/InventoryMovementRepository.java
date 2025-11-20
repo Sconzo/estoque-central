@@ -33,12 +33,7 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        WHERE product_id = :productId
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findByProductId(@Param("productId") UUID productId, Pageable pageable);
+    Page<InventoryMovement> findByProductIdOrderByCreatedAtDesc(UUID productId, Pageable pageable);
 
     /**
      * Finds all movements for a product and location (paginated)
@@ -48,13 +43,8 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        WHERE product_id = :productId AND location = :location
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findByProductIdAndLocation(@Param("productId") UUID productId,
-                                                         @Param("location") String location,
+    Page<InventoryMovement> findByProductIdAndLocationOrderByCreatedAtDesc(UUID productId,
+                                                         String location,
                                                          Pageable pageable);
 
     /**
@@ -64,12 +54,7 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        WHERE type = :type
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findByType(@Param("type") String type, Pageable pageable);
+    Page<InventoryMovement> findByTypeOrderByCreatedAtDesc(MovementType type, Pageable pageable);
 
     /**
      * Finds movements by date range (paginated)
@@ -79,13 +64,8 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        WHERE created_at >= :startDate AND created_at <= :endDate
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findByDateRange(@Param("startDate") LocalDateTime startDate,
-                                             @Param("endDate") LocalDateTime endDate,
+    Page<InventoryMovement> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate,
+                                             LocalDateTime endDate,
                                              Pageable pageable);
 
     /**
@@ -110,12 +90,7 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        WHERE created_by = :userId
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findByUserId(@Param("userId") UUID userId, Pageable pageable);
+    Page<InventoryMovement> findByCreatedByOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     /**
      * Finds recent movements (paginated)
@@ -123,11 +98,7 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of recent movements
      */
-    @Query("""
-        SELECT * FROM inventory_movements
-        ORDER BY created_at DESC
-        """)
-    Page<InventoryMovement> findRecent(Pageable pageable);
+    Page<InventoryMovement> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /**
      * Counts movements by product

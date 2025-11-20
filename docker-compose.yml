@@ -75,7 +75,7 @@ services:
   redis:
     image: redis:8-alpine
     container_name: estoque-central-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
