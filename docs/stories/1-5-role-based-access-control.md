@@ -2,9 +2,9 @@
 
 **Epic**: 1 - Foundation & Core Infrastructure
 **Story ID**: 1.5
-**Status**: drafted
+**Status**: Ready for Review
 **Created**: 2025-11-04
-**Updated**: 2025-11-04
+**Updated**: 2025-11-21
 
 ---
 

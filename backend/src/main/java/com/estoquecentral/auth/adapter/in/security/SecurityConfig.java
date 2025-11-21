@@ -91,14 +91,20 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api-docs/**"
+                                "/api-docs/**",
+                                "/", // Root path (Angular SPA)
+                                "/index.html", // Angular index
+                                "/*.js", // JavaScript files
+                                "/*.css", // CSS files
+                                "/assets/**", // Angular assets
+                                "/favicon.ico" // Favicon
                         ).permitAll()
 
                         // Protected endpoints (authentication required)
                         .requestMatchers("/api/**").authenticated()
 
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
+                        // All other requests (including Angular routes) are public
+                        .anyRequest().permitAll()
                 )
 
                 // Add JWT authentication filter before UsernamePasswordAuthenticationFilter

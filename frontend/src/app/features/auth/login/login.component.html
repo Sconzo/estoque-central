@@ -1,0 +1,35 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Estoque Central</h1>
+      <p>Sistema ERP Omnichannel</p>
+    </div>
+
+    <div class="login-body">
+      <h2>Bem-vindo!</h2>
+      <p class="subtitle">Faça login com sua conta Google</p>
+
+      <!-- Error message -->
+      <div *ngIf="errorMessage" class="error-alert">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Loading spinner -->
+      <div *ngIf="isLoading" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Autenticando...</p>
+      </div>
+
+      <!-- Google Sign-In button -->
+      <div *ngIf="!isLoading" class="google-signin-wrapper">
+        <div id="google-signin-button"></div>
+      </div>
+
+      <div class="login-footer">
+        <p class="info-text">
+          Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
