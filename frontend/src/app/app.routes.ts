@@ -36,6 +36,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/produtos/components/product-form/product-form.component').then(m => m.ProductFormComponent)
   },
   {
+    path: 'estoque/locais',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/estoque/components/location-list/location-list.component').then(m => m.LocationListComponent)
+  },
+  {
+    path: 'estoque/locais/novo',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/estoque/components/location-form/location-form.component').then(m => m.LocationFormComponent)
+  },
+  {
+    path: 'estoque/locais/:id/editar',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/estoque/components/location-form/location-form.component').then(m => m.LocationFormComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)
