@@ -6,12 +6,16 @@ import com.estoquecentral.catalog.domain.BomType;
 import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.catalog.domain.ProductComponent;
 import com.estoquecentral.catalog.domain.ProductType;
+import com.estoquecentral.inventory.adapter.out.InventoryRepository;
+import com.estoquecentral.inventory.domain.Inventory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -31,12 +35,15 @@ public class CompositeProductService {
 
     private final ProductRepository productRepository;
     private final ProductComponentRepository componentRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Autowired
     public CompositeProductService(ProductRepository productRepository,
-                                   ProductComponentRepository componentRepository) {
+                                   ProductComponentRepository componentRepository,
+                                   InventoryRepository inventoryRepository) {
         this.productRepository = productRepository;
         this.componentRepository = componentRepository;
+        this.inventoryRepository = inventoryRepository;
     }
 
     /**
@@ -130,11 +137,15 @@ public class CompositeProductService {
      * <p>Example: Kit needs 2 espetos (stock: 10) and 1 carvão (stock: 3)
      *              → can make 3 kits (limited by carvão: 3/1 = 3, espetos: 10/2 = 5)
      *
+     * Story 2.7 - AC4: BOM Virtual Stock Calculation
+     *
      * @param productId composite product ID
+     * @param tenantId tenant ID
+     * @param locationId optional location ID (if null, calculates across all locations)
      * @return available quantity (kits that can be assembled)
      */
     @Transactional(readOnly = true)
-    public AvailableStockResponse calculateAvailableStock(UUID productId) {
+    public AvailableStockResponse calculateAvailableStock(UUID productId, UUID tenantId, UUID locationId) {
         Product product = productRepository.findByIdAndActive(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
@@ -150,13 +161,86 @@ public class CompositeProductService {
         List<ProductComponent> components = componentRepository.findByProductId(productId);
 
         if (components.isEmpty()) {
-            return new AvailableStockResponse(productId, 0, null, "No components defined");
+            return new AvailableStockResponse(productId, BigDecimal.ZERO, null, null,
+                    "No components defined for this composite product");
         }
 
-        // TODO: Implement actual stock calculation when Stock module is available
-        // For now, return placeholder response
-        return new AvailableStockResponse(productId, 0, null,
-                "Stock calculation requires Stock module (Story 2.7)");
+        // Calculate available kits based on component stock
+        BigDecimal minKits = null;
+        UUID limitingComponentId = null;
+        String limitingComponentName = null;
+        BigDecimal limitingComponentStock = null;
+
+        for (ProductComponent component : components) {
+            // Get stock for this component
+            BigDecimal componentStock;
+
+            if (locationId != null) {
+                // Stock at specific location
+                Optional<Inventory> inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(
+                        tenantId, component.getComponentProductId(), locationId);
+
+                componentStock = inventory.map(Inventory::getComputedQuantityForSale)
+                                         .orElse(BigDecimal.ZERO);
+            } else {
+                // Aggregate stock across all locations
+                List<Inventory> inventories = inventoryRepository.findAllByTenantIdAndProductId(
+                        tenantId, component.getComponentProductId());
+
+                componentStock = inventories.stream()
+                        .map(Inventory::getComputedQuantityForSale)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            // If any component has zero stock, we can't make any kits
+            if (componentStock.compareTo(BigDecimal.ZERO) == 0) {
+                Product componentProduct = productRepository.findByIdAndActive(component.getComponentProductId())
+                        .orElse(null);
+                String componentName = componentProduct != null ? componentProduct.getName() : "Unknown";
+
+                return new AvailableStockResponse(productId, BigDecimal.ZERO,
+                        component.getComponentProductId(), componentName,
+                        "Component '" + componentName + "' is out of stock");
+            }
+
+            // Calculate how many kits we can make with this component
+            // possibleKits = component_stock / quantity_required (rounded down)
+            BigDecimal possibleKits = componentStock.divide(
+                    component.getQuantityRequired(), 0, RoundingMode.DOWN);
+
+            // Track the minimum (limiting component)
+            if (minKits == null || possibleKits.compareTo(minKits) < 0) {
+                minKits = possibleKits;
+                limitingComponentId = component.getComponentProductId();
+                limitingComponentStock = componentStock;
+
+                // Get component name for better response
+                Product componentProduct = productRepository.findByIdAndActive(component.getComponentProductId())
+                        .orElse(null);
+                limitingComponentName = componentProduct != null ? componentProduct.getName() : "Unknown";
+            }
+        }
+
+        String message = minKits != null && minKits.compareTo(BigDecimal.ZERO) > 0
+                ? String.format("Can make %s kits. Limited by component '%s' (stock: %s)",
+                        minKits.intValue(), limitingComponentName, limitingComponentStock)
+                : "Insufficient stock to make any kits";
+
+        return new AvailableStockResponse(productId,
+                minKits != null ? minKits : BigDecimal.ZERO,
+                limitingComponentId,
+                limitingComponentName,
+                message);
+    }
+
+    /**
+     * Overloaded method for backward compatibility (calculates across all locations)
+     */
+    @Transactional(readOnly = true)
+    public AvailableStockResponse calculateAvailableStock(UUID productId) {
+        // This method needs tenantId - will throw exception to force migration to new signature
+        throw new UnsupportedOperationException(
+                "Use calculateAvailableStock(productId, tenantId, locationId) instead");
     }
 
     /**
@@ -175,18 +259,22 @@ public class CompositeProductService {
 
     /**
      * Response for available stock calculation
+     * Story 2.7 - AC4: BOM Virtual stock response
      */
     public static class AvailableStockResponse {
         private final UUID productId;
-        private final int availableQuantity;
+        private final BigDecimal availableQuantity;
         private final UUID limitingComponentId;
+        private final String limitingComponentName;
         private final String message;
 
-        public AvailableStockResponse(UUID productId, int availableQuantity,
-                                     UUID limitingComponentId, String message) {
+        public AvailableStockResponse(UUID productId, BigDecimal availableQuantity,
+                                     UUID limitingComponentId, String limitingComponentName,
+                                     String message) {
             this.productId = productId;
             this.availableQuantity = availableQuantity;
             this.limitingComponentId = limitingComponentId;
+            this.limitingComponentName = limitingComponentName;
             this.message = message;
         }
 
@@ -194,12 +282,16 @@ public class CompositeProductService {
             return productId;
         }
 
-        public int getAvailableQuantity() {
+        public BigDecimal getAvailableQuantity() {
             return availableQuantity;
         }
 
         public UUID getLimitingComponentId() {
             return limitingComponentId;
+        }
+
+        public String getLimitingComponentName() {
+            return limitingComponentName;
         }
 
         public String getMessage() {

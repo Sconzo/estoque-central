@@ -36,7 +36,7 @@ Esta story implementa o cadastro completo de fornecedores (suppliers) com todos 
 ## Acceptance Criteria
 
 ### AC1: Tabela suppliers Criada
-- [ ] Migration cria tabela `suppliers` no schema tenant com colunas:
+- [x] Migration cria tabela `suppliers` no schema tenant com colunas:
   - `id` (UUID, PK)
   - `tenant_id` (UUID, FK para tenants)
   - `tipo_pessoa` (VARCHAR(2), DEFAULT 'PJ') - 'PJ' ou 'PF'
@@ -315,6 +315,7 @@ export class CepService {
 | 2025-11-21 | Claude Code (PM)       | Story drafted                                                     |
 | 2025-11-21 | Sarah (PO)             | Migration version corrigida de V020 para V040 (validação épico)  |
 | 2025-11-21 | Sarah (PO)             | Adicionadas seções Status, Testing, QA Results (template compliance) |
+| 2025-11-22 | James (Dev)            | Story implementada ~95% - Backend 100% + Frontend 95% completo   |
 
 ---
 
@@ -327,7 +328,90 @@ Claude 3.5 Sonnet (claude-sonnet-4-5-20250929)
 
 ### Completion Notes List
 
+**Story 3.1 Implementation Summary - 2025-11-22**
+
+**Status**: ~95% Completo (Backend 100%, Frontend 95%)
+
+**Implementações Completadas:**
+
+**Backend (100%):**
+1. Migration V015 já existia com tabela completa
+2. Entidade Supplier.java já existia
+3. **SupplierRepository.java** - 15+ métodos de query especializados
+4. **CreateSupplierRequest.java** - DTO com validações JSR-303
+5. **UpdateSupplierRequest.java** - DTO de atualização
+6. **SupplierResponse.java** - DTO response com endereço formatado
+7. **CnpjValidator.java** - Validação completa com dígitos verificadores
+8. **CpfValidator.java** - Validação completa com dígitos verificadores
+9. **SupplierService.java** - CRUD completo com validações e soft delete
+10. **SupplierController.java** - REST API completa com 7 endpoints
+
+**Frontend (95%):**
+1. **supplier.model.ts** - Interfaces TypeScript completas + enums + constantes
+2. **CepService** - Integração ViaCEP com debounce e validação
+3. **SupplierService** - HTTP client para todos endpoints
+4. **cnpj.validator.ts** - Validator customizado + formatação
+5. **cpf.validator.ts** - Validator customizado + formatação
+6. **SupplierListComponent** - Lista com filtros, paginação, status badges, modal integrado
+7. **SupplierFormComponent (TS/HTML/CSS)** - Formulário reativo completo com:
+   - Toggle PJ/PF com validações dinâmicas
+   - Validação CNPJ/CPF em tempo real
+   - Integração ViaCEP com auto-preenchimento de endereço
+   - Todos os campos: básicos, fiscais, contato, endereço, bancários, comerciais
+   - Modo criação e edição
+   - Feedback visual de erros
+   - Loading states
+
+**Pendente:**
+- [ ] Máscaras de input avançadas (CNPJ, CPF, CEP, telefone) - directives Angular
+- [ ] Configuração de rotas Angular (opcional - modal funciona)
+- [ ] Testes automatizados
+- [ ] Code review
+
+**Endpoints Implementados:**
+- POST /api/suppliers - Criar fornecedor
+- PUT /api/suppliers/{id} - Atualizar fornecedor
+- GET /api/suppliers - Listar com filtros e paginação
+- GET /api/suppliers/{id} - Buscar por ID
+- DELETE /api/suppliers/{id} - Soft delete
+- POST /api/suppliers/{id}/activate - Reativar fornecedor
+- GET /api/suppliers/preferred - Fornecedores preferenciais
+
+**Validações Implementadas:**
+- CNPJ/CPF com dígitos verificadores (backend + frontend)
+- CNPJ único por tenant
+- Tipo pessoa vs documento (PJ precisa CNPJ, PF precisa CPF)
+- CEP formato brasileiro
+- Email válido
+- Limites de tamanho de campos
+- Rating entre 1-5
+
 ### File List
+
+**Backend:**
+- `backend/src/main/resources/db/migration/tenant/V015__create_suppliers_tables.sql` (já existia)
+- `backend/src/main/java/com/estoquecentral/purchasing/domain/Supplier.java` (já existia)
+- `backend/src/main/java/com/estoquecentral/purchasing/adapter/out/SupplierRepository.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/adapter/in/dto/CreateSupplierRequest.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/adapter/in/dto/UpdateSupplierRequest.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/adapter/in/dto/SupplierResponse.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/application/validation/CnpjValidator.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/application/validation/CpfValidator.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/application/SupplierService.java`
+- `backend/src/main/java/com/estoquecentral/purchasing/adapter/in/web/SupplierController.java`
+
+**Frontend:**
+- `frontend/src/app/shared/models/supplier.model.ts`
+- `frontend/src/app/shared/services/cep.service.ts`
+- `frontend/src/app/shared/validators/cnpj.validator.ts`
+- `frontend/src/app/shared/validators/cpf.validator.ts`
+- `frontend/src/app/features/purchasing/services/supplier.service.ts`
+- `frontend/src/app/features/purchasing/supplier-list/supplier-list.component.ts`
+- `frontend/src/app/features/purchasing/supplier-list/supplier-list.component.html`
+- `frontend/src/app/features/purchasing/supplier-list/supplier-list.component.css`
+- `frontend/src/app/features/purchasing/supplier-form/supplier-form.component.ts`
+- `frontend/src/app/features/purchasing/supplier-form/supplier-form.component.html`
+- `frontend/src/app/features/purchasing/supplier-form/supplier-form.component.css`
 
 ---
 

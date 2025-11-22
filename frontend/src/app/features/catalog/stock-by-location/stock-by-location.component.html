@@ -1,0 +1,151 @@
+<div class="stock-by-location">
+  @if (stockData()) {
+    <!-- Product Header -->
+    <mat-card class="header-card">
+      <mat-card-header>
+        <button mat-icon-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="product-info">
+          <mat-card-title>{{ stockData()!.productName }}</mat-card-title>
+          <mat-card-subtitle>SKU: {{ stockData()!.productSku }}</mat-card-subtitle>
+        </div>
+        <button mat-raised-button color="primary" (click)="openTimeline()">
+          <mat-icon>history</mat-icon>
+          Ver Histórico
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Total de Localizações</span>
+            <span class="value">{{ stockData()!.totalLocations }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Quantidade Total Disponível</span>
+            <span class="value">{{ stockData()!.totalQuantityAvailable | number:'1.0-3' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Quantidade Total Reservada</span>
+            <span class="value">{{ stockData()!.totalReservedQuantity | number:'1.0-3' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Disponível para Venda</span>
+            <span class="value primary">{{ stockData()!.totalQuantityForSale | number:'1.0-3' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Stock by Location Table -->
+    <mat-card class="table-card">
+      <mat-card-header>
+        <mat-card-title>Estoque por Localização</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (loading()) {
+          <div class="loading">Carregando...</div>
+        } @else if (error()) {
+          <div class="error">{{ error() }}</div>
+        } @else {
+          <table mat-table [dataSource]="stockData()!.byLocation" class="location-table">
+            <!-- Location Column -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef>Localização</th>
+              <td mat-cell *matCellDef="let loc">
+                <div class="location-cell">
+                  <strong>{{ loc.locationName }}</strong>
+                  <span class="location-code">{{ loc.locationCode }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Quantity Available Column -->
+            <ng-container matColumnDef="quantityAvailable">
+              <th mat-header-cell *matHeaderCellDef>Disponível</th>
+              <td mat-cell *matCellDef="let loc">{{ loc.quantityAvailable | number:'1.0-3' }}</td>
+            </ng-container>
+
+            <!-- Reserved Column -->
+            <ng-container matColumnDef="reserved">
+              <th mat-header-cell *matHeaderCellDef>Reservado</th>
+              <td mat-cell *matCellDef="let loc">{{ loc.reservedQuantity | number:'1.0-3' }}</td>
+            </ng-container>
+
+            <!-- Quantity For Sale Column -->
+            <ng-container matColumnDef="quantityForSale">
+              <th mat-header-cell *matHeaderCellDef>Para Venda</th>
+              <td mat-cell *matCellDef="let loc">
+                <strong>{{ loc.quantityForSale | number:'1.0-3' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Minimum Column with Inline Edit -->
+            <ng-container matColumnDef="minimum">
+              <th mat-header-cell *matHeaderCellDef>Mínimo</th>
+              <td mat-cell *matCellDef="let loc">
+                @if (editingMinimum() === loc.stockLocationId) {
+                  <div class="edit-minimum">
+                    <mat-form-field appearance="outline" class="minimum-input">
+                      <input matInput type="number" [(ngModel)]="newMinimumValue" (ngModelChange)="newMinimumValue.set($event)">
+                    </mat-form-field>
+                    <button mat-icon-button color="primary" (click)="saveMinimum(loc.stockLocationId)" matTooltip="Salvar">
+                      <mat-icon>check</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="cancelEditMinimum()" matTooltip="Cancelar">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                } @else {
+                  <div class="minimum-display">
+                    <span>{{ loc.minimumQuantity !== null && loc.minimumQuantity !== undefined ? (loc.minimumQuantity | number:'1.0-3') : '-' }}</span>
+                    <button mat-icon-button (click)="startEditMinimum(loc.stockLocationId, loc.minimumQuantity)" matTooltip="Editar Mínimo">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                  </div>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let loc">
+                <mat-chip [color]="getStatusColor(loc.status)" highlighted>
+                  {{ getStatusLabel(loc.status) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let loc">
+                <button mat-button (click)="onTransfer(loc)">
+                  <mat-icon>swap_horiz</mat-icon>
+                  Transferir
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Footer Row -->
+            <tr class="footer-row">
+              <td colspan="1"><strong>TOTAL</strong></td>
+              <td><strong>{{ stockData()!.totalQuantityAvailable | number:'1.0-3' }}</strong></td>
+              <td><strong>{{ stockData()!.totalReservedQuantity | number:'1.0-3' }}</strong></td>
+              <td><strong>{{ stockData()!.totalQuantityForSale | number:'1.0-3' }}</strong></td>
+              <td colspan="3"></td>
+            </tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+  } @else if (loading()) {
+    <div class="loading">Carregando...</div>
+  } @else if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+</div>

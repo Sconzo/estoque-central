@@ -41,16 +41,19 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMovementRepository movementRepository;
     private final ProductRepository productRepository;
+    private final StockMovementService stockMovementService;
 
     private static final String DEFAULT_LOCATION = "DEFAULT";
 
     @Autowired
     public InventoryService(InventoryRepository inventoryRepository,
                             InventoryMovementRepository movementRepository,
-                            ProductRepository productRepository) {
+                            ProductRepository productRepository,
+                            StockMovementService stockMovementService) {
         this.inventoryRepository = inventoryRepository;
         this.movementRepository = movementRepository;
         this.productRepository = productRepository;
+        this.stockMovementService = stockMovementService;
     }
 
     /**
@@ -477,13 +480,18 @@ public class InventoryService {
                                 BigDecimal quantityBefore, BigDecimal quantityAfter,
                                 MovementReason reason, String notes,
                                 String referenceType, UUID referenceId, UUID userId) {
+        // Save to old InventoryMovement table (legacy)
         InventoryMovement movement = new InventoryMovement(
                 tenantId, productId, type, quantity, location,
                 quantityBefore, quantityAfter,
                 reason, notes, referenceType, referenceId, userId
         );
-
         movementRepository.save(movement);
+
+        // TODO: Integrate with new StockMovementService
+        // This requires mapping location (String) to location_id (UUID)
+        // For now, keeping both systems in parallel
+        // Future: Remove InventoryMovement table and use only StockMovement
     }
 
     private void validateQuantity(BigDecimal quantity) {

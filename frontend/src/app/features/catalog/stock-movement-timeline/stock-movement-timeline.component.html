@@ -1,0 +1,162 @@
+<div class="timeline-container">
+  <!-- Header with Summary -->
+  <mat-card class="summary-card">
+    <mat-card-header>
+      <mat-card-title>Histórico de Movimentações</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="summary-stats">
+        <div class="stat">
+          <span class="stat-label">Saldo Atual</span>
+          <span class="stat-value balance">{{ currentBalance() | number:'1.0-3' }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total de Entradas</span>
+          <span class="stat-value entries">+{{ totalEntries() | number:'1.0-3' }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total de Saídas</span>
+          <span class="stat-value exits">-{{ totalExits() | number:'1.0-3' }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total de Movimentos</span>
+          <span class="stat-value">{{ filteredMovements().length }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Tipo de Movimento</mat-label>
+          <mat-select [(ngModel)]="selectedType">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option *ngFor="let type of movementTypes" [value]="type">
+              {{ movementTypeInfo[type].icon }} {{ movementTypeInfo[type].displayName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Data Inicial</mat-label>
+          <input matInput [matDatepicker]="pickerStart" [(ngModel)]="startDate">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerStart"></mat-datepicker-toggle>
+          <mat-datepicker #pickerStart></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Data Final</mat-label>
+          <input matInput [matDatepicker]="pickerEnd" [(ngModel)]="endDate">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+          <mat-datepicker #pickerEnd></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-raised-button color="accent" (click)="clearFilters()">
+          Limpar Filtros
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>Carregando movimentações...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-state">
+    <mat-icon>error</mat-icon>
+    <p>{{ error() }}</p>
+    <button mat-raised-button color="primary" (click)="loadMovements()">
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Timeline -->
+  <div *ngIf="!loading() && !error()" class="timeline">
+    <!-- Empty State -->
+    <div *ngIf="filteredMovements().length === 0" class="empty-state">
+      <mat-icon>inventory_2</mat-icon>
+      <p>Nenhuma movimentação encontrada</p>
+    </div>
+
+    <!-- Movement Items -->
+    <div *ngFor="let movement of filteredMovements(); let i = index" class="timeline-item">
+      <div class="timeline-marker" [style.background-color]="getMovementColor(movement)">
+        <span class="movement-icon">{{ movement.typeIcon }}</span>
+      </div>
+
+      <mat-card class="movement-card clickable" (click)="openMovementDetails(movement)">
+        <mat-card-header>
+          <div class="movement-header">
+            <div class="movement-title">
+              <span class="movement-type" [style.color]="getMovementColor(movement)">
+                {{ movement.typeDisplayName }}
+              </span>
+              <span class="movement-date">{{ formatDate(movement.createdAt) }}</span>
+            </div>
+            <div class="movement-quantity" [class.entry]="isEntry(movement)" [class.exit]="isExit(movement)">
+              <span *ngIf="isEntry(movement)">+</span>
+              <span *ngIf="isExit(movement)">-</span>
+              {{ formatQuantity(movement.quantity) }}
+            </div>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="movement-details">
+            <!-- Product Info -->
+            <div class="detail-row">
+              <mat-icon class="detail-icon">inventory</mat-icon>
+              <span class="detail-label">Produto:</span>
+              <span class="detail-value">{{ movement.productName }} ({{ movement.productSku }})</span>
+            </div>
+
+            <!-- Location Info -->
+            <div class="detail-row">
+              <mat-icon class="detail-icon">location_on</mat-icon>
+              <span class="detail-label">Local:</span>
+              <span class="detail-value">{{ movement.locationName }} ({{ movement.locationCode }})</span>
+            </div>
+
+            <!-- Balance Info -->
+            <div class="detail-row">
+              <mat-icon class="detail-icon">balance</mat-icon>
+              <span class="detail-label">Saldo:</span>
+              <span class="detail-value">
+                {{ movement.balanceBefore | number:'1.0-3' }}
+                <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+                {{ movement.balanceAfter | number:'1.0-3' }}
+              </span>
+            </div>
+
+            <!-- User Info -->
+            <div class="detail-row" *ngIf="movement.userName">
+              <mat-icon class="detail-icon">person</mat-icon>
+              <span class="detail-label">Usuário:</span>
+              <span class="detail-value">{{ movement.userName }}</span>
+            </div>
+
+            <!-- Document Reference -->
+            <div class="detail-row" *ngIf="movement.documentType">
+              <mat-icon class="detail-icon">description</mat-icon>
+              <span class="detail-label">Documento:</span>
+              <span class="detail-value">{{ movement.documentType }} #{{ movement.documentId }}</span>
+            </div>
+
+            <!-- Reason -->
+            <div class="detail-row" *ngIf="movement.reason">
+              <mat-icon class="detail-icon">comment</mat-icon>
+              <span class="detail-label">Observação:</span>
+              <span class="detail-value">{{ movement.reason }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,46 +1,47 @@
 package com.estoquecentral.inventory.domain;
 
 /**
- * MovementType - Enum for inventory movement types
- *
- * <p>Defines the type of inventory movement:
- * <ul>
- *   <li>IN - Incoming stock (purchase, return from customer)</li>
- *   <li>OUT - Outgoing stock (sale, return to supplier)</li>
- *   <li>ADJUSTMENT - Manual adjustment (correction, count)</li>
- *   <li>TRANSFER - Transfer between locations (future)</li>
- *   <li>RESERVE - Reserve quantity for order</li>
- *   <li>UNRESERVE - Cancel reservation</li>
- * </ul>
+ * MovementType - Types of stock movements
+ * Story 2.8: Stock Movement History - AC2
  */
 public enum MovementType {
-    /**
-     * Incoming stock - increases quantity
-     */
-    IN,
+    ENTRY("Entrada Manual", "📥"),
+    EXIT("Saída Manual", "📤"),
+    TRANSFER_OUT("Transferência - Saída", "🔄"),
+    TRANSFER_IN("Transferência - Entrada", "🔄"),
+    ADJUSTMENT("Ajuste de Inventário", "⚖️"),
+    SALE("Venda", "🛒"),
+    PURCHASE("Compra", "📦"),
+    RESERVE("Reserva", "🔒"),
+    RELEASE("Liberação de Reserva", "🔓"),
+    BOM_ASSEMBLY("Montagem de Kit", "🔧"),
+    BOM_DISASSEMBLY("Desmontagem de Kit", "🔨");
 
-    /**
-     * Outgoing stock - decreases quantity
-     */
-    OUT,
+    private final String displayName;
+    private final String icon;
 
-    /**
-     * Manual adjustment - can increase or decrease
-     */
-    ADJUSTMENT,
+    MovementType(String displayName, String icon) {
+        this.displayName = displayName;
+        this.icon = icon;
+    }
 
-    /**
-     * Transfer between locations (future)
-     */
-    TRANSFER,
+    public String getDisplayName() {
+        return displayName;
+    }
 
-    /**
-     * Reserve quantity for order
-     */
-    RESERVE,
+    public String getIcon() {
+        return icon;
+    }
 
-    /**
-     * Cancel reservation
-     */
-    UNRESERVE
+    public boolean isEntry() {
+        return this == ENTRY || this == TRANSFER_IN || this == PURCHASE || this == RELEASE;
+    }
+
+    public boolean isExit() {
+        return this == EXIT || this == TRANSFER_OUT || this == SALE || this == RESERVE;
+    }
+
+    public boolean isAdjustable() {
+        return this == ADJUSTMENT || this == BOM_ASSEMBLY || this == BOM_DISASSEMBLY;
+    }
 }

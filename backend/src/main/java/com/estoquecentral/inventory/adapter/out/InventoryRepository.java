@@ -14,13 +14,15 @@ import java.util.UUID;
  * InventoryRepository - Data access for Inventory entity
  *
  * <p>Provides CRUD operations and custom queries for inventory management.
+ * Story 2.7: Multi-Warehouse Stock Control with variant support
  *
  * <p><strong>Key Queries:</strong>
  * <ul>
- *   <li>Find by product and location</li>
- *   <li>Find products with low stock</li>
- *   <li>Find products with excess stock</li>
+ *   <li>Find by product/variant and location</li>
+ *   <li>Find products below minimum quantity</li>
+ *   <li>Find products above maximum quantity</li>
  *   <li>Calculate total inventory value</li>
+ *   <li>Aggregate inventory across locations</li>
  * </ul>
  *
  * @see Inventory
@@ -29,177 +31,276 @@ import java.util.UUID;
 public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
 
     /**
-     * Finds inventory by product ID and location
+     * Finds inventory by product ID and location ID
      *
+     * @param tenantId tenant ID
      * @param productId product ID
-     * @param location location
+     * @param locationId location ID
      * @return optional inventory
      */
     @Query("""
         SELECT * FROM inventory
-        WHERE product_id = :productId AND location = :location
+        WHERE tenant_id = :tenantId
+          AND product_id = :productId
+          AND location_id = :locationId
         """)
-    Optional<Inventory> findByProductIdAndLocation(@Param("productId") UUID productId,
-                                                     @Param("location") String location);
+    Optional<Inventory> findByTenantIdAndProductIdAndLocationId(
+        @Param("tenantId") UUID tenantId,
+        @Param("productId") UUID productId,
+        @Param("locationId") UUID locationId);
+
+    /**
+     * Finds inventory by variant ID and location ID
+     *
+     * @param tenantId tenant ID
+     * @param variantId variant ID
+     * @param locationId location ID
+     * @return optional inventory
+     */
+    @Query("""
+        SELECT * FROM inventory
+        WHERE tenant_id = :tenantId
+          AND variant_id = :variantId
+          AND location_id = :locationId
+        """)
+    Optional<Inventory> findByTenantIdAndVariantIdAndLocationId(
+        @Param("tenantId") UUID tenantId,
+        @Param("variantId") UUID variantId,
+        @Param("locationId") UUID locationId);
 
     /**
      * Finds all inventory records for a product (all locations)
      *
+     * @param tenantId tenant ID
      * @param productId product ID
      * @return list of inventory records
      */
     @Query("""
         SELECT * FROM inventory
-        WHERE product_id = :productId
-        ORDER BY location
+        WHERE tenant_id = :tenantId
+          AND product_id = :productId
+        ORDER BY location_id
         """)
-    List<Inventory> findAllByProductId(@Param("productId") UUID productId);
+    List<Inventory> findAllByTenantIdAndProductId(
+        @Param("tenantId") UUID tenantId,
+        @Param("productId") UUID productId);
 
     /**
-     * Finds products with low stock (quantity <= min_quantity)
+     * Finds all inventory records for a variant (all locations)
      *
-     * @return list of inventory records below minimum
+     * @param tenantId tenant ID
+     * @param variantId variant ID
+     * @return list of inventory records
+     */
+    @Query("""
+        SELECT * FROM inventory
+        WHERE tenant_id = :tenantId
+          AND variant_id = :variantId
+        ORDER BY location_id
+        """)
+    List<Inventory> findAllByTenantIdAndVariantId(
+        @Param("tenantId") UUID tenantId,
+        @Param("variantId") UUID variantId);
+
+    /**
+     * Finds inventory records below minimum quantity (Story 2.7 - AC6)
+     *
+     * @param tenantId tenant ID
+     * @return list of inventory records where quantityForSale < minimumQuantity
      */
     @Query("""
         SELECT i.* FROM inventory i
-        WHERE i.min_quantity IS NOT NULL
-          AND i.quantity <= i.min_quantity
-        ORDER BY i.quantity ASC
+        WHERE i.tenant_id = :tenantId
+          AND i.minimum_quantity IS NOT NULL
+          AND i.minimum_quantity > 0
+          AND i.quantity_for_sale < i.minimum_quantity
+        ORDER BY (i.quantity_for_sale * 100.0 / i.minimum_quantity) ASC
         """)
-    List<Inventory> findLowStockProducts();
+    List<Inventory> findBelowMinimum(@Param("tenantId") UUID tenantId);
 
     /**
-     * Finds products with excess stock (quantity >= max_quantity)
+     * Finds inventory records below minimum quantity for a specific location
      *
+     * @param tenantId tenant ID
+     * @param locationId location ID
+     * @return list of inventory records below minimum at location
+     */
+    @Query("""
+        SELECT i.* FROM inventory i
+        WHERE i.tenant_id = :tenantId
+          AND i.location_id = :locationId
+          AND i.minimum_quantity IS NOT NULL
+          AND i.minimum_quantity > 0
+          AND i.quantity_for_sale < i.minimum_quantity
+        ORDER BY (i.quantity_for_sale * 100.0 / i.minimum_quantity) ASC
+        """)
+    List<Inventory> findBelowMinimumByLocation(
+        @Param("tenantId") UUID tenantId,
+        @Param("locationId") UUID locationId);
+
+    /**
+     * Finds products with excess stock (quantityAvailable >= maximumQuantity)
+     *
+     * @param tenantId tenant ID
      * @return list of inventory records above maximum
      */
     @Query("""
         SELECT i.* FROM inventory i
-        WHERE i.max_quantity IS NOT NULL
-          AND i.quantity >= i.max_quantity
-        ORDER BY i.quantity DESC
+        WHERE i.tenant_id = :tenantId
+          AND i.maximum_quantity IS NOT NULL
+          AND i.quantity_available >= i.maximum_quantity
+        ORDER BY i.quantity_available DESC
         """)
-    List<Inventory> findExcessStockProducts();
+    List<Inventory> findAboveMaximum(@Param("tenantId") UUID tenantId);
 
     /**
-     * Finds products with zero or negative available quantity
+     * Finds products with zero or negative quantity for sale
      *
+     * @param tenantId tenant ID
      * @return list of inventory records out of stock
      */
     @Query("""
         SELECT * FROM inventory
-        WHERE available_quantity <= 0
-        ORDER BY quantity ASC
+        WHERE tenant_id = :tenantId
+          AND quantity_for_sale <= 0
+        ORDER BY quantity_available ASC
         """)
-    List<Inventory> findOutOfStockProducts();
+    List<Inventory> findOutOfStock(@Param("tenantId") UUID tenantId);
 
     /**
      * Finds inventory by location
      *
-     * @param location location
+     * @param tenantId tenant ID
+     * @param locationId location ID
      * @return list of inventory records
      */
     @Query("""
         SELECT * FROM inventory
-        WHERE location = :location
-        ORDER BY product_id
+        WHERE tenant_id = :tenantId
+          AND location_id = :locationId
+        ORDER BY product_id, variant_id
         """)
-    List<Inventory> findByLocation(@Param("location") String location);
+    List<Inventory> findByTenantIdAndLocationId(
+        @Param("tenantId") UUID tenantId,
+        @Param("locationId") UUID locationId);
 
     /**
-     * Finds all distinct locations
+     * Finds all inventory for a tenant (all products, all locations)
      *
-     * @return list of location names
+     * @param tenantId tenant ID
+     * @return list of inventory records
      */
     @Query("""
-        SELECT DISTINCT location FROM inventory
-        ORDER BY location
+        SELECT * FROM inventory
+        WHERE tenant_id = :tenantId
+        ORDER BY location_id, product_id, variant_id
         """)
-    List<String> findAllLocations();
+    List<Inventory> findAllByTenantId(@Param("tenantId") UUID tenantId);
 
     /**
-     * Counts products with low stock
+     * Counts inventory records below minimum quantity
      *
+     * @param tenantId tenant ID
      * @return count of products below minimum
      */
     @Query("""
         SELECT COUNT(*) FROM inventory
-        WHERE min_quantity IS NOT NULL
-          AND quantity <= min_quantity
+        WHERE tenant_id = :tenantId
+          AND minimum_quantity IS NOT NULL
+          AND minimum_quantity > 0
+          AND quantity_for_sale < minimum_quantity
         """)
-    long countLowStockProducts();
+    long countBelowMinimum(@Param("tenantId") UUID tenantId);
 
     /**
      * Counts products out of stock
      *
-     * @return count of products with zero available quantity
+     * @param tenantId tenant ID
+     * @return count of products with zero quantity for sale
      */
     @Query("""
         SELECT COUNT(*) FROM inventory
-        WHERE available_quantity <= 0
+        WHERE tenant_id = :tenantId
+          AND quantity_for_sale <= 0
         """)
-    long countOutOfStockProducts();
+    long countOutOfStock(@Param("tenantId") UUID tenantId);
 
     /**
      * Gets total inventory value by location
-     * Requires JOIN with products table to get cost
+     * Calculates value for both simple products and variants
      *
-     * @param location location
+     * @param tenantId tenant ID
+     * @param locationId location ID
      * @return total inventory value
      */
     @Query("""
-        SELECT COALESCE(SUM(i.quantity * p.cost), 0)
+        SELECT COALESCE(SUM(i.quantity_available * COALESCE(pv.cost, p.cost)), 0)
         FROM inventory i
-        INNER JOIN products p ON i.product_id = p.id
-        WHERE i.location = :location
-          AND p.cost IS NOT NULL
+        LEFT JOIN products p ON i.product_id = p.id
+        LEFT JOIN product_variants pv ON i.variant_id = pv.id
+        WHERE i.tenant_id = :tenantId
+          AND i.location_id = :locationId
+          AND (p.cost IS NOT NULL OR pv.cost IS NOT NULL)
         """)
-    Double getTotalInventoryValueByLocation(@Param("location") String location);
+    Double getTotalInventoryValueByLocation(
+        @Param("tenantId") UUID tenantId,
+        @Param("locationId") UUID locationId);
 
     /**
-     * Gets total inventory value (all locations)
+     * Gets total inventory value for tenant (all locations)
      *
+     * @param tenantId tenant ID
      * @return total inventory value
      */
     @Query("""
-        SELECT COALESCE(SUM(i.quantity * p.cost), 0)
+        SELECT COALESCE(SUM(i.quantity_available * COALESCE(pv.cost, p.cost)), 0)
         FROM inventory i
-        INNER JOIN products p ON i.product_id = p.id
-        WHERE p.cost IS NOT NULL
+        LEFT JOIN products p ON i.product_id = p.id
+        LEFT JOIN product_variants pv ON i.variant_id = pv.id
+        WHERE i.tenant_id = :tenantId
+          AND (p.cost IS NOT NULL OR pv.cost IS NOT NULL)
         """)
-    Double getTotalInventoryValue();
-
-    /**
-     * Gets inventory with product details (enriched view)
-     *
-     * @param productId product ID
-     * @param location location
-     * @return optional inventory with product details
-     */
-    @Query("""
-        SELECT i.*
-        FROM inventory i
-        INNER JOIN products p ON i.product_id = p.id
-        WHERE i.product_id = :productId
-          AND i.location = :location
-          AND p.ativo = true
-        """)
-    Optional<Inventory> findByProductIdAndLocationWithProduct(@Param("productId") UUID productId,
-                                                                @Param("location") String location);
+    Double getTotalInventoryValue(@Param("tenantId") UUID tenantId);
 
     /**
      * Checks if inventory exists for product and location
      *
+     * @param tenantId tenant ID
      * @param productId product ID
-     * @param location location
+     * @param locationId location ID
      * @return true if exists
      */
     @Query("""
         SELECT EXISTS(
             SELECT 1 FROM inventory
-            WHERE product_id = :productId AND location = :location
+            WHERE tenant_id = :tenantId
+              AND product_id = :productId
+              AND location_id = :locationId
         )
         """)
-    boolean existsByProductIdAndLocation(@Param("productId") UUID productId,
-                                          @Param("location") String location);
+    boolean existsByTenantIdAndProductIdAndLocationId(
+        @Param("tenantId") UUID tenantId,
+        @Param("productId") UUID productId,
+        @Param("locationId") UUID locationId);
+
+    /**
+     * Checks if inventory exists for variant and location
+     *
+     * @param tenantId tenant ID
+     * @param variantId variant ID
+     * @param locationId location ID
+     * @return true if exists
+     */
+    @Query("""
+        SELECT EXISTS(
+            SELECT 1 FROM inventory
+            WHERE tenant_id = :tenantId
+              AND variant_id = :variantId
+              AND location_id = :locationId
+        )
+        """)
+    boolean existsByTenantIdAndVariantIdAndLocationId(
+        @Param("tenantId") UUID tenantId,
+        @Param("variantId") UUID variantId,
+        @Param("locationId") UUID locationId);
 }

@@ -10,25 +10,30 @@ import java.util.UUID;
 /**
  * Inventory - Domain entity for inventory tracking
  *
- * <p>Represents current inventory levels for a product at a specific location.
+ * <p>Represents current inventory levels for a product/variant at a specific location.
  * Tracks quantity, reserved quantity, and min/max levels for alerts.
  *
  * <p><strong>Key Concepts:</strong>
  * <ul>
- *   <li>quantity - Total physical quantity in stock</li>
+ *   <li>quantityAvailable - Total physical quantity in stock</li>
  *   <li>reservedQuantity - Quantity reserved for pending orders</li>
- *   <li>availableQuantity - Computed: quantity - reservedQuantity (GENERATED column)</li>
- *   <li>location - Storage location (DEFAULT for single location, future multi-location support)</li>
+ *   <li>quantityForSale - Computed: quantityAvailable - reservedQuantity (GENERATED column, never negative)</li>
+ *   <li>locationId - FK to locations table (warehouse, store, etc.)</li>
+ *   <li>productId - For simple/composite products (NULL for variants)</li>
+ *   <li>variantId - For product variants (NULL for simple/composite)</li>
  * </ul>
  *
  * <p><strong>Business Rules:</strong>
  * <ul>
- *   <li>quantity >= 0</li>
+ *   <li>quantityAvailable >= 0</li>
  *   <li>reservedQuantity >= 0</li>
- *   <li>reservedQuantity <= quantity</li>
- *   <li>availableQuantity = quantity - reservedQuantity</li>
- *   <li>One inventory record per product-location combination</li>
+ *   <li>reservedQuantity <= quantityAvailable</li>
+ *   <li>quantityForSale = MAX(0, quantityAvailable - reservedQuantity)</li>
+ *   <li>Either productId OR variantId must be NOT NULL (XOR constraint)</li>
+ *   <li>One inventory record per (product/variant, location) combination</li>
  * </ul>
+ *
+ * <p><strong>Story 2.7:</strong> Multi-Warehouse Stock Control
  *
  * @see InventoryMovement
  */
@@ -38,26 +43,43 @@ public class Inventory {
     @Id
     private UUID id;
     private UUID tenantId;
-    private UUID productId;
-    private BigDecimal quantity;
+    private UUID productId;             // NULL for variants
+    private UUID variantId;             // NULL for simple/composite products
+    private UUID locationId;            // FK to locations table
+    private BigDecimal quantityAvailable;
     private BigDecimal reservedQuantity;
-    private BigDecimal availableQuantity; // Computed by database
-    private BigDecimal minQuantity;
-    private BigDecimal maxQuantity;
-    private String location;
+    private BigDecimal quantityForSale; // Computed by database (GENERATED column)
+    private BigDecimal minimumQuantity;
+    private BigDecimal maximumQuantity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     /**
-     * Constructor for creating new inventory
+     * Constructor for creating new inventory for simple/composite product
      */
-    public Inventory(UUID tenantId, UUID productId, BigDecimal quantity, String location) {
+    public Inventory(UUID tenantId, UUID productId, UUID locationId, BigDecimal quantityAvailable) {
         this.id = UUID.randomUUID();
         this.tenantId = tenantId;
         this.productId = productId;
-        this.quantity = quantity != null ? quantity : BigDecimal.ZERO;
+        this.variantId = null;
+        this.locationId = locationId;
+        this.quantityAvailable = quantityAvailable != null ? quantityAvailable : BigDecimal.ZERO;
         this.reservedQuantity = BigDecimal.ZERO;
-        this.location = location != null ? location : "DEFAULT";
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Constructor for creating new inventory for product variant
+     */
+    public Inventory(UUID tenantId, UUID variantId, UUID locationId) {
+        this.id = UUID.randomUUID();
+        this.tenantId = tenantId;
+        this.productId = null;
+        this.variantId = variantId;
+        this.locationId = locationId;
+        this.quantityAvailable = BigDecimal.ZERO;
+        this.reservedQuantity = BigDecimal.ZERO;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -78,7 +100,7 @@ public class Inventory {
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
-        this.quantity = this.quantity.add(amount);
+        this.quantityAvailable = this.quantityAvailable.add(amount);
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -86,21 +108,21 @@ public class Inventory {
      * Removes quantity from inventory
      *
      * @param amount amount to remove
-     * @throws IllegalArgumentException if amount is negative or exceeds available quantity
+     * @throws IllegalArgumentException if amount is negative or exceeds available quantity for sale
      */
     public void removeQuantity(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
 
-        BigDecimal available = this.quantity.subtract(this.reservedQuantity);
-        if (amount.compareTo(available) > 0) {
+        BigDecimal forSale = this.getComputedQuantityForSale();
+        if (amount.compareTo(forSale) > 0) {
             throw new IllegalArgumentException(
-                    String.format("Insufficient available quantity. Available: %s, Requested: %s",
-                            available, amount));
+                    String.format("Insufficient quantity for sale. Available: %s, Requested: %s",
+                            forSale, amount));
         }
 
-        this.quantity = this.quantity.subtract(amount);
+        this.quantityAvailable = this.quantityAvailable.subtract(amount);
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -108,18 +130,18 @@ public class Inventory {
      * Reserves quantity for pending order
      *
      * @param amount amount to reserve
-     * @throws IllegalArgumentException if amount is negative or exceeds available quantity
+     * @throws IllegalArgumentException if amount is negative or exceeds quantity for sale
      */
     public void reserve(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
 
-        BigDecimal available = this.quantity.subtract(this.reservedQuantity);
-        if (amount.compareTo(available) > 0) {
+        BigDecimal forSale = this.getComputedQuantityForSale();
+        if (amount.compareTo(forSale) > 0) {
             throw new IllegalArgumentException(
-                    String.format("Insufficient available quantity to reserve. Available: %s, Requested: %s",
-                            available, amount));
+                    String.format("Insufficient quantity for sale to reserve. Available: %s, Requested: %s",
+                            forSale, amount));
         }
 
         this.reservedQuantity = this.reservedQuantity.add(amount);
@@ -148,7 +170,7 @@ public class Inventory {
     }
 
     /**
-     * Fulfills reservation by removing from both quantity and reserved
+     * Fulfills reservation by removing from both quantityAvailable and reserved
      *
      * @param amount amount to fulfill
      * @throws IllegalArgumentException if amount is negative or exceeds reserved quantity
@@ -164,7 +186,7 @@ public class Inventory {
                             this.reservedQuantity, amount));
         }
 
-        this.quantity = this.quantity.subtract(amount);
+        this.quantityAvailable = this.quantityAvailable.subtract(amount);
         this.reservedQuantity = this.reservedQuantity.subtract(amount);
         this.updatedAt = LocalDateTime.now();
     }
@@ -186,34 +208,38 @@ public class Inventory {
                             this.reservedQuantity, newQuantity));
         }
 
-        this.quantity = newQuantity;
+        this.quantityAvailable = newQuantity;
         this.updatedAt = LocalDateTime.now();
     }
 
     /**
      * Sets min/max quantity levels for alerts
      *
-     * @param minQuantity minimum quantity threshold
-     * @param maxQuantity maximum quantity threshold
+     * @param minimumQuantity minimum quantity threshold
+     * @param maximumQuantity maximum quantity threshold
      */
-    public void setLevels(BigDecimal minQuantity, BigDecimal maxQuantity) {
-        if (minQuantity != null && maxQuantity != null &&
-                minQuantity.compareTo(maxQuantity) > 0) {
-            throw new IllegalArgumentException("Min quantity cannot be greater than max quantity");
+    public void setLevels(BigDecimal minimumQuantity, BigDecimal maximumQuantity) {
+        if (minimumQuantity != null && maximumQuantity != null &&
+                minimumQuantity.compareTo(maximumQuantity) > 0) {
+            throw new IllegalArgumentException("Minimum quantity cannot be greater than maximum quantity");
         }
 
-        this.minQuantity = minQuantity;
-        this.maxQuantity = maxQuantity;
+        this.minimumQuantity = minimumQuantity;
+        this.maximumQuantity = maximumQuantity;
         this.updatedAt = LocalDateTime.now();
     }
 
     /**
-     * Checks if inventory is below minimum level
+     * Checks if inventory is below minimum level (based on quantityForSale)
      *
      * @return true if below minimum
      */
     public boolean isBelowMinimum() {
-        return this.minQuantity != null && this.quantity.compareTo(this.minQuantity) < 0;
+        if (this.minimumQuantity == null) {
+            return false;
+        }
+        BigDecimal forSale = getComputedQuantityForSale();
+        return forSale.compareTo(this.minimumQuantity) < 0;
     }
 
     /**
@@ -222,17 +248,19 @@ public class Inventory {
      * @return true if above maximum
      */
     public boolean isAboveMaximum() {
-        return this.maxQuantity != null && this.quantity.compareTo(this.maxQuantity) > 0;
+        return this.maximumQuantity != null && this.quantityAvailable.compareTo(this.maximumQuantity) > 0;
     }
 
     /**
-     * Gets available quantity (quantity - reserved)
+     * Gets quantity for sale (quantityAvailable - reserved)
      * Note: In DB this is a GENERATED column, but we compute it here for domain logic
+     * Never returns negative (returns 0 if calculation would be negative)
      *
-     * @return available quantity
+     * @return quantity for sale (never negative)
      */
-    public BigDecimal getComputedAvailableQuantity() {
-        return this.quantity.subtract(this.reservedQuantity);
+    public BigDecimal getComputedQuantityForSale() {
+        BigDecimal forSale = this.quantityAvailable.subtract(this.reservedQuantity);
+        return forSale.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : forSale;
     }
 
     // Getters and Setters
@@ -261,12 +289,28 @@ public class Inventory {
         this.productId = productId;
     }
 
-    public BigDecimal getQuantity() {
-        return quantity;
+    public UUID getVariantId() {
+        return variantId;
     }
 
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
+    public void setVariantId(UUID variantId) {
+        this.variantId = variantId;
+    }
+
+    public UUID getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(UUID locationId) {
+        this.locationId = locationId;
+    }
+
+    public BigDecimal getQuantityAvailable() {
+        return quantityAvailable;
+    }
+
+    public void setQuantityAvailable(BigDecimal quantityAvailable) {
+        this.quantityAvailable = quantityAvailable;
     }
 
     public BigDecimal getReservedQuantity() {
@@ -277,36 +321,28 @@ public class Inventory {
         this.reservedQuantity = reservedQuantity;
     }
 
-    public BigDecimal getAvailableQuantity() {
-        return availableQuantity;
+    public BigDecimal getQuantityForSale() {
+        return quantityForSale;
     }
 
-    public void setAvailableQuantity(BigDecimal availableQuantity) {
-        this.availableQuantity = availableQuantity;
+    public void setQuantityForSale(BigDecimal quantityForSale) {
+        this.quantityForSale = quantityForSale;
     }
 
-    public BigDecimal getMinQuantity() {
-        return minQuantity;
+    public BigDecimal getMinimumQuantity() {
+        return minimumQuantity;
     }
 
-    public void setMinQuantity(BigDecimal minQuantity) {
-        this.minQuantity = minQuantity;
+    public void setMinimumQuantity(BigDecimal minimumQuantity) {
+        this.minimumQuantity = minimumQuantity;
     }
 
-    public BigDecimal getMaxQuantity() {
-        return maxQuantity;
+    public BigDecimal getMaximumQuantity() {
+        return maximumQuantity;
     }
 
-    public void setMaxQuantity(BigDecimal maxQuantity) {
-        this.maxQuantity = maxQuantity;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
+    public void setMaximumQuantity(BigDecimal maximumQuantity) {
+        this.maximumQuantity = maximumQuantity;
     }
 
     public LocalDateTime getCreatedAt() {

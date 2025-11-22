@@ -1,0 +1,43 @@
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  width: calc(50% - 8px);
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+mat-card {
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+}
+
+mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+mat-form-field {
+  margin-bottom: 8px;
+}
+
+mat-hint {
+  color: #666;
+  font-size: 12px;
+}

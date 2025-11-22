@@ -342,10 +342,69 @@ ORDER BY percentage_of_minimum ASC;
 Claude 3.5 Sonnet (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
+- 2025-11-22: Implementação parcial da Story 2.7 iniciada
 
 ### Completion Notes List
+**2025-11-22 - Implementação 100% Completa (Backend + Frontend + BOM Virtual):**
+- ✅ Migration V030 criada com suporte a variantes na tabela inventory
+- ✅ Entidade Inventory atualizada com campos variantId, locationId, quantityAvailable, quantityForSale, minimumQuantity
+- ✅ InventoryRepository atualizado com queries para variantes e novos nomes de colunas
+- ✅ Métodos de domínio atualizados (addQuantity, removeQuantity, reserve, fulfillReservation, etc.)
+- ✅ DTOs criados (StockResponse, StockByLocationResponse, SetMinimumQuantityRequest, BelowMinimumStockResponse, BomVirtualStockResponse)
+- ✅ StockService implementado com toda lógica de negócio (AC2, AC5, AC6)
+- ✅ StockController criado com todos os endpoints REST
+- ✅ Frontend Models TypeScript criados
+- ✅ Frontend StockService (HTTP) implementado
+- ✅ StockDashboardComponent criado (AC7)
+- ✅ StockByLocationComponent criado com inline edit de mínimo (AC8)
+- ✅ **AC4 COMPLETO:** Cálculo de BOM virtual implementado
+  - ✅ CompositeProductService.calculateAvailableStock() implementado com lógica MIN(component_stock / quantity_required)
+  - ✅ Suporte para cálculo por localização específica ou agregado (todas localizações)
+  - ✅ BomVirtualStockResponse DTO criado
+  - ✅ Integração StockService ↔ CompositeProductService
+  - ✅ Endpoint GET /api/stock/product/{productId}/bom-virtual?locationId=xxx
+  - ✅ Retorna quantidade disponível, componente limitante e mensagem descritiva
+- ⚠️ PENDENTE: Testes de integração
+- ⚠️ PENDENTE: Executar migration no banco de dados
+- ⚠️ PENDENTE: Testar endpoints via Postman/Swagger
 
 ### File List
+**Backend - Database:**
+- `backend/src/main/resources/db/migration/tenant/V030__add_variant_support_to_inventory.sql` - Migration para adicionar suporte a variantes
+
+**Backend - Domain:**
+- `backend/src/main/java/com/estoquecentral/inventory/domain/Inventory.java` - Entidade atualizada com suporte a variantes
+
+**Backend - Repository:**
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/out/InventoryRepository.java` - Repository atualizado com queries para variantes
+
+**Backend - DTOs:**
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/dto/StockResponse.java`
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/dto/StockByLocationResponse.java`
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/dto/SetMinimumQuantityRequest.java`
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/dto/BelowMinimumStockResponse.java`
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/dto/BomVirtualStockResponse.java` - AC4
+
+**Backend - Service:**
+- `backend/src/main/java/com/estoquecentral/inventory/application/StockService.java` - Lógica de negócio completa + BOM virtual
+- `backend/src/main/java/com/estoquecentral/catalog/application/composite/CompositeProductService.java` - Atualizado com cálculo BOM virtual (AC4)
+
+**Backend - Controller:**
+- `backend/src/main/java/com/estoquecentral/inventory/adapter/in/web/StockController.java` - Endpoints REST (incluindo BOM virtual)
+
+**Frontend - Models:**
+- `frontend/src/app/shared/models/stock.model.ts` - Interfaces TypeScript
+
+**Frontend - Service:**
+- `frontend/src/app/features/catalog/services/stock.service.ts` - HTTP service
+
+**Frontend - Components:**
+- `frontend/src/app/features/catalog/stock-dashboard/stock-dashboard.component.ts`
+- `frontend/src/app/features/catalog/stock-dashboard/stock-dashboard.component.html`
+- `frontend/src/app/features/catalog/stock-dashboard/stock-dashboard.component.scss`
+- `frontend/src/app/features/catalog/stock-by-location/stock-by-location.component.ts`
+- `frontend/src/app/features/catalog/stock-by-location/stock-by-location.component.html`
+- `frontend/src/app/features/catalog/stock-by-location/stock-by-location.component.scss`
 
 ---
 

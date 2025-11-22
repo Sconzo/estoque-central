@@ -1,0 +1,307 @@
+<h2 mat-dialog-title>{{ isEditMode() ? 'Editar Fornecedor' : 'Novo Fornecedor' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="supplierForm" class="supplier-form">
+
+    <!-- Tipo de Pessoa -->
+    <div class="form-section">
+      <h3>Tipo de Pessoa</h3>
+      <mat-radio-group formControlName="supplierType" class="radio-group">
+        <mat-radio-button [value]="SupplierType.BUSINESS">Pessoa Jurídica (PJ)</mat-radio-button>
+        <mat-radio-button [value]="SupplierType.INDIVIDUAL">Pessoa Física (PF)</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- Dados Básicos -->
+    <div class="form-section">
+      <h3>Dados Básicos</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Código do Fornecedor *</mat-label>
+          <input matInput formControlName="supplierCode" placeholder="SUP-001">
+          <mat-error *ngIf="hasError('supplierCode', 'required')">
+            {{ getErrorMessage('supplierCode') }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width" *ngIf="selectedType() === SupplierType.BUSINESS">
+          <mat-label>CNPJ *</mat-label>
+          <input matInput formControlName="cnpj" placeholder="00.000.000/0000-00">
+          <mat-error>{{ getErrorMessage('cnpj') }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width" *ngIf="selectedType() === SupplierType.INDIVIDUAL">
+          <mat-label>CPF *</mat-label>
+          <input matInput formControlName="cpf" placeholder="000.000.000-00">
+          <mat-error>{{ getErrorMessage('cpf') }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row" *ngIf="selectedType() === SupplierType.BUSINESS">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Razão Social *</mat-label>
+          <input matInput formControlName="companyName">
+          <mat-error>{{ getErrorMessage('companyName') }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row" *ngIf="selectedType() === SupplierType.BUSINESS">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome Fantasia</mat-label>
+          <input matInput formControlName="tradeName">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row" *ngIf="selectedType() === SupplierType.INDIVIDUAL">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Nome *</mat-label>
+          <input matInput formControlName="firstName">
+          <mat-error>{{ getErrorMessage('firstName') }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Sobrenome</mat-label>
+          <input matInput formControlName="lastName">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Dados Fiscais (apenas PJ) -->
+    <div class="form-section" *ngIf="selectedType() === SupplierType.BUSINESS">
+      <h3>Dados Fiscais</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Inscrição Estadual</mat-label>
+          <input matInput formControlName="stateRegistration">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Inscrição Municipal</mat-label>
+          <input matInput formControlName="municipalRegistration">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Regime Tributário</mat-label>
+          <mat-select formControlName="taxRegime">
+            <mat-option *ngFor="let regime of taxRegimes" [value]="regime.value">
+              {{ regime.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Contato -->
+    <div class="form-section">
+      <h3>Contato</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email">
+          <mat-error>{{ getErrorMessage('email') }}</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Telefone</mat-label>
+          <input matInput formControlName="phone" placeholder="(00) 0000-0000">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Celular</mat-label>
+          <input matInput formControlName="mobile" placeholder="(00) 00000-0000">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Website</mat-label>
+          <input matInput formControlName="website" placeholder="https://www.exemplo.com.br">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="form-section">
+      <h3>Endereço</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="quarter-width">
+          <mat-label>CEP</mat-label>
+          <input matInput formControlName="postalCode" placeholder="00000-000">
+          <mat-hint *ngIf="searchingCep()">Buscando...</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="three-quarter-width">
+          <mat-label>Logradouro</mat-label>
+          <input matInput formControlName="street">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="quarter-width">
+          <mat-label>Número</mat-label>
+          <input matInput formControlName="number">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Complemento</mat-label>
+          <input matInput formControlName="complement">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Bairro</mat-label>
+          <input matInput formControlName="neighborhood">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Cidade</mat-label>
+          <input matInput formControlName="city">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="state">
+            <mat-option *ngFor="let state of brazilianStates" [value]="state.value">
+              {{ state.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Dados Bancários -->
+    <div class="form-section">
+      <h3>Dados Bancários</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Banco</mat-label>
+          <input matInput formControlName="bankName">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="quarter-width">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="bankCode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="quarter-width">
+          <mat-label>Agência</mat-label>
+          <input matInput formControlName="bankBranch">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Conta</mat-label>
+          <input matInput formControlName="bankAccount">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Chave PIX</mat-label>
+          <input matInput formControlName="pixKey">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Condições Comerciais -->
+    <div class="form-section">
+      <h3>Condições Comerciais</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Prazo de Pagamento</mat-label>
+          <input matInput formControlName="paymentTerms" placeholder="30/60/90 dias">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Forma de Pagamento Padrão</mat-label>
+          <input matInput formControlName="defaultPaymentMethod">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="third-width">
+          <mat-label>Limite de Crédito</mat-label>
+          <input matInput formControlName="creditLimit" type="number">
+          <span matPrefix>R$ </span>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="third-width">
+          <mat-label>Prazo Médio de Entrega (dias)</mat-label>
+          <input matInput formControlName="averageDeliveryDays" type="number">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="third-width">
+          <mat-label>Valor Mínimo de Pedido</mat-label>
+          <input matInput formControlName="minimumOrderValue" type="number">
+          <span matPrefix>R$ </span>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Classificação -->
+    <div class="form-section">
+      <h3>Classificação</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Categoria</mat-label>
+          <mat-select formControlName="supplierCategory">
+            <mat-option *ngFor="let cat of supplierCategories" [value]="cat.value">
+              {{ cat.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="quarter-width">
+          <mat-label>Avaliação (1-5)</mat-label>
+          <input matInput formControlName="rating" type="number" min="1" max="5">
+          <mat-error>{{ getErrorMessage('rating') }}</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Observações -->
+    <div class="form-section">
+      <h3>Observações</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Observações</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notas Internas</mat-label>
+          <textarea matInput formControlName="internalNotes" rows="3"></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading()">
+    Cancelar
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!supplierForm.valid || loading()">
+    <mat-spinner diameter="20" *ngIf="loading()" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+    {{ loading() ? 'Salvando...' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>
