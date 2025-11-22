@@ -2,7 +2,7 @@
 
 **Epic**: 2 - Product Catalog & Inventory Foundation
 **Story ID**: 2.5
-**Status**: drafted
+**Status**: approved
 **Created**: 2025-11-21
 **Updated**: 2025-11-21
 
