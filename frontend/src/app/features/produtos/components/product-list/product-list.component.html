@@ -1,0 +1,198 @@
+<div class="product-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Produtos</h2>
+    <div class="header-actions">
+      <button class="btn btn-outline-primary" (click)="importProducts()" [disabled]="loading">
+        <span class="icon">📥</span>
+        Importar CSV
+      </button>
+      <button class="btn btn-primary" (click)="createProduct()" [disabled]="loading">
+        <span class="icon">+</span>
+        Novo Produto
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <!-- Search -->
+    <div class="filter-group">
+      <label for="search">Busca Rápida:</label>
+      <input
+        id="search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="filters.query"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Nome, SKU ou código de barras..."
+      />
+    </div>
+
+    <!-- Category Filter -->
+    <div class="filter-group">
+      <label for="category">Categoria:</label>
+      <select
+        id="category"
+        class="form-control"
+        [(ngModel)]="filters.categoryId"
+        (ngModelChange)="onCategoryChange()"
+      >
+        <option [value]="undefined">Todas as categorias</option>
+        <option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="filter-group">
+      <label for="status">Status:</label>
+      <select
+        id="status"
+        class="form-control"
+        [(ngModel)]="filters.status"
+        (ngModelChange)="onStatusChange()"
+      >
+        <option [value]="undefined">Todos os status</option>
+        <option [value]="ProductStatus.ACTIVE">{{ STATUS_LABELS[ProductStatus.ACTIVE] }}</option>
+        <option [value]="ProductStatus.INACTIVE">{{ STATUS_LABELS[ProductStatus.INACTIVE] }}</option>
+        <option [value]="ProductStatus.DISCONTINUED">{{ STATUS_LABELS[ProductStatus.DISCONTINUED] }}</option>
+      </select>
+    </div>
+
+    <!-- Clear Filters -->
+    <div class="filter-actions">
+      <button class="btn btn-secondary" (click)="clearFilters()" [disabled]="loading">
+        Limpar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="products && !loading">
+    <p>
+      Mostrando <strong>{{ products.content.length }}</strong> de
+      <strong>{{ products.totalElements }}</strong> produtos
+    </p>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading && !products">
+    <div class="spinner"></div>
+    <p>Carregando produtos...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+    <button class="btn btn-secondary" (click)="loadProducts()">Tentar Novamente</button>
+  </div>
+
+  <!-- Product Table -->
+  <div class="table-container" *ngIf="!loading && !error && products">
+    <div class="empty-state" *ngIf="products.empty">
+      <p>Nenhum produto encontrado.</p>
+      <p class="hint">Tente ajustar os filtros ou cadastre um novo produto.</p>
+      <button class="btn btn-primary" (click)="createProduct()">
+        <span class="icon">+</span>
+        Cadastrar Primeiro Produto
+      </button>
+    </div>
+
+    <table class="product-table" *ngIf="!products.empty">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Preço</th>
+          <th>Custo</th>
+          <th>Estoque</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products.content" (click)="viewProduct(product)" class="clickable">
+          <td>
+            <strong>{{ product.sku }}</strong>
+            <div class="subtitle" *ngIf="product.barcode">{{ product.barcode }}</div>
+          </td>
+          <td>
+            <strong>{{ product.name }}</strong>
+            <div class="subtitle" *ngIf="product.description">{{ product.description | slice:0:50 }}{{ product.description && product.description.length > 50 ? '...' : '' }}</div>
+          </td>
+          <td>
+            <span *ngIf="product.categoryName">{{ product.categoryName }}</span>
+            <span *ngIf="!product.categoryName" class="text-muted">-</span>
+          </td>
+          <td>
+            <strong>{{ formatCurrency(product.price) }}</strong>
+          </td>
+          <td>
+            <span *ngIf="product.cost">{{ formatCurrency(product.cost) }}</span>
+            <span *ngIf="!product.cost" class="text-muted">-</span>
+          </td>
+          <td>
+            <span *ngIf="product.controlsInventory" class="text-muted">Controla</span>
+            <span *ngIf="!product.controlsInventory" class="text-muted">Não controla</span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(product.status)">
+              {{ STATUS_LABELS[product.status] }}
+            </span>
+          </td>
+          <td class="actions">
+            <button
+              class="btn-icon btn-edit"
+              (click)="editProduct(product); $event.stopPropagation()"
+              title="Editar Produto"
+            >
+              <span class="icon">✎</span>
+            </button>
+            <button
+              class="btn-icon btn-delete"
+              (click)="deleteProduct(product, $event)"
+              title="Excluir Produto"
+            >
+              <span class="icon">🗑</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="products && !products.empty">
+    <button
+      class="btn btn-secondary"
+      (click)="previousPage()"
+      [disabled]="products.first || loading"
+    >
+      ← Anterior
+    </button>
+
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of getPageNumbers()"
+        class="btn btn-page"
+        [class.active]="page === products.number"
+        (click)="goToPage(page)"
+        [disabled]="loading"
+      >
+        {{ page + 1 }}
+      </button>
+    </div>
+
+    <button
+      class="btn btn-secondary"
+      (click)="nextPage()"
+      [disabled]="products.last || loading"
+    >
+      Próxima →
+    </button>
+  </div>
+</div>

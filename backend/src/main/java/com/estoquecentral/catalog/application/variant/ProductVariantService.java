@@ -117,6 +117,39 @@ public class ProductVariantService {
     }
 
     /**
+     * Updates variant
+     *
+     * @param id variant ID
+     * @param name variant name
+     * @param barcode barcode
+     * @param price price
+     * @param cost cost
+     * @param userId user updating variant
+     * @return updated variant
+     */
+    public ProductVariant updateVariant(UUID id, String name, String barcode,
+                                       BigDecimal price, BigDecimal cost, UUID userId) {
+        ProductVariant variant = getById(id);
+
+        if (name != null) {
+            variant.setName(name);
+        }
+        if (barcode != null) {
+            variant.setBarcode(barcode);
+        }
+        if (price != null) {
+            variant.setPrice(price);
+        }
+        if (cost != null) {
+            variant.setCost(cost);
+        }
+
+        variant.setUpdatedBy(userId);
+
+        return variantRepository.save(variant);
+    }
+
+    /**
      * Deletes variant (soft delete)
      *
      * @param id variant ID

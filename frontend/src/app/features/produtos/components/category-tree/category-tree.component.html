@@ -1,0 +1,175 @@
+<div class="category-tree-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Categorias de Produtos</h2>
+    <button class="btn btn-primary" (click)="openCreateRootModal()" [disabled]="loading">
+      <span class="icon">+</span>
+      Nova Categoria Raiz
+    </button>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-container" *ngIf="breadcrumb.length > 0">
+    <div class="breadcrumb">
+      <button class="breadcrumb-close" (click)="clearBreadcrumb()" title="Limpar seleção">
+        ×
+      </button>
+      <span class="breadcrumb-label">Caminho:</span>
+      <ng-container *ngFor="let cat of breadcrumb; let last = last">
+        <button
+          class="breadcrumb-item"
+          [class.active]="last"
+          (click)="navigateToBreadcrumb(cat)"
+        >
+          {{ cat.name }}
+        </button>
+        <span class="breadcrumb-separator" *ngIf="!last"> / </span>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading && tree.length === 0">
+    <div class="spinner"></div>
+    <p>Carregando categorias...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+    <button class="btn btn-secondary" (click)="loadTree()">Tentar Novamente</button>
+  </div>
+
+  <!-- Category Tree -->
+  <div class="tree" *ngIf="!loading && !error">
+    <div class="empty-state" *ngIf="tree.length === 0">
+      <p>Nenhuma categoria cadastrada.</p>
+      <p class="hint">Clique em "Nova Categoria Raiz" para começar.</p>
+    </div>
+
+    <ng-container *ngFor="let node of tree">
+      <ng-container *ngTemplateOutlet="categoryNode; context: { $implicit: node, level: 0 }"></ng-container>
+    </ng-container>
+  </div>
+</div>
+
+<!-- Recursive Category Node Template -->
+<ng-template #categoryNode let-node let-level="level">
+  <div class="tree-node" [class.selected]="node.category.id === selectedCategoryId">
+    <!-- Node Content -->
+    <div class="node-content" [style.paddingLeft.px]="level * 24">
+      <!-- Expand/Collapse Button -->
+      <button
+        class="node-toggle"
+        *ngIf="node.children && node.children.length > 0"
+        (click)="toggleNode(node)"
+      >
+        <span class="icon" [class.expanded]="node.expanded">
+          {{ node.expanded ? '▼' : '▶' }}
+        </span>
+      </button>
+      <span class="node-placeholder" *ngIf="!node.children || node.children.length === 0"></span>
+
+      <!-- Category Name -->
+      <span class="node-name" (click)="loadBreadcrumb(node.category.id)">
+        {{ node.category.name }}
+      </span>
+
+      <!-- Category Description (optional) -->
+      <span class="node-description" *ngIf="node.category.description">
+        - {{ node.category.description }}
+      </span>
+
+      <!-- Actions -->
+      <div class="node-actions">
+        <!-- Add Child Button -->
+        <button
+          class="btn-icon btn-add"
+          (click)="openCreateChildModal(node.category)"
+          title="Adicionar Subcategoria"
+        >
+          <span class="icon">+</span>
+        </button>
+
+        <!-- Edit Button -->
+        <button
+          class="btn-icon btn-edit"
+          (click)="openEditModal(node.category)"
+          title="Editar Categoria"
+        >
+          <span class="icon">✎</span>
+        </button>
+
+        <!-- Delete Button -->
+        <button
+          class="btn-icon btn-delete"
+          (click)="deleteCategory(node.category, $event)"
+          title="Excluir Categoria"
+        >
+          <span class="icon">🗑</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Children (recursively) -->
+    <div class="node-children" *ngIf="node.expanded && node.children && node.children.length > 0">
+      <ng-container *ngFor="let childNode of node.children">
+        <ng-container *ngTemplateOutlet="categoryNode; context: { $implicit: childNode, level: level + 1 }"></ng-container>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modalTitle }}</h3>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Parent Info (for create-child mode) -->
+      <div class="form-group" *ngIf="modalMode === 'create-child' && parentCategory">
+        <label>Categoria Pai:</label>
+        <div class="parent-info">{{ parentCategory.name }}</div>
+      </div>
+
+      <!-- Name Field -->
+      <div class="form-group">
+        <label for="categoryName">Nome: <span class="required">*</span></label>
+        <input
+          id="categoryName"
+          type="text"
+          class="form-control"
+          [(ngModel)]="formData.name"
+          placeholder="Ex: Eletrônicos, Alimentos, etc."
+          required
+          autofocus
+        />
+      </div>
+
+      <!-- Description Field -->
+      <div class="form-group">
+        <label for="categoryDescription">Descrição:</label>
+        <textarea
+          id="categoryDescription"
+          class="form-control"
+          [(ngModel)]="formData.description"
+          placeholder="Descrição opcional da categoria"
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()" [disabled]="loading">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="saveCategory()" [disabled]="loading || !formData.name">
+        {{ loading ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</div>

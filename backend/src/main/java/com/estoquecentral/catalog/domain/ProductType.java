@@ -6,12 +6,10 @@ package com.estoquecentral.catalog.domain;
  * <p>Defines the type of product:
  * <ul>
  *   <li>SIMPLE - Standard product with single SKU (no variants)</li>
- *   <li>VARIANT_PARENT - Parent product that has multiple variants (future)</li>
- *   <li>VARIANT - Child variant of a parent product (future)</li>
+ *   <li>VARIANT_PARENT - Parent product that has multiple variants (Story 2.3)</li>
+ *   <li>VARIANT - Child variant of a parent product (Story 2.3)</li>
+ *   <li>COMPOSITE - Composite product/kit with BOM (Story 2.4)</li>
  * </ul>
- *
- * <p><strong>Story 2.2 scope:</strong> Only SIMPLE products are supported.
- * VARIANT_PARENT and VARIANT will be implemented in Story 2.3.
  */
 public enum ProductType {
     /**
@@ -21,14 +19,20 @@ public enum ProductType {
     SIMPLE,
 
     /**
-     * Parent product with variants (future)
+     * Parent product with variants
      * Example: "T-shirt Basic" (parent of size/color variants)
      */
     VARIANT_PARENT,
 
     /**
-     * Child variant product (future)
+     * Child variant product
      * Example: "T-shirt Basic - Red - M"
      */
-    VARIANT
+    VARIANT,
+
+    /**
+     * Composite product/kit with Bill of Materials (BOM)
+     * Example: "Kit Churrasco" (composed of carvão + acendedor + espetos)
+     */
+    COMPOSITE
 }

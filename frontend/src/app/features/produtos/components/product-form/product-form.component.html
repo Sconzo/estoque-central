@@ -1,0 +1,302 @@
+<div class="product-form-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>{{ isEditMode ? 'Editar Produto' : 'Novo Produto' }}</h2>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Carregando produto...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+    <div class="form-sections">
+      <!-- Product Type (only in create mode) -->
+      <div class="form-section" *ngIf="!isEditMode">
+        <h3>Tipo de Produto</h3>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="productType">
+              Tipo: <span class="required">*</span>
+            </label>
+            <select
+              id="productType"
+              class="form-control"
+              [value]="selectedProductType"
+              (change)="onProductTypeChange($event)"
+              [disabled]="createdProductId !== null"
+            >
+              <option *ngFor="let option of PRODUCT_TYPE_OPTIONS" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <span class="help-text">
+              <strong>Produto Simples:</strong> produto único sem variações.<br>
+              <strong>Produto com Variantes:</strong> produto com múltiplas variações (ex: cores, tamanhos).
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="form-section">
+        <h3>Informações Básicas</h3>
+
+        <div class="form-row">
+          <!-- Name -->
+          <div class="form-group full-width">
+            <label for="name">
+              Nome do Produto: <span class="required">*</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              class="form-control"
+              formControlName="name"
+              [class.error]="hasError('name')"
+              placeholder="Ex: Notebook Dell Inspiron 15"
+            />
+            <span class="error-message" *ngIf="hasError('name')">
+              {{ getErrorMessage('name') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- SKU -->
+          <div class="form-group">
+            <label for="sku">
+              SKU: <span class="required">*</span>
+            </label>
+            <input
+              id="sku"
+              type="text"
+              class="form-control"
+              formControlName="sku"
+              [class.error]="hasError('sku')"
+              placeholder="Ex: NOTE-DELL-I15-001"
+              [attr.readonly]="isEditMode ? true : null"
+            />
+            <span class="help-text" *ngIf="isEditMode">SKU não pode ser alterado</span>
+            <span class="error-message" *ngIf="hasError('sku')">
+              {{ getErrorMessage('sku') }}
+            </span>
+          </div>
+
+          <!-- Barcode -->
+          <div class="form-group">
+            <label for="barcode">Código de Barras:</label>
+            <input
+              id="barcode"
+              type="text"
+              class="form-control"
+              formControlName="barcode"
+              placeholder="Ex: 7891234567890"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label for="description">Descrição:</label>
+            <textarea
+              id="description"
+              class="form-control"
+              formControlName="description"
+              placeholder="Descrição detalhada do produto..."
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category & Classification -->
+      <div class="form-section">
+        <h3>Categoria e Classificação</h3>
+
+        <div class="form-row">
+          <!-- Category -->
+          <div class="form-group">
+            <label for="category">
+              Categoria: <span class="required">*</span>
+            </label>
+            <select
+              id="category"
+              class="form-control"
+              formControlName="categoryId"
+              [class.error]="hasError('categoryId')"
+            >
+              <option value="">Selecione uma categoria</option>
+              <option *ngFor="let category of categories" [value]="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+            <span class="error-message" *ngIf="hasError('categoryId')">
+              {{ getErrorMessage('categoryId') }}
+            </span>
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label for="status">
+              Status: <span class="required">*</span>
+            </label>
+            <select
+              id="status"
+              class="form-control"
+              formControlName="status"
+            >
+              <option *ngFor="let option of STATUS_OPTIONS" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-section">
+        <h3>Preços</h3>
+
+        <div class="form-row">
+          <!-- Price -->
+          <div class="form-group">
+            <label for="price">
+              Preço de Venda: <span class="required">*</span>
+            </label>
+            <div class="input-prefix">
+              <span class="prefix">R$</span>
+              <input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                class="form-control"
+                formControlName="price"
+                [class.error]="hasError('price')"
+                placeholder="0,00"
+              />
+            </div>
+            <span class="error-message" *ngIf="hasError('price')">
+              {{ getErrorMessage('price') }}
+            </span>
+          </div>
+
+          <!-- Cost -->
+          <div class="form-group">
+            <label for="cost">Custo:</label>
+            <div class="input-prefix">
+              <span class="prefix">R$</span>
+              <input
+                id="cost"
+                type="number"
+                step="0.01"
+                min="0"
+                class="form-control"
+                formControlName="cost"
+                placeholder="0,00"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory -->
+      <div class="form-section">
+        <h3>Controle de Estoque</h3>
+
+        <div class="form-row">
+          <!-- Unit -->
+          <div class="form-group">
+            <label for="unit">
+              Unidade de Medida: <span class="required">*</span>
+            </label>
+            <select
+              id="unit"
+              class="form-control"
+              formControlName="unit"
+            >
+              <option *ngFor="let option of UNIT_OPTIONS" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Controls Inventory -->
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                formControlName="controlsInventory"
+              />
+              <span>Controla estoque</span>
+            </label>
+            <span class="help-text">
+              Marque esta opção se este produto precisa ter controle de estoque.
+              Desmarque para produtos de serviço ou sem necessidade de controle.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions (only for simple products or edit mode) -->
+    <div class="form-actions" *ngIf="selectedProductType === ProductType.SIMPLE || isEditMode">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="cancel()"
+        [disabled]="saving"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="saving || productForm.invalid"
+      >
+        {{ saving ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Produto') }}
+      </button>
+    </div>
+
+    <!-- Variant Parent Actions (save base product first) -->
+    <div class="form-actions" *ngIf="selectedProductType === ProductType.VARIANT_PARENT && !isEditMode && !createdProductId">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="cancel()"
+        [disabled]="saving"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="saving || productForm.invalid"
+      >
+        {{ saving ? 'Salvando...' : 'Criar Produto Base' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Variant Matrix (shown after base product is created) -->
+  <div class="variant-section" *ngIf="!isEditMode && selectedProductType === ProductType.VARIANT_PARENT && createdProductId">
+    <app-variant-matrix
+      [parentProductId]="createdProductId"
+      [baseSku]="productForm.get('sku')?.value || ''"
+      [basePrice]="productForm.get('price')?.value || 0"
+      [baseCost]="productForm.get('cost')?.value || 0"
+      (variantsGenerated)="onVariantsGenerated($event)"
+    ></app-variant-matrix>
+  </div>
+</div>

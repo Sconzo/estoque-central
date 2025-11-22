@@ -1,0 +1,166 @@
+<div class="variant-matrix-container">
+  <h3>Configurar Variantes</h3>
+
+  <!-- Error Message -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Attributes Section -->
+  <div class="attributes-section">
+    <div class="section-header">
+      <h4>Atributos (máximo 3)</h4>
+      <button
+        class="btn btn-secondary btn-sm"
+        (click)="addAttribute()"
+        [disabled]="attributes.length >= 3 || loading"
+      >
+        <span class="icon">+</span>
+        Adicionar Atributo
+      </button>
+    </div>
+
+    <!-- Attribute List -->
+    <div class="attributes-list">
+      <div *ngFor="let attribute of attributes; let i = index" class="attribute-card">
+        <div class="attribute-header">
+          <input
+            type="text"
+            class="form-control attribute-name-input"
+            [(ngModel)]="attribute.name"
+            placeholder="Ex: Cor, Tamanho, Voltagem..."
+            (ngModelChange)="calculateEstimatedVariants()"
+          />
+          <button
+            class="btn-icon btn-delete"
+            (click)="removeAttribute(i)"
+            title="Remover Atributo"
+          >
+            <span class="icon">×</span>
+          </button>
+        </div>
+
+        <div class="attribute-values">
+          <div class="values-header">
+            <label>Valores:</label>
+            <button
+              class="btn btn-sm btn-add-value"
+              (click)="addValueToAttribute(i)"
+              [disabled]="!attribute.name"
+            >
+              + Adicionar Valor
+            </button>
+          </div>
+
+          <div class="values-list" *ngIf="attribute.values.length > 0">
+            <span
+              *ngFor="let value of attribute.values; let vi = index"
+              class="value-chip"
+            >
+              {{ value }}
+              <button class="chip-remove" (click)="removeValue(i, vi)">×</button>
+            </span>
+          </div>
+
+          <p class="empty-state" *ngIf="attribute.values.length === 0">
+            Nenhum valor adicionado
+          </p>
+        </div>
+      </div>
+
+      <p class="empty-state" *ngIf="attributes.length === 0">
+        Nenhum atributo definido. Clique em "Adicionar Atributo" para começar.
+      </p>
+    </div>
+
+    <!-- Estimated Variants -->
+    <div class="estimated-variants" *ngIf="estimatedVariants > 0">
+      <span class="label">Variantes estimadas:</span>
+      <strong [class.warning]="estimatedVariants > 100">{{ estimatedVariants }}</strong>
+      <span class="hint" *ngIf="estimatedVariants > 100">(Máximo: 100)</span>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="action-buttons">
+      <button
+        class="btn btn-primary"
+        (click)="generateMatrix()"
+        [disabled]="loading || estimatedVariants === 0 || estimatedVariants > 100"
+      >
+        Gerar Matriz de Variantes
+      </button>
+    </div>
+  </div>
+
+  <!-- Generated Variants Table -->
+  <div class="variants-table-section" *ngIf="generatedVariants.length > 0">
+    <h4>Variantes Geradas ({{ generatedVariants.length }})</h4>
+
+    <div class="table-container">
+      <table class="variants-table">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th *ngFor="let attrName of getAttributeNames()">{{ attrName }}</th>
+            <th>Preço</th>
+            <th>Custo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let variant of generatedVariants; let i = index">
+            <td>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.sku"
+              />
+            </td>
+            <td *ngFor="let attrName of getAttributeNames()">
+              {{ variant.combination[attrName] }}
+            </td>
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.price"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.cost"
+              />
+            </td>
+            <td>
+              <button
+                class="btn-icon btn-delete"
+                (click)="deleteVariantRow(i)"
+                title="Remover Variante"
+              >
+                <span class="icon">🗑</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Save Button -->
+    <div class="action-buttons">
+      <button
+        class="btn btn-primary"
+        (click)="saveVariants()"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Salvando...' : 'Salvar Variantes' }}
+      </button>
+    </div>
+  </div>
+</div>

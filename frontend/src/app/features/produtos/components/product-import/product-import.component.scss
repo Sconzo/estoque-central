@@ -1,0 +1,52 @@
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-responsive {
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+}
+
+.btn-group {
+  flex-wrap: wrap;
+}
+
+.alert ul {
+  padding-left: 1.5rem;
+  margin-bottom: 0;
+}
+
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.progress {
+  height: 25px;
+}
+
+.progress-bar {
+  font-size: 0.875rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.d-flex.gap-2 {
+  display: flex;
+}
+
+.table-success td {
+  background-color: #d1e7dd !important;
+}
+
+.table-danger td {
+  background-color: #f8d7da !important;
+}

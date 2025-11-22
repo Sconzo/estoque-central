@@ -1,0 +1,235 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <h2>Importar Produtos via CSV</h2>
+      <p class="text-muted">Faça upload de um arquivo CSV para criar produtos em lote</p>
+
+      <!-- Error Alert -->
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erro:</strong> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null"></button>
+      </div>
+
+      <!-- Success Result -->
+      <div *ngIf="confirmResult" class="alert alert-success" role="alert">
+        <h5 class="alert-heading">Importação Concluída!</h5>
+        <p>{{ confirmResult.message }}</p>
+        <hr>
+        <p class="mb-0">
+          <strong>Total:</strong> {{ confirmResult.totalRows }} linhas |
+          <strong>Sucesso:</strong> {{ confirmResult.successRows }} |
+          <strong>Erros:</strong> {{ confirmResult.errorRows }}
+        </p>
+        <p class="text-muted mt-2">Redirecionando para lista de produtos...</p>
+      </div>
+
+      <!-- Upload Section -->
+      <div *ngIf="!showPreview && !confirmResult" class="card">
+        <div class="card-header">
+          <h5 class="mb-0">1. Selecione o arquivo CSV</h5>
+        </div>
+        <div class="card-body">
+          <!-- Template Download -->
+          <div class="mb-4">
+            <h6>Templates CSV:</h6>
+            <div class="btn-group" role="group">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="downloadTemplate(ProductType.SIMPLE)"
+              >
+                Produtos Simples
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="downloadTemplate(ProductType.COMPOSITE)"
+              >
+                Kits/Compostos
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="downloadTemplate(ProductType.VARIANT_PARENT)"
+              >
+                Com Variantes
+              </button>
+            </div>
+            <small class="form-text text-muted d-block mt-2">
+              Baixe um template para ver o formato esperado do CSV
+            </small>
+          </div>
+
+          <!-- File Input -->
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">Arquivo CSV</label>
+            <input
+              type="file"
+              class="form-control"
+              id="csvFile"
+              accept=".csv"
+              (change)="onFileSelected($event)"
+            >
+            <small class="form-text text-muted">
+              Formato: type,name,sku,barcode,description,categoryId,price,cost,unit,controlsInventory,status,bomType
+            </small>
+          </div>
+
+          <!-- Selected File Info -->
+          <div *ngIf="selectedFile" class="alert alert-info">
+            <strong>Arquivo selecionado:</strong> {{ selectedFile.name }}
+            ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
+          </div>
+
+          <!-- Upload Progress -->
+          <div *ngIf="isUploading" class="mb-3">
+            <div class="progress">
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                [style.width.%]="uploadProgress"
+              >
+                {{ uploadProgress }}%
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-2">
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="!selectedFile || isUploading"
+              (click)="uploadAndPreview()"
+            >
+              <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isUploading ? 'Processando...' : 'Processar e Visualizar' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="cancel()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Section -->
+      <div *ngIf="showPreview && preview && !confirmResult" class="card">
+        <div class="card-header">
+          <h5 class="mb-0">2. Revisar Prévia da Importação</h5>
+        </div>
+        <div class="card-body">
+          <!-- Summary -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card bg-light">
+                <div class="card-body text-center">
+                  <h6 class="text-muted">Total de Linhas</h6>
+                  <h3>{{ preview.totalRows }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h6>Linhas Válidas</h6>
+                  <h3>{{ preview.validRows }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                  <h6>Linhas com Erros</h6>
+                  <h3>{{ preview.invalidRows }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h6>Arquivo</h6>
+                  <p class="mb-0 small">{{ preview.fileName }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Table -->
+          <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th style="width: 50px;">OK</th>
+                  <th>Tipo</th>
+                  <th>Nome</th>
+                  <th>SKU</th>
+                  <th>Categoria</th>
+                  <th>Preço</th>
+                  <th>Erros</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of preview.rows" [ngClass]="getRowClass(row)">
+                  <td>{{ row.rowNumber }}</td>
+                  <td class="text-center">
+                    <span [class]="row.valid ? 'text-success' : 'text-danger'">
+                      {{ getValidationIcon(row) }}
+                    </span>
+                  </td>
+                  <td>{{ row.type }}</td>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.sku }}</td>
+                  <td>{{ row.categoryId }}</td>
+                  <td>{{ row.price | number:'1.2-2' }}</td>
+                  <td>
+                    <ul *ngIf="row.errors.length > 0" class="mb-0 small">
+                      <li *ngFor="let error of row.errors">{{ error }}</li>
+                    </ul>
+                    <span *ngIf="row.errors.length === 0" class="text-muted">-</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Confirm Actions -->
+          <div class="mt-4">
+            <div *ngIf="preview.validRows === 0" class="alert alert-warning">
+              Nenhuma linha válida encontrada. Corrija os erros e tente novamente.
+            </div>
+
+            <div *ngIf="preview.validRows > 0" class="alert alert-info">
+              <strong>Atenção:</strong> Apenas as {{ preview.validRows }} linhas válidas serão importadas.
+              {{ preview.invalidRows }} linhas com erros serão ignoradas.
+            </div>
+
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-success"
+                [disabled]="preview.validRows === 0 || isConfirming"
+                (click)="confirmImport()"
+              >
+                <span *ngIf="isConfirming" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isConfirming ? 'Importando...' : 'Confirmar Importação' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                [disabled]="isConfirming"
+                (click)="reset()"
+              >
+                Cancelar e Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

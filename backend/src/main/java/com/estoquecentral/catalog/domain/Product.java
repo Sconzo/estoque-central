@@ -39,6 +39,7 @@ public class Product {
     private UUID id;
     private UUID tenantId;
     private ProductType type;
+    private BomType bomType;
     private String name;
     private String sku;
     private String barcode;
@@ -61,9 +62,20 @@ public class Product {
     public Product(UUID tenantId, ProductType type, String name, String sku, String barcode,
                    String description, UUID categoryId, BigDecimal price, BigDecimal cost,
                    String unit, Boolean controlsInventory, ProductStatus status) {
+        this(tenantId, type, null, name, sku, barcode, description, categoryId, price, cost,
+                unit, controlsInventory, status);
+    }
+
+    /**
+     * Constructor for creating new product with BOM type
+     */
+    public Product(UUID tenantId, ProductType type, BomType bomType, String name, String sku, String barcode,
+                   String description, UUID categoryId, BigDecimal price, BigDecimal cost,
+                   String unit, Boolean controlsInventory, ProductStatus status) {
         this.id = UUID.randomUUID();
         this.tenantId = tenantId;
         this.type = type;
+        this.bomType = bomType;
         this.name = name;
         this.sku = sku;
         this.barcode = barcode;
@@ -203,6 +215,14 @@ public class Product {
 
     public void setType(ProductType type) {
         this.type = type;
+    }
+
+    public BomType getBomType() {
+        return bomType;
+    }
+
+    public void setBomType(BomType bomType) {
+        this.bomType = bomType;
     }
 
     public String getName() {

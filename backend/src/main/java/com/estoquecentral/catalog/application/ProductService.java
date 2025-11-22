@@ -2,6 +2,7 @@ package com.estoquecentral.catalog.application;
 
 import com.estoquecentral.catalog.adapter.out.CategoryRepository;
 import com.estoquecentral.catalog.adapter.out.ProductRepository;
+import com.estoquecentral.catalog.domain.BomType;
 import com.estoquecentral.catalog.domain.Category;
 import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.catalog.domain.ProductStatus;
@@ -163,6 +164,59 @@ public class ProductService {
                           String description, UUID categoryId, BigDecimal price,
                           BigDecimal cost, String unit, Boolean controlsInventory,
                           UUID createdBy) {
+        return create(tenantId, ProductType.SIMPLE, name, sku, barcode, description,
+                categoryId, price, cost, unit, controlsInventory, createdBy);
+    }
+
+    /**
+     * Creates new product with specific type
+     *
+     * @param tenantId tenant ID
+     * @param type product type
+     * @param name product name
+     * @param sku product SKU
+     * @param barcode product barcode (optional)
+     * @param description product description
+     * @param categoryId category ID
+     * @param price product price
+     * @param cost product cost (optional)
+     * @param unit unit of measure
+     * @param controlsInventory inventory control flag
+     * @param createdBy user creating the product
+     * @return created product
+     * @throws IllegalArgumentException if validation fails
+     */
+    public Product create(UUID tenantId, ProductType type, String name, String sku, String barcode,
+                          String description, UUID categoryId, BigDecimal price,
+                          BigDecimal cost, String unit, Boolean controlsInventory,
+                          UUID createdBy) {
+        return create(tenantId, type, null, name, sku, barcode, description,
+                categoryId, price, cost, unit, controlsInventory, createdBy);
+    }
+
+    /**
+     * Creates new product with BOM type (for COMPOSITE products)
+     *
+     * @param tenantId tenant ID
+     * @param type product type
+     * @param bomType BOM type (VIRTUAL or PHYSICAL, required for COMPOSITE)
+     * @param name product name
+     * @param sku product SKU
+     * @param barcode product barcode (optional)
+     * @param description product description
+     * @param categoryId category ID
+     * @param price product price
+     * @param cost product cost (optional)
+     * @param unit unit of measure
+     * @param controlsInventory inventory control flag
+     * @param createdBy user creating the product
+     * @return created product
+     * @throws IllegalArgumentException if validation fails
+     */
+    public Product create(UUID tenantId, ProductType type, BomType bomType, String name, String sku, String barcode,
+                          String description, UUID categoryId, BigDecimal price,
+                          BigDecimal cost, String unit, Boolean controlsInventory,
+                          UUID createdBy) {
         // Validation
         validateProductName(name);
         validateSku(sku);
@@ -174,10 +228,19 @@ public class ProductService {
         validatePrice(price);
         validateCost(cost);
 
+        // Validate BOM type for COMPOSITE products
+        if (type == ProductType.COMPOSITE && bomType == null) {
+            throw new IllegalArgumentException("BOM type is required for COMPOSITE products");
+        }
+        if (type != ProductType.COMPOSITE && bomType != null) {
+            throw new IllegalArgumentException("BOM type can only be set for COMPOSITE products");
+        }
+
         // Create product
         Product product = new Product(
                 tenantId,
-                ProductType.SIMPLE,
+                type,
+                bomType,
                 name,
                 sku,
                 barcode,
