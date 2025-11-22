@@ -2,7 +2,7 @@
 
 **Epic**: 3 - Purchasing & Inventory Replenishment
 **Story ID**: 3.1
-**Status**: approved
+**Status**: Ready for Review
 **Created**: 2025-11-21
 **Updated**: 2025-11-21
 

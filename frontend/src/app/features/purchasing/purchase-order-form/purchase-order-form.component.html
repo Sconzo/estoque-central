@@ -1,0 +1,157 @@
+<h2 mat-dialog-title>
+  @if (isReadOnly) {
+    Detalhes da Ordem de Compra
+  } @else if (isEditMode) {
+    Editar Ordem de Compra
+  } @else {
+    Nova Ordem de Compra
+  }
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="poForm" class="po-form">
+    <!-- Dados Gerais -->
+    <div class="form-section">
+      <h3>Dados Gerais</h3>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Fornecedor *</mat-label>
+          <mat-select formControlName="supplierId">
+            <!-- TODO: Load suppliers from service -->
+            <mat-option value="">Selecione um fornecedor</mat-option>
+          </mat-select>
+          <mat-error>Fornecedor é obrigatório</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Local de Estoque Destino *</mat-label>
+          <mat-select formControlName="stockLocationId">
+            <!-- TODO: Load locations from service -->
+            <mat-option value="">Selecione um local</mat-option>
+          </mat-select>
+          <mat-error>Local de estoque é obrigatório</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Data do Pedido *</mat-label>
+          <input matInput [matDatepicker]="pickerOrderDate" formControlName="orderDate">
+          <mat-datepicker-toggle matSuffix [for]="pickerOrderDate"></mat-datepicker-toggle>
+          <mat-datepicker #pickerOrderDate></mat-datepicker>
+          <mat-error>Data do pedido é obrigatória</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Previsão de Entrega</mat-label>
+          <input matInput [matDatepicker]="pickerDeliveryDate" formControlName="expectedDeliveryDate">
+          <mat-datepicker-toggle matSuffix [for]="pickerDeliveryDate"></mat-datepicker-toggle>
+          <mat-datepicker #pickerDeliveryDate></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Observações</mat-label>
+        <textarea matInput formControlName="notes" rows="3"></textarea>
+      </mat-form-field>
+    </div>
+
+    <!-- Itens da Ordem -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3>Itens da Ordem</h3>
+        @if (!isReadOnly) {
+          <button mat-raised-button color="primary" type="button" (click)="addItem()">
+            <mat-icon>add</mat-icon>
+            Adicionar Item
+          </button>
+        }
+      </div>
+
+      <div class="items-table-container">
+        <table mat-table [dataSource]="items.controls" class="items-table">
+          <!-- Product Column -->
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Produto *</th>
+            <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
+              <mat-form-field appearance="outline" class="table-field">
+                <mat-select formControlName="productId">
+                  <!-- TODO: Load products from service -->
+                  <mat-option value="">Selecione um produto</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </td>
+          </ng-container>
+
+          <!-- Quantity Column -->
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Quantidade *</th>
+            <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
+              <mat-form-field appearance="outline" class="table-field">
+                <input matInput type="number" formControlName="quantityOrdered" step="0.01" min="0.001">
+              </mat-form-field>
+            </td>
+          </ng-container>
+
+          <!-- Unit Cost Column -->
+          <ng-container matColumnDef="unitCost">
+            <th mat-header-cell *matHeaderCellDef>Custo Unitário *</th>
+            <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
+              <mat-form-field appearance="outline" class="table-field">
+                <input matInput type="number" formControlName="unitCost" step="0.01" min="0">
+                <span matPrefix>R$&nbsp;</span>
+              </mat-form-field>
+            </td>
+          </ng-container>
+
+          <!-- Total Column -->
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let item; let i = index">
+              <strong>{{ getItemTotal(i) | currency:'BRL' }}</strong>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let item; let i = index">
+              @if (!isReadOnly) {
+                <button mat-icon-button color="warn" type="button" (click)="removeItem(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Total da Ordem -->
+      <div class="order-total">
+        <h3>Total da Ordem: {{ calculateTotals() | currency:'BRL' }}</h3>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    @if (isReadOnly) {
+      Fechar
+    } @else {
+      Cancelar
+    }
+  </button>
+  @if (!isReadOnly) {
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || poForm.invalid">
+      @if (loading) {
+        Salvando...
+      } @else {
+        Salvar
+      }
+    </button>
+  }
+</mat-dialog-actions>

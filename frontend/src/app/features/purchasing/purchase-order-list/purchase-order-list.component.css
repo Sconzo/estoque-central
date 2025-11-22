@@ -1,0 +1,58 @@
+.purchase-order-list-container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.filters-card {
+  margin-bottom: 20px;
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.table-container {
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+}
+
+.loading, .no-data {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-chip {
+  font-size: 12px;
+}
