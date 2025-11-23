@@ -1,0 +1,114 @@
+.scanning-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: #000;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #fff;
+}
+
+.mobile-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  z-index: 10;
+
+  .header-info {
+    flex: 1;
+    margin-left: 8px;
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  }
+}
+
+.camera-preview {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10;
+
+  .action-button {
+    flex: 1;
+    height: 48px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.mobile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  z-index: 10;
+
+  .scanned-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    span {
+      font-size: 14px;
+    }
+  }
+
+  .summary-fab {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Snackbar custom classes
+::ng-deep {
+  .success-snackbar {
+    background-color: #4CAF50 !important;
+    color: white !important;
+  }
+
+  .warning-snackbar {
+    background-color: #FF9800 !important;
+    color: white !important;
+  }
+
+  .error-snackbar {
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+}

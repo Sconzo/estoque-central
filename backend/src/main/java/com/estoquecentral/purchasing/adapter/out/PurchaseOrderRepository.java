@@ -4,6 +4,7 @@ import com.estoquecentral.purchasing.domain.PurchaseOrder;
 import com.estoquecentral.purchasing.domain.PurchaseOrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -175,4 +176,34 @@ public interface PurchaseOrderRepository extends
         ORDER BY expected_delivery_date
         """)
     List<PurchaseOrder> findOverduePurchaseOrders(@Param("tenantId") UUID tenantId);
+
+    /**
+     * Find purchase orders by tenant and status IN list (Story 3.3)
+     */
+    @Query("""
+        SELECT * FROM purchase_orders
+        WHERE tenant_id = :tenantId
+          AND status IN (:statuses)
+        """)
+    List<PurchaseOrder> findByTenantIdAndStatusIn(
+        @Param("tenantId") UUID tenantId,
+        @Param("statuses") List<String> statuses,
+        Sort sort
+    );
+
+    /**
+     * Find purchase orders by tenant, supplier, and status IN list (Story 3.3)
+     */
+    @Query("""
+        SELECT * FROM purchase_orders
+        WHERE tenant_id = :tenantId
+          AND supplier_id = :supplierId
+          AND status IN (:statuses)
+        """)
+    List<PurchaseOrder> findByTenantIdAndSupplierIdAndStatusIn(
+        @Param("tenantId") UUID tenantId,
+        @Param("supplierId") UUID supplierId,
+        @Param("statuses") List<String> statuses,
+        Sort sort
+    );
 }

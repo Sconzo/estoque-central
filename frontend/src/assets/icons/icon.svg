@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#1976d2"/>
+  <g fill="#ffffff">
+    <!-- Barcode Scanner Icon -->
+    <path d="M128 128h256v32H128zm0 64h256v16H128zm0 48h256v32H128zm0 64h256v16H128zm0 48h256v32H128z"/>
+    <rect x="96" y="96" width="320" height="320" fill="none" stroke="#ffffff" stroke-width="8"/>
+    <!-- Corner markers for scanner -->
+    <path d="M64 64h64v16H80v48H64zm0 320v64h16v-48h48v-16zm384 0h-64v16h48v48h16zm0-320v-64h-16v48h-48v16z" fill="#ffffff"/>
+  </g>
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="48" fill="#ffffff" text-anchor="middle" font-weight="bold">EC</text>
+</svg>

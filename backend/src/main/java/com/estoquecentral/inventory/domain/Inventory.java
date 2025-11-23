@@ -49,6 +49,7 @@ public class Inventory {
     private BigDecimal quantityAvailable;
     private BigDecimal reservedQuantity;
     private BigDecimal quantityForSale; // Computed by database (GENERATED column)
+    private BigDecimal cost;            // Weighted average cost (Story 3.4)
     private BigDecimal minimumQuantity;
     private BigDecimal maximumQuantity;
     private LocalDateTime createdAt;
@@ -359,5 +360,13 @@ public class Inventory {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public BigDecimal getCost() {
+        return cost;
+    }
+
+    public void setCost(BigDecimal cost) {
+        this.cost = cost;
     }
 }

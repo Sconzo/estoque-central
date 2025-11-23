@@ -1,0 +1,58 @@
+<div class="scanning-container">
+  @if (loading) {
+    <div class="loading-state">
+      <p>Carregando ordem...</p>
+    </div>
+  }
+
+  @if (!loading && orderDetail) {
+    <!-- Header -->
+    <header class="mobile-header">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-info">
+        <h2>{{ orderDetail.orderNumber }}</h2>
+        <p>{{ orderDetail.supplierName }}</p>
+      </div>
+    </header>
+
+    <!-- Camera Preview with Scanner -->
+    <div class="camera-preview">
+      <app-barcode-scanner
+        (barcodeDetected)="onBarcodeDetected($event)"
+        (permissionDenied)="onPermissionDenied()"
+        (camerasFound)="onCamerasFound($event)">
+      </app-barcode-scanner>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button mat-raised-button (click)="openManualEntry()" class="action-button">
+        <mat-icon>keyboard</mat-icon>
+        Entrada Manual
+      </button>
+    </div>
+
+    <!-- Footer with scanned items count and summary button -->
+    <footer class="mobile-footer">
+      <div class="scanned-info">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>{{ scannedItemsCount }} itens escaneados</span>
+      </div>
+
+      @if (scannedItemsCount > 0) {
+        <button
+          mat-fab
+          color="primary"
+          (click)="openSummary()"
+          class="summary-fab"
+          [matBadge]="scannedItemsCount"
+          matBadgePosition="above after"
+          matBadgeColor="accent">
+          <mat-icon>list</mat-icon>
+        </button>
+      }
+    </footer>
+  }
+</div>

@@ -1,0 +1,176 @@
+.receiving-selection-container {
+  padding: 16px;
+  max-width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+
+  @media (min-width: 768px) {
+    padding: 24px;
+    max-width: 768px;
+    margin: 0 auto;
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #333;
+  }
+}
+
+.loading-container,
+.error-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #666;
+    margin: 8px 0;
+  }
+
+  button {
+    margin-top: 16px;
+  }
+}
+
+.error-container mat-icon {
+  color: #f44336;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-card {
+  margin-bottom: 0;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  mat-card-subtitle {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+}
+
+.order-info {
+  margin-bottom: 16px;
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .value {
+      color: #333;
+    }
+  }
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+
+  &.sent_to_supplier {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.partially_received {
+    background-color: #fff3e0;
+    color: #f57c00;
+  }
+}
+
+.progress-container {
+  position: relative;
+  margin: 16px 0;
+
+  mat-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  .progress-label {
+    position: absolute;
+    top: -24px;
+    right: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+  }
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 2px solid #eee;
+  font-size: 16px;
+
+  .label {
+    font-weight: 500;
+    color: #666;
+  }
+
+  .value {
+    font-weight: 600;
+    color: #1976d2;
+  }
+}
+
+mat-card-actions {
+  padding: 16px;
+  margin: 0;
+
+  .receive-button {
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}

@@ -1,0 +1,93 @@
+<div class="receiving-selection-container">
+  <header class="page-header">
+    <h1>Recebimento de Mercadorias</h1>
+    <button mat-icon-button (click)="onRefresh()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </header>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Carregando ordens...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-container">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="onRefresh()">
+        Tentar Novamente
+      </button>
+    </div>
+  }
+
+  @if (!loading && !error && orders.length === 0) {
+    <div class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <h2>Nenhuma Ordem Pendente</h2>
+      <p>Não há ordens de compra aguardando recebimento</p>
+    </div>
+  }
+
+  @if (!loading && !error && orders.length > 0) {
+    <div class="orders-list">
+      @for (order of orders; track order.id) {
+        <mat-card class="order-card">
+          <mat-card-header>
+            <mat-card-title>{{ order.orderNumber }}</mat-card-title>
+            <mat-card-subtitle>{{ order.supplierName }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="order-info">
+              <div class="info-row">
+                <span class="label">Data:</span>
+                <span class="value">{{ formatDate(order.orderDate) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Status:</span>
+                <span class="value status-badge" [class]="order.status.toLowerCase()">
+                  {{ order.status }}
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="label">Progresso:</span>
+                <span class="value">
+                  {{ order.itemsSummary.totalReceived }} de {{ order.itemsSummary.totalItems }} itens
+                </span>
+              </div>
+            </div>
+
+            <div class="progress-container">
+              <mat-progress-bar
+                mode="determinate"
+                [value]="getProgressPercentage(order)">
+              </mat-progress-bar>
+              <span class="progress-label">
+                {{ getProgressPercentage(order).toFixed(0) }}%
+              </span>
+            </div>
+
+            <div class="order-total">
+              <span class="label">Valor Total:</span>
+              <span class="value">{{ formatCurrency(order.itemsSummary.totalAmount) }}</span>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="startReceiving(order)"
+              class="receive-button">
+              <mat-icon>qr_code_scanner</mat-icon>
+              Receber
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

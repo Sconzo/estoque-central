@@ -1,0 +1,30 @@
+<div class="barcode-scanner-container">
+  @if (hasPermission) {
+    <zxing-scanner
+      [formats]="allowedFormats"
+      [device]="currentDevice"
+      [torch]="torchEnabled"
+      (scanSuccess)="onCodeResult($event)"
+      (permissionResponse)="onHasPermission($event)"
+      (camerasFound)="onCamerasFound($event)"
+      (torchCompatible)="onTorchCompatible($event)"
+      class="scanner-viewport">
+    </zxing-scanner>
+
+    <div class="scanner-overlay">
+      <div class="scan-area">
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+      </div>
+      <p class="scan-instruction">Posicione o código de barras na área destacada</p>
+    </div>
+  } @else {
+    <div class="permission-message">
+      <mat-icon>camera_alt</mat-icon>
+      <h3>Permissão de Câmera Necessária</h3>
+      <p>Por favor, permita o acesso à câmera para escanear códigos de barras.</p>
+    </div>
+  }
+</div>

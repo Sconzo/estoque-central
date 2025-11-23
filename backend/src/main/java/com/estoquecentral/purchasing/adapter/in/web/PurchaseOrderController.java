@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
  * - GET /api/purchase-orders/{id} - Get purchase order by ID with items
  * - PUT /api/purchase-orders/{id}/status - Update status
  * - DELETE /api/purchase-orders/{id} - Delete (only DRAFT)
+ * - GET /api/purchase-orders/pending-receipt - List orders pending receipt (Story 3.3)
+ * - GET /api/purchase-orders/{id}/receiving-details - Get order details for receiving (Story 3.3)
  */
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -284,5 +286,52 @@ public class PurchaseOrderController {
         response.setProduct(productSummary);
 
         return response;
+    }
+
+    /**
+     * Get purchase orders pending receipt (Story 3.3 AC3)
+     * GET /api/purchase-orders/pending-receipt
+     *
+     * Returns purchase orders with status SENT or PARTIALLY_RECEIVED
+     * Ordered by order_date descending (most recent first)
+     *
+     * @param tenantId Tenant ID from header
+     * @param supplierId Optional supplier filter
+     * @return List of purchase orders pending receipt with items summary
+     */
+    @GetMapping("/pending-receipt")
+    public ResponseEntity<List<ReceivingOrderSummaryDTO>> getPendingReceipt(
+            @RequestHeader("X-Tenant-ID") UUID tenantId,
+            @RequestParam(required = false, name = "supplier_id") UUID supplierId
+    ) {
+        List<ReceivingOrderSummaryDTO> pendingOrders =
+            purchaseOrderService.getPendingReceiptOrders(tenantId, supplierId);
+
+        return ResponseEntity.ok(pendingOrders);
+    }
+
+    /**
+     * Get purchase order receiving details (Story 3.3 AC4)
+     * GET /api/purchase-orders/{id}/receiving-details
+     *
+     * Returns detailed information for receiving interface including:
+     * - Order number, supplier, stock location
+     * - Items with barcode, quantity ordered/received/pending, unit cost
+     *
+     * @param tenantId Tenant ID from header
+     * @param id Purchase order ID
+     * @return Receiving details or 404 if not found
+     */
+    @GetMapping("/{id}/receiving-details")
+    public ResponseEntity<ReceivingOrderDetailDTO> getReceivingDetails(
+            @RequestHeader("X-Tenant-ID") UUID tenantId,
+            @PathVariable UUID id
+    ) {
+        Optional<ReceivingOrderDetailDTO> details =
+            purchaseOrderService.getReceivingDetails(tenantId, id);
+
+        return details
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 }
