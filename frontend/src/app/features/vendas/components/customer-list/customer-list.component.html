@@ -1,0 +1,163 @@
+<div class="customer-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Clientes</h2>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="createCustomer()" [disabled]="loading">
+        <span class="icon">+</span>
+        Novo Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <!-- Search -->
+    <div class="filter-group">
+      <label for="search">Busca Rápida:</label>
+      <input
+        id="search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Nome, CPF ou CNPJ..."
+      />
+    </div>
+
+    <!-- Type Filter -->
+    <div class="filter-group">
+      <label for="type">Tipo:</label>
+      <select
+        id="type"
+        class="form-control"
+        [(ngModel)]="selectedType"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="">Todos</option>
+        <option [value]="CustomerType.INDIVIDUAL">Pessoa Física</option>
+        <option [value]="CustomerType.BUSINESS">Pessoa Jurídica</option>
+      </select>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="filter-group">
+      <label for="status">Status:</label>
+      <select
+        id="status"
+        class="form-control"
+        [(ngModel)]="selectedStatus"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option [value]="true">Ativos</option>
+        <option [value]="false">Inativos</option>
+        <option value="">Todos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Carregando clientes...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <span class="icon">⚠️</span>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-primary" (click)="loadCustomers()">
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Customer Table -->
+  <div *ngIf="!loading && !error && customers" class="table-container">
+    <table class="customer-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>CPF/CNPJ</th>
+          <th>Nome/Razão Social</th>
+          <th>Nome Fantasia</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>Status</th>
+          <th class="actions-column">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let customer of customers.content">
+          <td>
+            <span class="badge" [ngClass]="getTypeBadgeClass(customer.customerType)">
+              {{ getTypeLabel(customer.customerType) }}
+            </span>
+          </td>
+          <td>{{ getTaxId(customer) }}</td>
+          <td>
+            <strong>{{ customer.displayName }}</strong>
+            <span *ngIf="customer.isDefaultConsumer" class="badge badge-default" title="Cliente padrão para PDV">
+              🛒 Padrão PDV
+            </span>
+          </td>
+          <td>{{ customer.tradeName || '-' }}</td>
+          <td>{{ customer.email || '-' }}</td>
+          <td>{{ customer.phone || customer.mobile || '-' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(customer.ativo)">
+              {{ getStatusLabel(customer.ativo) }}
+            </span>
+          </td>
+          <td class="actions">
+            <button
+              class="btn btn-sm btn-outline-primary"
+              (click)="editCustomer(customer.id)"
+              title="Editar"
+            >
+              ✏️
+            </button>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              (click)="deleteCustomer(customer)"
+              [disabled]="customer.isDefaultConsumer"
+              title="Inativar"
+            >
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="customers.content.length === 0" class="empty-state">
+      <span class="icon">👥</span>
+      <p>Nenhum cliente encontrado</p>
+      <button class="btn btn-primary" (click)="createCustomer()">
+        Criar Primeiro Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="customers && customers.totalPages > 1" class="pagination">
+    <button
+      class="btn btn-outline-primary"
+      (click)="previousPage()"
+      [disabled]="currentPage === 0"
+    >
+      ← Anterior
+    </button>
+    <span class="page-info">
+      Página {{ currentPage + 1 }} de {{ customers.totalPages }}
+      ({{ customers.totalElements }} clientes)
+    </span>
+    <button
+      class="btn btn-outline-primary"
+      (click)="nextPage()"
+      [disabled]="currentPage >= customers.totalPages - 1"
+    >
+      Próxima →
+    </button>
+  </div>
+</div>

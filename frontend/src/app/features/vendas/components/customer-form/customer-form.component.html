@@ -1,0 +1,80 @@
+<div class="customer-form-container">
+  <div class="header">
+    <h2>{{ isEditMode ? 'Editar Cliente' : 'Novo Cliente' }}</h2>
+  </div>
+
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form">
+    <!-- Customer Type -->
+    <div class="form-group">
+      <label>Tipo de Pessoa *</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" formControlName="customerType" [value]="CustomerType.INDIVIDUAL" />
+          Pessoa Física
+        </label>
+        <label>
+          <input type="radio" formControlName="customerType" [value]="CustomerType.BUSINESS" />
+          Pessoa Jurídica
+        </label>
+      </div>
+    </div>
+
+    <!-- PF Fields -->
+    <div *ngIf="customerForm.get('customerType')?.value === CustomerType.INDIVIDUAL" class="form-row">
+      <div class="form-group">
+        <label for="firstName">Nome *</label>
+        <input id="firstName" type="text" formControlName="firstName" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="lastName">Sobrenome *</label>
+        <input id="lastName" type="text" formControlName="lastName" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="cpf">CPF</label>
+        <input id="cpf" type="text" formControlName="cpf" class="form-control" placeholder="000.000.000-00" />
+      </div>
+    </div>
+
+    <!-- PJ Fields -->
+    <div *ngIf="customerForm.get('customerType')?.value === CustomerType.BUSINESS" class="form-row">
+      <div class="form-group">
+        <label for="companyName">Razão Social *</label>
+        <input id="companyName" type="text" formControlName="companyName" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="cnpj">CNPJ *</label>
+        <input id="cnpj" type="text" formControlName="cnpj" class="form-control" placeholder="00.000.000/0000-00" />
+      </div>
+      <div class="form-group">
+        <label for="tradeName">Nome Fantasia</label>
+        <input id="tradeName" type="text" formControlName="tradeName" class="form-control" />
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="phone">Telefone</label>
+        <input id="phone" type="text" formControlName="phone" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="mobile">Celular</label>
+        <input id="mobile" type="text" formControlName="mobile" class="form-control" />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="loading">Cancelar</button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading || customerForm.invalid">
+        {{ loading ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+  </form>
+</div>
