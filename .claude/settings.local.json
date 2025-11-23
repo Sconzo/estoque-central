@@ -15,7 +15,8 @@
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose ps:*)",
       "Bash(docker-compose down:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(mvn flyway:migrate:*)"
     ],
     "deny": [],
     "ask": []
