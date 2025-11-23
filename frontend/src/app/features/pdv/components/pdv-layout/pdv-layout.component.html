@@ -1,0 +1,45 @@
+<div class="pdv-container">
+  <!-- Header -->
+  <div class="pdv-header">
+    <h1>PDV - Ponto de Venda</h1>
+    <div class="customer-info">
+      <span>Cliente: {{ selectedCustomer?.displayName || 'Consumidor Final' }}</span>
+    </div>
+  </div>
+
+  <!-- Main Content - 3 Columns -->
+  <div class="pdv-content">
+    <!-- Column 1: Product Search (40%) -->
+    <div class="products-column">
+      <app-product-search></app-product-search>
+    </div>
+
+    <!-- Column 2: Shopping Cart (35%) -->
+    <div class="cart-column">
+      <app-shopping-cart></app-shopping-cart>
+    </div>
+
+    <!-- Column 3: Actions (25%) -->
+    <div class="actions-column">
+      <div class="total-display">
+        <h2>Total</h2>
+        <h1 class="total-value">R$ {{ cartTotal | number:'1.2-2' }}</h1>
+      </div>
+      <button
+        class="btn-finalize"
+        (click)="onFinalizeSale()"
+        [disabled]="cartTotal === 0"
+      >
+        Finalizar Venda (F9)
+      </button>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <app-payment-modal
+    *ngIf="showPaymentModal"
+    [total]="cartTotal"
+    (paymentComplete)="onPaymentComplete()"
+    (cancel)="onPaymentCancel()"
+  ></app-payment-modal>
+</div>

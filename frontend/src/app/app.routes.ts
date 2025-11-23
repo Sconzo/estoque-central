@@ -66,6 +66,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/vendas/components/customer-form/customer-form.component').then(m => m.CustomerFormComponent)
   },
   {
+    path: 'pdv',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/pdv/components/pdv-layout/pdv-layout.component').then(m => m.PdvLayoutComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)
