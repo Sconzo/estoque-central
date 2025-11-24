@@ -1,0 +1,188 @@
+<div class="sales-order-form-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>{{ isEditMode() ? 'Editar Pedido de Venda' : 'Novo Pedido de Venda' }}</h1>
+  </div>
+
+  <form [formGroup]="orderForm" *ngIf="!loading()">
+    <!-- General Data Section -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>Dados Gerais</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Cliente *</mat-label>
+            <mat-select formControlName="customerId">
+              <mat-option *ngFor="let customer of customers()" [value]="customer.id">
+                {{ customer.name }} - {{ customer.document }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Cliente é obrigatório</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Local de Estoque *</mat-label>
+            <mat-select formControlName="stockLocationId" (selectionChange)="checkAllItemsStock()">
+              <mat-option *ngFor="let location of locations()" [value]="location.id">
+                {{ location.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Local de estoque é obrigatório</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Data do Pedido *</mat-label>
+            <input matInput [matDatepicker]="orderDatePicker" formControlName="orderDate">
+            <mat-datepicker-toggle matIconSuffix [for]="orderDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #orderDatePicker></mat-datepicker>
+            <mat-error>Data do pedido é obrigatória</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Entrega Prevista</mat-label>
+            <input matInput [matDatepicker]="deliveryDatePicker" formControlName="deliveryDateExpected">
+            <mat-datepicker-toggle matIconSuffix [for]="deliveryDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #deliveryDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Condição de Pagamento</mat-label>
+            <mat-select formControlName="paymentTerms">
+              <mat-option [value]="null">Nenhuma</mat-option>
+              <mat-option *ngFor="let term of paymentTermsOptions" [value]="term.value">
+                {{ term.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Observações</mat-label>
+            <textarea matInput formControlName="notes" rows="3" placeholder="Observações gerais do pedido"></textarea>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Items Section -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>Itens do Pedido</mat-card-title>
+        <button mat-icon-button type="button" (click)="addItem()" color="primary">
+          <mat-icon>add_circle</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="items-table-container">
+          <table mat-table [dataSource]="items.controls" class="items-table">
+            <!-- Product Column -->
+            <ng-container matColumnDef="product">
+              <th mat-header-cell *matHeaderCellDef>Produto *</th>
+              <td mat-cell *matCellDef="let item; let i = index">
+                <mat-form-field appearance="outline" class="item-field">
+                  <mat-select [formControl]="item.controls.productId">
+                    <mat-option *ngFor="let product of products()" [value]="product.id">
+                      {{ product.name }} ({{ product.sku }})
+                    </mat-option>
+                  </mat-select>
+                  <mat-error>Produto é obrigatório</mat-error>
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <!-- Quantity Column -->
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef>Quantidade *</th>
+              <td mat-cell *matCellDef="let item">
+                <mat-form-field appearance="outline" class="item-field number-field">
+                  <input matInput type="number" [formControl]="item.controls.quantity" min="0.01" step="0.01">
+                  <mat-error>Quantidade deve ser maior que 0</mat-error>
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <!-- Unit Price Column -->
+            <ng-container matColumnDef="unitPrice">
+              <th mat-header-cell *matHeaderCellDef>Preço Unit. *</th>
+              <td mat-cell *matCellDef="let item">
+                <mat-form-field appearance="outline" class="item-field number-field">
+                  <span matPrefix>R$ </span>
+                  <input matInput type="number" [formControl]="item.controls.unitPrice" min="0" step="0.01">
+                  <mat-error>Preço deve ser maior ou igual a 0</mat-error>
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <!-- Total Column -->
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef>Total</th>
+              <td mat-cell *matCellDef="let item">
+                <strong>{{ getItemTotal(item) | currency: 'BRL' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Stock Column -->
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef>Estoque</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="stock-info">
+                  <span class="stock-label">Disponível:</span>
+                  <span [class.stock-insufficient]="hasStockIssues(item)">
+                    {{ item.controls.stockForSale.value }}
+                  </span>
+                  <mat-icon *ngIf="hasStockIssues(item)" class="warning-icon" color="warn">warning</mat-icon>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let item; let i = index">
+                <button mat-icon-button type="button" (click)="removeItem(i)" color="warn"
+                        [disabled]="items.length === 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="itemsColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: itemsColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Order Total -->
+        <div class="order-total">
+          <strong>Total do Pedido: {{ getOrderTotal() | currency: 'BRL' }}</strong>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button mat-button type="button" (click)="cancel()">
+        <mat-icon>cancel</mat-icon>
+        Cancelar
+      </button>
+      <button mat-raised-button type="button" (click)="saveDraft()" [disabled]="loading()">
+        <mat-icon>save</mat-icon>
+        Salvar Rascunho
+      </button>
+      <button mat-raised-button color="primary" type="button" (click)="confirmOrder()" [disabled]="loading()">
+        <mat-icon>check_circle</mat-icon>
+        Confirmar Pedido
+      </button>
+    </div>
+  </form>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="loading()" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Carregando...</p>
+  </div>
+</div>

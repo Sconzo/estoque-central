@@ -7,6 +7,7 @@ public enum PurchaseOrderStatus {
     SENT_TO_SUPPLIER,       // Sent to supplier
     PARTIALLY_RECEIVED,     // Some items received
     RECEIVED,               // All items received
+    COMPLETED,              // Completed (all items fully received)
     CANCELLED,              // Cancelled
     CLOSED                  // Closed (finished/archived)
 }

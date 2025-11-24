@@ -12,8 +12,8 @@ import com.estoquecentral.purchasing.domain.PurchaseOrderStatus;
 import com.estoquecentral.purchasing.domain.Supplier;
 import com.estoquecentral.catalog.adapter.out.ProductRepository;
 import com.estoquecentral.catalog.domain.Product;
-import com.estoquecentral.inventory.adapter.out.StockLocationRepository;
-import com.estoquecentral.inventory.domain.StockLocation;
+import com.estoquecentral.inventory.adapter.out.LocationRepository;
+import com.estoquecentral.inventory.domain.Location;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,7 +37,7 @@ public class PurchaseOrderService {
     private final PurchaseOrderItemRepository purchaseOrderItemRepository;
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
-    private final StockLocationRepository stockLocationRepository;
+    private final LocationRepository locationRepository;
     private final OrderNumberGenerator orderNumberGenerator;
 
     // Allowed status transitions
@@ -57,13 +57,13 @@ public class PurchaseOrderService {
             PurchaseOrderItemRepository purchaseOrderItemRepository,
             SupplierRepository supplierRepository,
             ProductRepository productRepository,
-            StockLocationRepository stockLocationRepository,
+            LocationRepository locationRepository,
             OrderNumberGenerator orderNumberGenerator) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.purchaseOrderItemRepository = purchaseOrderItemRepository;
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
-        this.stockLocationRepository = stockLocationRepository;
+        this.locationRepository = locationRepository;
         this.orderNumberGenerator = orderNumberGenerator;
     }
 
@@ -395,8 +395,8 @@ public class PurchaseOrderService {
         String supplierName = supplierOpt.map(Supplier::getCompanyName).orElse("Unknown");
 
         // Fetch stock location name
-        Optional<StockLocation> locationOpt = stockLocationRepository.findById(po.getLocationId());
-        String locationName = locationOpt.map(StockLocation::getName).orElse("Unknown");
+        Optional<Location> locationOpt = locationRepository.findById(po.getLocationId());
+        String locationName = locationOpt.map(Location::getName).orElse("Unknown");
 
         // Map to DTO
         ReceivingOrderDetailDTO dto = new ReceivingOrderDetailDTO();

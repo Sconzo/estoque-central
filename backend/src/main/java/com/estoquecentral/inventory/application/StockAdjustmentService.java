@@ -1,9 +1,10 @@
 package com.estoquecentral.inventory.application;
 
 import com.estoquecentral.inventory.adapter.out.InventoryRepository;
-import com.estoquecentral.inventory.adapter.out.ProductRepository;
+import com.estoquecentral.catalog.adapter.out.ProductRepository;
+import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.inventory.adapter.out.StockAdjustmentRepository;
-import com.estoquecentral.inventory.adapter.out.StockLocationRepository;
+import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.adapter.out.StockMovementRepository;
 import com.estoquecentral.inventory.domain.*;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ public class StockAdjustmentService {
     private final StockAdjustmentRepository adjustmentRepository;
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
-    private final StockLocationRepository stockLocationRepository;
+    private final LocationRepository locationRepository;
     private final StockMovementRepository stockMovementRepository;
     private final AdjustmentNumberGenerator numberGenerator;
 
@@ -35,13 +36,13 @@ public class StockAdjustmentService {
             StockAdjustmentRepository adjustmentRepository,
             InventoryRepository inventoryRepository,
             ProductRepository productRepository,
-            StockLocationRepository stockLocationRepository,
+            LocationRepository locationRepository,
             StockMovementRepository stockMovementRepository,
             AdjustmentNumberGenerator numberGenerator) {
         this.adjustmentRepository = adjustmentRepository;
         this.inventoryRepository = inventoryRepository;
         this.productRepository = productRepository;
-        this.stockLocationRepository = stockLocationRepository;
+        this.locationRepository = locationRepository;
         this.stockMovementRepository = stockMovementRepository;
         this.numberGenerator = numberGenerator;
     }
@@ -72,7 +73,7 @@ public class StockAdjustmentService {
         }
 
         // 2. Validate location exists (AC2)
-        StockLocation location = stockLocationRepository.findById(stockLocationId)
+        Location location = locationRepository.findById(stockLocationId)
                 .orElseThrow(() -> new IllegalArgumentException("Stock location not found"));
 
         if (!location.getTenantId().equals(tenantId)) {
@@ -128,7 +129,7 @@ public class StockAdjustmentService {
         if (adjustmentType == AdjustmentType.INCREASE) {
             inventory.addQuantity(quantity);
         } else {
-            inventory.subtractQuantity(quantity);
+            inventory.removeQuantity(quantity);
         }
 
         BigDecimal balanceAfter = inventory.getQuantityAvailable();
@@ -144,8 +145,8 @@ public class StockAdjustmentService {
         movement.setTenantId(tenantId);
         movement.setProductId(productId);
         movement.setVariantId(variantId);
-        movement.setLocationId(stockLocationId);
-        movement.setMovementType(MovementType.ADJUSTMENT);
+        movement.setStockLocationId(stockLocationId);
+        movement.setType(MovementType.ADJUSTMENT);
 
         // Quantity is positive for INCREASE, negative for DECREASE
         BigDecimal movementQuantity = adjustmentType == AdjustmentType.INCREASE ?

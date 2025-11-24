@@ -10,10 +10,10 @@ import com.estoquecentral.purchasing.application.ReceivingService;
 import com.estoquecentral.purchasing.domain.PurchaseOrder;
 import com.estoquecentral.purchasing.domain.Receiving;
 import com.estoquecentral.purchasing.domain.ReceivingItem;
-import com.estoquecentral.inventory.adapter.out.ProductRepository;
-import com.estoquecentral.inventory.adapter.out.StockLocationRepository;
-import com.estoquecentral.inventory.domain.Product;
-import com.estoquecentral.inventory.domain.StockLocation;
+import com.estoquecentral.catalog.adapter.out.ProductRepository;
+import com.estoquecentral.inventory.adapter.out.LocationRepository;
+import com.estoquecentral.catalog.domain.Product;
+import com.estoquecentral.inventory.domain.Location;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.StreamSupport;
 import java.util.stream.Collectors;
 
 /**
@@ -38,19 +39,19 @@ public class ReceivingController {
     private final ReceivingService receivingService;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final ProductRepository productRepository;
-    private final StockLocationRepository stockLocationRepository;
+    private final LocationRepository locationRepository;
     private final ReceivingItemRepository receivingItemRepository;
 
     public ReceivingController(
             ReceivingService receivingService,
             PurchaseOrderRepository purchaseOrderRepository,
             ProductRepository productRepository,
-            StockLocationRepository stockLocationRepository,
+            LocationRepository locationRepository,
             ReceivingItemRepository receivingItemRepository) {
         this.receivingService = receivingService;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.productRepository = productRepository;
-        this.stockLocationRepository = stockLocationRepository;
+        this.locationRepository = locationRepository;
         this.receivingItemRepository = receivingItemRepository;
     }
 
@@ -145,7 +146,7 @@ public class ReceivingController {
     private ReceivingResponseDTO mapToResponseDTO(Receiving receiving, UUID tenantId) {
         // Load related data
         PurchaseOrder po = purchaseOrderRepository.findById(receiving.getPurchaseOrderId()).orElse(null);
-        StockLocation location = stockLocationRepository.findById(receiving.getStockLocationId()).orElse(null);
+        Location location = locationRepository.findById(receiving.getStockLocationId()).orElse(null);
 
         ReceivingResponseDTO dto = new ReceivingResponseDTO();
         dto.setId(receiving.getId());
@@ -181,8 +182,7 @@ public class ReceivingController {
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<UUID, Product> productsMap = productRepository.findAllById(productIds)
-                .stream()
+        Map<UUID, Product> productsMap = StreamSupport.stream(productRepository.findAllById(productIds).spliterator(), false)
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
         List<ReceivingItemResponseDTO> itemDTOs = items.stream()

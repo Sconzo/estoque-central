@@ -1,20 +1,21 @@
 package com.estoquecentral.sales.application;
 
 import com.estoquecentral.sales.adapter.out.SaleRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Sale Number Generator
- * Generates sale numbers in format: SALE-YYYYMM-9999
+ * SaleNumberGenerator - Generates unique sale numbers per tenant
  * Story 4.3: NFCe Emission and Stock Decrease
+ * Format: SALE-YYYYMM-0001 (monthly sequence)
  */
-@Component
+@Service
 public class SaleNumberGenerator {
-    private static final DateTimeFormatter YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+
     private final SaleRepository saleRepository;
 
     public SaleNumberGenerator(SaleRepository saleRepository) {
@@ -22,17 +23,25 @@ public class SaleNumberGenerator {
     }
 
     /**
-     * Generate next sale number for the current month
-     * @param tenantId Tenant ID
-     * @return Sale number in format SALE-YYYYMM-9999
+     * Generate next sale number for tenant
+     * Format: SALE-YYYYMM-0001
+     * Sequence resets monthly
      */
-    public String generate(UUID tenantId) {
-        String yearMonth = LocalDateTime.now().format(YEAR_MONTH_FORMATTER);
-        String pattern = "SALE-" + yearMonth + "-%";
+    public synchronized String generateSaleNumber(UUID tenantId) {
+        String yearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String prefix = "SALE-" + yearMonth + "-";
 
-        long count = saleRepository.countBySaleNumberPattern(tenantId, pattern);
-        long nextSequence = count + 1;
+        Optional<String> maxNumberOpt = saleRepository.findMaxSaleNumberByTenantAndYearMonth(
+                tenantId, "SALE-" + yearMonth
+        );
 
-        return String.format("SALE-%s-%04d", yearMonth, nextSequence);
+        int nextSequence = 1;
+        if (maxNumberOpt.isPresent()) {
+            String maxNumber = maxNumberOpt.get();
+            String sequencePart = maxNumber.substring(prefix.length());
+            nextSequence = Integer.parseInt(sequencePart) + 1;
+        }
+
+        return String.format("%s%04d", prefix, nextSequence);
     }
 }

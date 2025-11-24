@@ -18,7 +18,9 @@
     <description>Sistema ERP Omnichannel Brasileiro</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <spring-modulith.version>1.1.6</spring-modulith.version>
         <redisson.version>3.25.2</redisson.version>
         <springdoc.version>2.3.0</springdoc.version>
@@ -213,7 +215,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments>install --legacy-peer-deps</arguments>
                         </configuration>
                     </execution>
                     <execution>

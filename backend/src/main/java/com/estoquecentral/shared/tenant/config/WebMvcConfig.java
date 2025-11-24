@@ -1,10 +1,14 @@
 package com.estoquecentral.shared.tenant.config;
 
+import com.estoquecentral.common.CurrentUserArgumentResolver;
 import com.estoquecentral.shared.tenant.TenantInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 /**
  * WebMvcConfig - Registers TenantInterceptor globally
@@ -41,5 +45,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(new TenantInterceptor())
                 .addPathPatterns("/**"); // Intercept all requests
+    }
+
+    /**
+     * Registers custom argument resolvers for controller methods.
+     *
+     * <p>Adds the CurrentUserArgumentResolver to automatically inject
+     * CurrentUser instances in controller method parameters.
+     *
+     * @param resolvers the list of argument resolvers
+     */
+    @Override
+    public void addArgumentResolvers(@NonNull List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new CurrentUserArgumentResolver());
     }
 }

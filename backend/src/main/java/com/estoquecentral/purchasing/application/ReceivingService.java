@@ -155,7 +155,7 @@ public class ReceivingService {
             receivingItem.setReceivingId(savedReceiving.getId());
             receivingItem.setPurchaseOrderItemId(poItem.getId());
             receivingItem.setProductId(poItem.getProductId());
-            receivingItem.setVariantId(poItem.getVariantId());
+            receivingItem.setVariantId(poItem.getProductVariantId());
             receivingItem.setQuantityReceived(itemRequest.getQuantityReceived());
             receivingItem.setUnitCost(poItem.getUnitCost());
             receivingItem.setNewWeightedAverageCost(newCost);
@@ -166,16 +166,16 @@ public class ReceivingService {
             StockMovement movement = new StockMovement();
             movement.setTenantId(tenantId);
             movement.setProductId(poItem.getProductId());
-            movement.setVariantId(poItem.getVariantId());
-            movement.setLocationId(po.getLocationId());
-            movement.setMovementType(MovementType.PURCHASE);
+            movement.setVariantId(poItem.getProductVariantId());
+            movement.setStockLocationId(po.getLocationId());
+            movement.setType(MovementType.PURCHASE);
             movement.setQuantity(itemRequest.getQuantityReceived());
             movement.setBalanceBefore(balanceBefore);
             movement.setBalanceAfter(inventory.getQuantityAvailable());
             movement.setDocumentId(savedReceiving.getId());
             movement.setUserId(userId);
             movement.setReason("Recebimento OC " + po.getPoNumber());
-            movement.setNotes(itemRequest.getNotes());
+            movement.setReason(itemRequest.getNotes());
             movement.setCreatedAt(LocalDateTime.now());
             stockMovementRepository.save(movement);
 

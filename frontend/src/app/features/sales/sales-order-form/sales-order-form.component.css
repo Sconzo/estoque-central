@@ -1,0 +1,161 @@
+.sales-order-form-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.section-card {
+  margin-bottom: 24px;
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+mat-card-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.items-table-container {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.items-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.items-table th {
+  font-weight: 600;
+  color: #333;
+}
+
+.items-table td {
+  padding: 8px 4px;
+}
+
+.item-field {
+  width: 100%;
+  margin: 0;
+}
+
+.number-field {
+  max-width: 120px;
+}
+
+.stock-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.stock-label {
+  color: #666;
+}
+
+.stock-insufficient {
+  color: #f44336;
+  font-weight: 600;
+}
+
+.warning-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.order-total {
+  text-align: right;
+  padding: 16px;
+  font-size: 18px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  font-size: 16px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .sales-order-form-container {
+    padding: 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .items-table-container {
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
+
+/* Material overrides */
+mat-form-field {
+  font-size: 14px;
+}
+
+mat-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+mat-card-content {
+  padding: 16px;
+}

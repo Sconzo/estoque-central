@@ -1,0 +1,400 @@
+package com.estoquecentral.sales.application;
+
+import com.estoquecentral.inventory.adapter.out.InventoryRepository;
+import com.estoquecentral.inventory.adapter.out.StockMovementRepository;
+import com.estoquecentral.inventory.domain.Inventory;
+import com.estoquecentral.inventory.domain.MovementType;
+import com.estoquecentral.inventory.domain.StockMovement;
+import com.estoquecentral.sales.adapter.out.FiscalEventRepository;
+import com.estoquecentral.sales.adapter.out.SaleItemRepository;
+import com.estoquecentral.sales.adapter.out.SaleRepository;
+import com.estoquecentral.sales.domain.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * SaleService - Business logic for sale processing
+ * Story 4.3: NFCe Emission and Stock Decrease
+ *
+ * <p>This service handles the complete sale flow:
+ * <ol>
+ *   <li>Validate stock availability for all items</li>
+ *   <li>Create Sale entity with generated sale number</li>
+ *   <li>Create SaleItems and decrease stock for each</li>
+ *   <li>Try to emit NFCe (success: EMITTED, fail: PENDING)</li>
+ *   <li>Create fiscal events for audit trail (NFR16)</li>
+ * </ol>
+ *
+ * @see Sale
+ * @see SaleItem
+ * @see FiscalEvent
+ */
+@Service
+@Transactional
+public class SaleService {
+
+    private final SaleRepository saleRepository;
+    private final SaleItemRepository saleItemRepository;
+    private final InventoryRepository inventoryRepository;
+    private final StockMovementRepository stockMovementRepository;
+    private final FiscalEventRepository fiscalEventRepository;
+    private final SaleNumberGenerator saleNumberGenerator;
+    private final NfceService nfceService;
+
+    public SaleService(
+            SaleRepository saleRepository,
+            SaleItemRepository saleItemRepository,
+            InventoryRepository inventoryRepository,
+            StockMovementRepository stockMovementRepository,
+            FiscalEventRepository fiscalEventRepository,
+            SaleNumberGenerator saleNumberGenerator,
+            NfceService nfceService) {
+        this.saleRepository = saleRepository;
+        this.saleItemRepository = saleItemRepository;
+        this.inventoryRepository = inventoryRepository;
+        this.stockMovementRepository = stockMovementRepository;
+        this.fiscalEventRepository = fiscalEventRepository;
+        this.saleNumberGenerator = saleNumberGenerator;
+        this.nfceService = nfceService;
+    }
+
+    /**
+     * Process a complete sale transaction
+     * Story 4.3 - AC1, AC2, AC3, AC4
+     *
+     * @param request sale request with items
+     * @return created sale with NFCe status
+     * @throws InsufficientStockException if stock is insufficient for any item
+     */
+    @Transactional
+    public Sale processSale(SaleRequest request) {
+        // AC1: Validate stock availability for all items
+        validateStockAvailability(request.tenantId(), request.stockLocationId(), request.items());
+
+        // AC2: Create Sale entity with generated sale number
+        Sale sale = createSale(request);
+        sale = saleRepository.save(sale);
+
+        // AC2: Create SaleItems and decrease stock for each
+        List<SaleItem> saleItems = new ArrayList<>();
+        for (ItemRequest itemRequest : request.items()) {
+            SaleItem saleItem = createSaleItem(sale.getId(), itemRequest);
+            saleItem = saleItemRepository.save(saleItem);
+            saleItems.add(saleItem);
+
+            // Decrease stock and create stock movement
+            decreaseStock(
+                    request.tenantId(),
+                    request.stockLocationId(),
+                    itemRequest.productId(),
+                    itemRequest.variantId(),
+                    itemRequest.quantity(),
+                    sale.getId(),
+                    request.userId()
+            );
+        }
+
+        // AC3: Try to emit NFCe
+        try {
+            NfceResponse nfceResponse = nfceService.emitNfce(sale, saleItems);
+            sale.markNfceAsEmitted(nfceResponse.nfceKey(), nfceResponse.xml());
+            sale = saleRepository.save(sale);
+
+            // AC4: Create fiscal event for successful emission
+            createFiscalEvent(
+                    request.tenantId(),
+                    sale.getId(),
+                    FiscalEventType.NFCE_EMITTED,
+                    nfceResponse.nfceKey(),
+                    nfceResponse.xml(),
+                    null,
+                    null,
+                    request.userId()
+            );
+
+        } catch (NfceService.NfceException e) {
+            // AC3: NFCe emission failed - mark as PENDING (not FAILED)
+            // Sale is still valid, NFCe can be retried later
+            sale.markNfceAsPending();
+            sale = saleRepository.save(sale);
+
+            // AC4: Create fiscal event for failed emission
+            createFiscalEvent(
+                    request.tenantId(),
+                    sale.getId(),
+                    FiscalEventType.NFCE_FAILED,
+                    null,
+                    null,
+                    e.getMessage(),
+                    null,
+                    request.userId()
+            );
+        }
+
+        return sale;
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Validates that sufficient stock is available for all items
+     * AC1: Stock validation before processing sale
+     *
+     * @throws InsufficientStockException if stock is insufficient for any item
+     */
+    private void validateStockAvailability(UUID tenantId, UUID locationId, List<ItemRequest> items) {
+        for (ItemRequest item : items) {
+            Inventory inventory;
+
+            if (item.variantId() != null) {
+                // Variant product
+                inventory = inventoryRepository.findByTenantIdAndVariantIdAndLocationId(
+                        tenantId, item.variantId(), locationId
+                ).orElseThrow(() -> new InsufficientStockException(
+                        "No inventory found for variant: " + item.variantId()
+                ));
+            } else {
+                // Simple/composite product
+                inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(
+                        tenantId, item.productId(), locationId
+                ).orElseThrow(() -> new InsufficientStockException(
+                        "No inventory found for product: " + item.productId()
+                ));
+            }
+
+            BigDecimal availableForSale = inventory.getComputedQuantityForSale();
+            if (availableForSale.compareTo(item.quantity()) < 0) {
+                String itemIdentifier = item.variantId() != null
+                        ? "variant " + item.variantId()
+                        : "product " + item.productId();
+                throw new InsufficientStockException(
+                        String.format("Insufficient stock for %s. Available: %s, Requested: %s",
+                                itemIdentifier, availableForSale, item.quantity())
+                );
+            }
+        }
+    }
+
+    /**
+     * Creates Sale entity with generated sale number and calculated totals
+     * AC2: Create sale record
+     */
+    private Sale createSale(SaleRequest request) {
+        Sale sale = new Sale();
+        sale.setTenantId(request.tenantId());
+        sale.setSaleNumber(saleNumberGenerator.generateSaleNumber(request.tenantId()));
+        sale.setCustomerId(request.customerId());
+        sale.setStockLocationId(request.stockLocationId());
+        sale.setPaymentMethod(request.paymentMethod());
+        sale.setPaymentAmountReceived(request.paymentAmountReceived());
+        sale.setDiscount(request.discount() != null ? request.discount() : BigDecimal.ZERO);
+        sale.setTotalAmount(calculateTotal(request.items(), sale.getDiscount()));
+        sale.calculateChangeAmount();
+        sale.setCreatedByUserId(request.userId());
+        sale.setSaleDate(LocalDateTime.now());
+        sale.setNfceStatus(NfceStatus.PENDING);
+
+        return sale;
+    }
+
+    /**
+     * Creates a SaleItem entity
+     * AC2: Create sale item records
+     */
+    private SaleItem createSaleItem(UUID saleId, ItemRequest itemRequest) {
+        SaleItem saleItem = new SaleItem();
+        saleItem.setSaleId(saleId);
+        saleItem.setProductId(itemRequest.productId());
+        saleItem.setVariantId(itemRequest.variantId());
+        saleItem.setQuantity(itemRequest.quantity());
+        saleItem.setUnitPrice(itemRequest.unitPrice());
+        saleItem.setDiscount(itemRequest.discount() != null ? itemRequest.discount() : BigDecimal.ZERO);
+        saleItem.calculateTotalPrice();
+
+        return saleItem;
+    }
+
+    /**
+     * Decreases stock and creates stock movement record
+     * AC2: Decrease stock for each item
+     * AC5: Create stock movement audit trail
+     */
+    private void decreaseStock(
+            UUID tenantId,
+            UUID locationId,
+            UUID productId,
+            UUID variantId,
+            BigDecimal quantity,
+            UUID saleId,
+            UUID userId) {
+
+        Inventory inventory;
+
+        if (variantId != null) {
+            // Variant product
+            inventory = inventoryRepository.findByTenantIdAndVariantIdAndLocationId(
+                    tenantId, variantId, locationId
+            ).orElseThrow(() -> new IllegalStateException(
+                    "Inventory not found for variant: " + variantId
+            ));
+        } else {
+            // Simple/composite product
+            inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(
+                    tenantId, productId, locationId
+            ).orElseThrow(() -> new IllegalStateException(
+                    "Inventory not found for product: " + productId
+            ));
+        }
+
+        BigDecimal balanceBefore = inventory.getQuantityAvailable();
+        inventory.removeQuantity(quantity);
+        BigDecimal balanceAfter = inventory.getQuantityAvailable();
+
+        inventoryRepository.save(inventory);
+
+        // Create stock movement record (audit trail)
+        StockMovement movement = new StockMovement(
+                tenantId,
+                productId,
+                variantId,
+                locationId,
+                MovementType.SALE,
+                quantity.negate(), // Negative quantity for exit
+                balanceBefore,
+                userId,
+                "SALE",
+                saleId,
+                "Stock decreased by sale"
+        );
+        stockMovementRepository.save(movement);
+    }
+
+    /**
+     * Creates a fiscal event for audit trail
+     * AC4: Create fiscal events (NFR16 - 5-year retention)
+     */
+    private void createFiscalEvent(
+            UUID tenantId,
+            UUID saleId,
+            FiscalEventType eventType,
+            String nfceKey,
+            String xmlSnapshot,
+            String errorMessage,
+            Integer httpStatusCode,
+            UUID userId) {
+
+        FiscalEvent event = new FiscalEvent();
+        event.setTenantId(tenantId);
+        event.setSaleId(saleId);
+        event.setEventType(eventType);
+        event.setNfceKey(nfceKey);
+        event.setXmlSnapshot(xmlSnapshot);
+        event.setErrorMessage(errorMessage);
+        event.setHttpStatusCode(httpStatusCode);
+        event.setUserId(userId);
+
+        fiscalEventRepository.save(event);
+    }
+
+    /**
+     * Calculates total amount for all items minus discount
+     * AC2: Calculate sale total
+     */
+    private BigDecimal calculateTotal(List<ItemRequest> items, BigDecimal discount) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (ItemRequest item : items) {
+            BigDecimal itemTotal = item.quantity().multiply(item.unitPrice());
+            if (item.discount() != null) {
+                itemTotal = itemTotal.subtract(item.discount());
+            }
+            total = total.add(itemTotal);
+        }
+
+        if (discount != null) {
+            total = total.subtract(discount);
+        }
+
+        return total;
+    }
+
+    // ==================== Inner Classes ====================
+
+    /**
+     * Sale request DTO
+     * Contains all data needed to process a sale
+     */
+    public record SaleRequest(
+            UUID tenantId,
+            UUID customerId,
+            UUID stockLocationId,
+            PaymentMethod paymentMethod,
+            BigDecimal paymentAmountReceived,
+            BigDecimal discount,
+            List<ItemRequest> items,
+            UUID userId
+    ) {
+        public SaleRequest {
+            if (tenantId == null) {
+                throw new IllegalArgumentException("Tenant ID is required");
+            }
+            if (stockLocationId == null) {
+                throw new IllegalArgumentException("Stock location ID is required");
+            }
+            if (paymentMethod == null) {
+                throw new IllegalArgumentException("Payment method is required");
+            }
+            if (paymentAmountReceived == null || paymentAmountReceived.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Payment amount received must be positive");
+            }
+            if (items == null || items.isEmpty()) {
+                throw new IllegalArgumentException("Sale must have at least one item");
+            }
+            if (userId == null) {
+                throw new IllegalArgumentException("User ID is required");
+            }
+        }
+    }
+
+    /**
+     * Sale item request DTO
+     * Contains data for a single item in the sale
+     */
+    public record ItemRequest(
+            UUID productId,
+            UUID variantId,
+            BigDecimal quantity,
+            BigDecimal unitPrice,
+            BigDecimal discount
+    ) {
+        public ItemRequest {
+            if (productId == null && variantId == null) {
+                throw new IllegalArgumentException("Either product ID or variant ID must be provided");
+            }
+            if (productId != null && variantId != null) {
+                throw new IllegalArgumentException("Cannot specify both product ID and variant ID");
+            }
+            if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Quantity must be positive");
+            }
+            if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Unit price must be positive");
+            }
+        }
+    }
+
+    /**
+     * Exception thrown when insufficient stock is available
+     */
+    public static class InsufficientStockException extends RuntimeException {
+        public InsufficientStockException(String message) {
+            super(message);
+        }
+    }
+}

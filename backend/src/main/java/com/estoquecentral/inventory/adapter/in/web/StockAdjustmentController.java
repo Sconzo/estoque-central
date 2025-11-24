@@ -4,8 +4,9 @@ import com.estoquecentral.common.CurrentUser;
 import com.estoquecentral.inventory.adapter.in.dto.FrequentAdjustmentDTO;
 import com.estoquecentral.inventory.adapter.in.dto.StockAdjustmentRequestDTO;
 import com.estoquecentral.inventory.adapter.in.dto.StockAdjustmentResponseDTO;
-import com.estoquecentral.inventory.adapter.out.ProductRepository;
-import com.estoquecentral.inventory.adapter.out.StockLocationRepository;
+import com.estoquecentral.catalog.adapter.out.ProductRepository;
+import com.estoquecentral.catalog.domain.Product;
+import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.application.StockAdjustmentService;
 import com.estoquecentral.inventory.domain.*;
 import jakarta.validation.Valid;
@@ -31,15 +32,15 @@ public class StockAdjustmentController {
 
     private final StockAdjustmentService adjustmentService;
     private final ProductRepository productRepository;
-    private final StockLocationRepository stockLocationRepository;
+    private final LocationRepository locationRepository;
 
     public StockAdjustmentController(
             StockAdjustmentService adjustmentService,
             ProductRepository productRepository,
-            StockLocationRepository stockLocationRepository) {
+            LocationRepository locationRepository) {
         this.adjustmentService = adjustmentService;
         this.productRepository = productRepository;
-        this.stockLocationRepository = stockLocationRepository;
+        this.locationRepository = locationRepository;
     }
 
     /**
@@ -145,7 +146,7 @@ public class StockAdjustmentController {
         // Load product and location names
         List<FrequentAdjustmentDTO> response = frequentAdjustments.stream().map(data -> {
             Product product = productRepository.findById(data.productId()).orElse(null);
-            StockLocation location = stockLocationRepository.findById(data.stockLocationId()).orElse(null);
+            Location location = locationRepository.findById(data.stockLocationId()).orElse(null);
 
             return new FrequentAdjustmentDTO(
                     data.productId(),
@@ -169,7 +170,7 @@ public class StockAdjustmentController {
         // Load related data
         Product product = adjustment.getProductId() != null ?
                 productRepository.findById(adjustment.getProductId()).orElse(null) : null;
-        StockLocation location = stockLocationRepository.findById(adjustment.getStockLocationId()).orElse(null);
+        Location location = locationRepository.findById(adjustment.getStockLocationId()).orElse(null);
 
         StockAdjustmentResponseDTO dto = new StockAdjustmentResponseDTO();
         dto.setId(adjustment.getId());
