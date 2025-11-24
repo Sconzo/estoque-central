@@ -90,9 +90,9 @@ public class InventoryMovement {
      */
     public boolean verifyIntegrity() {
         BigDecimal expected;
-        if (type == MovementType.IN) {
+        if (type == MovementType.ENTRY) {
             expected = quantityBefore.add(quantity);
-        } else if (type == MovementType.OUT) {
+        } else if (type == MovementType.EXIT) {
             expected = quantityBefore.subtract(quantity);
         } else {
             // For ADJUSTMENT, quantity can be positive or negative
@@ -108,7 +108,7 @@ public class InventoryMovement {
      * @return true if inbound
      */
     public boolean isInbound() {
-        return type == MovementType.IN;
+        return type == MovementType.ENTRY;
     }
 
     /**
@@ -117,7 +117,7 @@ public class InventoryMovement {
      * @return true if outbound
      */
     public boolean isOutbound() {
-        return type == MovementType.OUT;
+        return type == MovementType.EXIT;
     }
 
     /**

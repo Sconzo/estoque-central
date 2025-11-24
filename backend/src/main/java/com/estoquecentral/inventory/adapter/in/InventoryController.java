@@ -31,8 +31,11 @@ public class InventoryController {
     @GetMapping("/product/{productId}")
     @Operation(summary = "Get inventory for product")
     public ResponseEntity<InventoryDTO> getInventory(@PathVariable UUID productId,
-                                                      @RequestParam(required = false) String location) {
-        return inventoryService.getInventory(productId, location)
+                                                      @RequestParam(required = false) UUID locationId) {
+        if (locationId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return inventoryService.getInventory(productId, locationId)
                 .map(inv -> ResponseEntity.ok(InventoryDTO.fromEntity(inv)))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -44,7 +47,7 @@ public class InventoryController {
                                                   Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         Inventory inventory = inventoryService.addStock(
-                request.getProductId(), request.getQuantity(), request.getLocation(),
+                request.getProductId(), request.getQuantity(), request.getLocationId(),
                 request.getReason(), request.getNotes(),
                 request.getReferenceType(), request.getReferenceId(), userId
         );
@@ -58,7 +61,7 @@ public class InventoryController {
                                                      Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         Inventory inventory = inventoryService.removeStock(
-                request.getProductId(), request.getQuantity(), request.getLocation(),
+                request.getProductId(), request.getQuantity(), request.getLocationId(),
                 request.getReason(), request.getNotes(),
                 request.getReferenceType(), request.getReferenceId(), userId
         );
@@ -72,7 +75,7 @@ public class InventoryController {
                                                       Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         Inventory inventory = inventoryService.reserveStock(
-                request.getProductId(), request.getQuantity(), request.getLocation(),
+                request.getProductId(), request.getQuantity(), request.getLocationId(),
                 request.getReferenceType(), request.getReferenceId(), userId
         );
         return ResponseEntity.ok(InventoryDTO.fromEntity(inventory));

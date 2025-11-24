@@ -1,9 +1,5 @@
 package com.estoquecentral.shared.security;
 
-import org.springframework.data.jdbc.core.convert.JdbcValue;
-import org.springframework.data.relational.core.mapping.NamingStrategy;
-import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
-import org.springframework.data.relational.core.sql.SqlIdentifier;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;

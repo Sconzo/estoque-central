@@ -4,7 +4,9 @@ import com.estoquecentral.catalog.adapter.out.ProductRepository;
 import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.inventory.adapter.out.InventoryMovementRepository;
 import com.estoquecentral.inventory.adapter.out.InventoryRepository;
+import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.domain.*;
+import com.estoquecentral.shared.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,32 +43,33 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMovementRepository movementRepository;
     private final ProductRepository productRepository;
+    private final LocationRepository locationRepository;
     private final StockMovementService stockMovementService;
-
-    private static final String DEFAULT_LOCATION = "DEFAULT";
 
     @Autowired
     public InventoryService(InventoryRepository inventoryRepository,
                             InventoryMovementRepository movementRepository,
                             ProductRepository productRepository,
+                            LocationRepository locationRepository,
                             StockMovementService stockMovementService) {
         this.inventoryRepository = inventoryRepository;
         this.movementRepository = movementRepository;
         this.productRepository = productRepository;
+        this.locationRepository = locationRepository;
         this.stockMovementService = stockMovementService;
     }
 
     /**
-     * Gets inventory for a product
+     * Gets inventory for a product at a specific location
      *
      * @param productId product ID
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @return optional inventory
      */
     @Transactional(readOnly = true)
-    public Optional<Inventory> getInventory(UUID productId, String location) {
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        return inventoryRepository.findByProductIdAndLocation(productId, loc);
+    public Optional<Inventory> getInventory(UUID productId, UUID locationId) {
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId);
     }
 
     /**
@@ -88,24 +91,38 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public List<Inventory> getAllInventoryForProduct(UUID productId) {
-        return inventoryRepository.findAllByProductId(productId);
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findAllByTenantIdAndProductId(tenantId, productId);
+    }
+
+    /**
+     * Gets inventory records by location
+     *
+     * @param locationId location ID
+     * @return list of inventory records
+     */
+    @Transactional(readOnly = true)
+    public List<Inventory> getInventoryByLocation(UUID locationId) {
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findByTenantIdAndLocationId(tenantId, locationId);
     }
 
     /**
      * Creates inventory record for a product
      *
-     * @param tenantId tenant ID
      * @param productId product ID
      * @param initialQuantity initial quantity
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param minQuantity minimum quantity threshold
      * @param maxQuantity maximum quantity threshold
      * @param userId user creating the inventory
      * @return created inventory
      */
-    public Inventory createInventory(UUID tenantId, UUID productId, BigDecimal initialQuantity,
-                                      String location, BigDecimal minQuantity, BigDecimal maxQuantity,
+    public Inventory createInventory(UUID productId, BigDecimal initialQuantity,
+                                      UUID locationId, BigDecimal minQuantity, BigDecimal maxQuantity,
                                       UUID userId) {
+        UUID tenantId = getTenantIdAsUUID();
+
         // Validate product exists and controls inventory
         Product product = productRepository.findByIdAndActive(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
@@ -114,23 +131,21 @@ public class InventoryService {
             throw new IllegalArgumentException("Product does not control inventory: " + productId);
         }
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-
         // Check if inventory already exists
-        if (inventoryRepository.existsByProductIdAndLocation(productId, loc)) {
+        if (inventoryRepository.existsByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)) {
             throw new IllegalArgumentException(
-                    "Inventory already exists for product " + productId + " at location " + loc);
+                    "Inventory already exists for product " + productId + " at location " + locationId);
         }
 
         // Create inventory
-        Inventory inventory = new Inventory(tenantId, productId, initialQuantity, loc);
+        Inventory inventory = new Inventory(tenantId, productId, locationId, initialQuantity);
         inventory.setLevels(minQuantity, maxQuantity);
         inventory = inventoryRepository.save(inventory);
 
         // Create initial movement if quantity > 0
         if (initialQuantity.compareTo(BigDecimal.ZERO) > 0) {
             createMovement(
-                    tenantId, productId, MovementType.IN, initialQuantity, loc,
+                    tenantId, productId, MovementType.ENTRY, initialQuantity, locationId,
                     BigDecimal.ZERO, initialQuantity,
                     MovementReason.INITIAL, "Initial inventory setup",
                     null, null, userId
@@ -145,7 +160,7 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param quantity quantity to add
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param reason reason for addition
      * @param notes additional notes
      * @param referenceType reference type (e.g., "PURCHASE_ORDER")
@@ -153,22 +168,21 @@ public class InventoryService {
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory addStock(UUID productId, BigDecimal quantity, String location,
+    public Inventory addStock(UUID productId, BigDecimal quantity, UUID locationId,
                                MovementReason reason, String notes,
                                String referenceType, UUID referenceId, UUID userId) {
         validateQuantity(quantity);
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = getOrCreateInventory(productId, loc);
+        Inventory inventory = getOrCreateInventory(productId, locationId);
 
-        BigDecimal before = inventory.getQuantity();
+        BigDecimal before = inventory.getQuantityAvailable();
         inventory.addQuantity(quantity);
-        BigDecimal after = inventory.getQuantity();
+        BigDecimal after = inventory.getQuantityAvailable();
 
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.IN, quantity, loc,
+                inventory.getTenantId(), productId, MovementType.ENTRY, quantity, locationId,
                 before, after, reason, notes, referenceType, referenceId, userId
         );
 
@@ -180,7 +194,7 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param quantity quantity to remove
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param reason reason for removal
      * @param notes additional notes
      * @param referenceType reference type (e.g., "SALE")
@@ -188,23 +202,23 @@ public class InventoryService {
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory removeStock(UUID productId, BigDecimal quantity, String location,
+    public Inventory removeStock(UUID productId, BigDecimal quantity, UUID locationId,
                                   MovementReason reason, String notes,
                                   String referenceType, UUID referenceId, UUID userId) {
         validateQuantity(quantity);
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
-        BigDecimal before = inventory.getQuantity();
+        BigDecimal before = inventory.getQuantityAvailable();
         inventory.removeQuantity(quantity);
-        BigDecimal after = inventory.getQuantity();
+        BigDecimal after = inventory.getQuantityAvailable();
 
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.OUT, quantity, loc,
+                inventory.getTenantId(), productId, MovementType.EXIT, quantity, locationId,
                 before, after, reason, notes, referenceType, referenceId, userId
         );
 
@@ -216,25 +230,25 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param newQuantity new quantity
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param reason reason for adjustment
      * @param notes additional notes
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory adjustStock(UUID productId, BigDecimal newQuantity, String location,
+    public Inventory adjustStock(UUID productId, BigDecimal newQuantity, UUID locationId,
                                   MovementReason reason, String notes, UUID userId) {
         if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("New quantity cannot be negative");
         }
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
-        BigDecimal before = inventory.getQuantity();
+        BigDecimal before = inventory.getQuantityAvailable();
         inventory.adjustTo(newQuantity);
-        BigDecimal after = inventory.getQuantity();
+        BigDecimal after = inventory.getQuantityAvailable();
 
         // Calculate adjustment quantity (can be positive or negative)
         BigDecimal adjustmentQty = after.subtract(before);
@@ -242,7 +256,7 @@ public class InventoryService {
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.ADJUSTMENT, adjustmentQty.abs(), loc,
+                inventory.getTenantId(), productId, MovementType.ADJUSTMENT, adjustmentQty.abs(), locationId,
                 before, after, reason, notes, null, null, userId
         );
 
@@ -254,18 +268,18 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param quantity quantity to reserve
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param referenceType reference type (e.g., "ORDER")
      * @param referenceId reference ID
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory reserveStock(UUID productId, BigDecimal quantity, String location,
+    public Inventory reserveStock(UUID productId, BigDecimal quantity, UUID locationId,
                                    String referenceType, UUID referenceId, UUID userId) {
         validateQuantity(quantity);
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
         BigDecimal reservedBefore = inventory.getReservedQuantity();
@@ -275,7 +289,7 @@ public class InventoryService {
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.RESERVE, quantity, loc,
+                inventory.getTenantId(), productId, MovementType.RESERVE, quantity, locationId,
                 reservedBefore, reservedAfter,
                 MovementReason.RESERVATION, "Stock reserved",
                 referenceType, referenceId, userId
@@ -289,18 +303,18 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param quantity quantity to unreserve
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param referenceType reference type (e.g., "ORDER")
      * @param referenceId reference ID
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory unreserveStock(UUID productId, BigDecimal quantity, String location,
+    public Inventory unreserveStock(UUID productId, BigDecimal quantity, UUID locationId,
                                      String referenceType, UUID referenceId, UUID userId) {
         validateQuantity(quantity);
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
         BigDecimal reservedBefore = inventory.getReservedQuantity();
@@ -310,7 +324,7 @@ public class InventoryService {
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.UNRESERVE, quantity, loc,
+                inventory.getTenantId(), productId, MovementType.RELEASE, quantity, locationId,
                 reservedBefore, reservedAfter,
                 MovementReason.UNRESERVATION, "Stock unreserved",
                 referenceType, referenceId, userId
@@ -324,28 +338,28 @@ public class InventoryService {
      *
      * @param productId product ID
      * @param quantity quantity to fulfill
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param referenceType reference type (e.g., "SALE")
      * @param referenceId reference ID
      * @param userId user performing the operation
      * @return updated inventory
      */
-    public Inventory fulfillReservation(UUID productId, BigDecimal quantity, String location,
+    public Inventory fulfillReservation(UUID productId, BigDecimal quantity, UUID locationId,
                                          String referenceType, UUID referenceId, UUID userId) {
         validateQuantity(quantity);
 
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
-        BigDecimal before = inventory.getQuantity();
+        BigDecimal before = inventory.getQuantityAvailable();
         inventory.fulfillReservation(quantity);
-        BigDecimal after = inventory.getQuantity();
+        BigDecimal after = inventory.getQuantityAvailable();
 
         inventory = inventoryRepository.save(inventory);
 
         createMovement(
-                inventory.getTenantId(), productId, MovementType.OUT, quantity, loc,
+                inventory.getTenantId(), productId, MovementType.SALE, quantity, locationId,
                 before, after, MovementReason.SALE, "Fulfilled reservation",
                 referenceType, referenceId, userId
         );
@@ -357,15 +371,15 @@ public class InventoryService {
      * Sets min/max quantity levels
      *
      * @param productId product ID
-     * @param location location (null for DEFAULT)
+     * @param locationId location ID
      * @param minQuantity minimum quantity
      * @param maxQuantity maximum quantity
      * @return updated inventory
      */
-    public Inventory setStockLevels(UUID productId, String location,
+    public Inventory setStockLevels(UUID productId, UUID locationId,
                                      BigDecimal minQuantity, BigDecimal maxQuantity) {
-        String loc = location != null ? location : DEFAULT_LOCATION;
-        Inventory inventory = inventoryRepository.findByProductIdAndLocation(productId, loc)
+        UUID tenantId = getTenantIdAsUUID();
+        Inventory inventory = inventoryRepository.findByTenantIdAndProductIdAndLocationId(tenantId, productId, locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Inventory not found for product: " + productId));
 
         inventory.setLevels(minQuantity, maxQuantity);
@@ -379,7 +393,20 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public List<Inventory> getLowStockProducts() {
-        return inventoryRepository.findLowStockProducts();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findBelowMinimum(tenantId);
+    }
+
+    /**
+     * Gets products with low stock at a specific location
+     *
+     * @param locationId location ID
+     * @return list of inventory records below minimum at location
+     */
+    @Transactional(readOnly = true)
+    public List<Inventory> getLowStockProductsByLocation(UUID locationId) {
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findBelowMinimumByLocation(tenantId, locationId);
     }
 
     /**
@@ -389,7 +416,8 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public List<Inventory> getOutOfStockProducts() {
-        return inventoryRepository.findOutOfStockProducts();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findOutOfStock(tenantId);
     }
 
     /**
@@ -399,7 +427,8 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public List<Inventory> getExcessStockProducts() {
-        return inventoryRepository.findExcessStockProducts();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.findAboveMaximum(tenantId);
     }
 
     /**
@@ -432,7 +461,20 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public Double getTotalInventoryValue() {
-        return inventoryRepository.getTotalInventoryValue();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.getTotalInventoryValue(tenantId);
+    }
+
+    /**
+     * Gets total inventory value by location
+     *
+     * @param locationId location ID
+     * @return total inventory value for location
+     */
+    @Transactional(readOnly = true)
+    public Double getTotalInventoryValueByLocation(UUID locationId) {
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.getTotalInventoryValueByLocation(tenantId, locationId);
     }
 
     /**
@@ -442,7 +484,8 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public long countLowStockProducts() {
-        return inventoryRepository.countLowStockProducts();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.countBelowMinimum(tenantId);
     }
 
     /**
@@ -452,13 +495,17 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public long countOutOfStockProducts() {
-        return inventoryRepository.countOutOfStockProducts();
+        UUID tenantId = getTenantIdAsUUID();
+        return inventoryRepository.countOutOfStock(tenantId);
     }
 
     // ==================== Private Helper Methods ====================
 
-    private Inventory getOrCreateInventory(UUID productId, String location) {
-        Optional<Inventory> existing = inventoryRepository.findByProductIdAndLocation(productId, location);
+    private Inventory getOrCreateInventory(UUID productId, UUID locationId) {
+        UUID tenantId = getTenantIdAsUUID();
+        Optional<Inventory> existing = inventoryRepository.findByTenantIdAndProductIdAndLocationId(
+                tenantId, productId, locationId);
+
         if (existing.isPresent()) {
             return existing.get();
         }
@@ -471,25 +518,24 @@ public class InventoryService {
             throw new IllegalArgumentException("Product does not control inventory: " + productId);
         }
 
-        Inventory inventory = new Inventory(product.getTenantId(), productId, BigDecimal.ZERO, location);
+        Inventory inventory = new Inventory(tenantId, productId, locationId, BigDecimal.ZERO);
         return inventoryRepository.save(inventory);
     }
 
     private void createMovement(UUID tenantId, UUID productId, MovementType type,
-                                BigDecimal quantity, String location,
+                                BigDecimal quantity, UUID locationId,
                                 BigDecimal quantityBefore, BigDecimal quantityAfter,
                                 MovementReason reason, String notes,
                                 String referenceType, UUID referenceId, UUID userId) {
         // Save to old InventoryMovement table (legacy)
         InventoryMovement movement = new InventoryMovement(
-                tenantId, productId, type, quantity, location,
+                tenantId, productId, type, quantity, locationId.toString(),
                 quantityBefore, quantityAfter,
                 reason, notes, referenceType, referenceId, userId
         );
         movementRepository.save(movement);
 
         // TODO: Integrate with new StockMovementService
-        // This requires mapping location (String) to location_id (UUID)
         // For now, keeping both systems in parallel
         // Future: Remove InventoryMovement table and use only StockMovement
     }
@@ -498,5 +544,19 @@ public class InventoryService {
         if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
+    }
+
+    /**
+     * Gets tenant ID from TenantContext and converts to UUID
+     *
+     * @return tenant ID as UUID
+     * @throws IllegalStateException if tenant ID is not set
+     */
+    private UUID getTenantIdAsUUID() {
+        String tenantIdStr = TenantContext.getTenantId();
+        if (tenantIdStr == null) {
+            throw new IllegalStateException("Tenant ID not set in context");
+        }
+        return UUID.fromString(tenantIdStr);
     }
 }

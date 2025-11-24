@@ -13,7 +13,8 @@ public class StockMovementRequest {
     @DecimalMin(value = "0.001", message = "Quantity must be positive")
     private BigDecimal quantity;
 
-    private String location;
+    @NotNull(message = "Location ID is required")
+    private UUID locationId;
 
     @NotNull(message = "Reason is required")
     private MovementReason reason;
@@ -27,8 +28,8 @@ public class StockMovementRequest {
     public void setProductId(UUID productId) { this.productId = productId; }
     public BigDecimal getQuantity() { return quantity; }
     public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public UUID getLocationId() { return locationId; }
+    public void setLocationId(UUID locationId) { this.locationId = locationId; }
     public MovementReason getReason() { return reason; }
     public void setReason(MovementReason reason) { this.reason = reason; }
     public String getNotes() { return notes; }

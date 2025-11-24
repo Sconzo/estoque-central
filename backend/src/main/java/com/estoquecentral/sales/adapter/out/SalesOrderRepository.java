@@ -145,4 +145,36 @@ public interface SalesOrderRepository extends
         ORDER BY delivery_date_expected
         """)
     List<SalesOrder> findOverdueSalesOrders(@Param("tenantId") UUID tenantId);
+
+    /**
+     * Find confirmed sales orders older than specified date (for auto-release)
+     * Story 4.6: Stock Reservation and Automatic Release
+     */
+    @Query("""
+        SELECT * FROM sales_orders
+        WHERE tenant_id = :tenantId
+          AND status = 'CONFIRMED'
+          AND DATE(data_criacao) < :expirationDate
+        ORDER BY data_criacao
+        """)
+    List<SalesOrder> findExpiredConfirmedOrders(
+        @Param("tenantId") UUID tenantId,
+        @Param("expirationDate") LocalDate expirationDate
+    );
+
+    /**
+     * Find confirmed sales orders expiring soon (within N days)
+     * Story 4.6: Stock Reservation and Automatic Release - AC9
+     */
+    @Query("""
+        SELECT * FROM sales_orders
+        WHERE tenant_id = :tenantId
+          AND status = 'CONFIRMED'
+          AND DATE(data_criacao) < :expirationDate
+        ORDER BY data_criacao
+        """)
+    List<SalesOrder> findExpiringSoon(
+        @Param("tenantId") UUID tenantId,
+        @Param("expirationDate") LocalDate expirationDate
+    );
 }

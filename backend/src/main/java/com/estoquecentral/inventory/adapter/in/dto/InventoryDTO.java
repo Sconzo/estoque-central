@@ -24,12 +24,12 @@ public class InventoryDTO {
         InventoryDTO dto = new InventoryDTO();
         dto.setId(inventory.getId());
         dto.setProductId(inventory.getProductId());
-        dto.setQuantity(inventory.getQuantity());
+        dto.setQuantity(inventory.getQuantityAvailable());
         dto.setReservedQuantity(inventory.getReservedQuantity());
-        dto.setAvailableQuantity(inventory.getAvailableQuantity());
-        dto.setMinQuantity(inventory.getMinQuantity());
-        dto.setMaxQuantity(inventory.getMaxQuantity());
-        dto.setLocation(inventory.getLocation());
+        dto.setAvailableQuantity(inventory.getComputedQuantityForSale());
+        dto.setMinQuantity(inventory.getMinimumQuantity());
+        dto.setMaxQuantity(inventory.getMaximumQuantity());
+        dto.setLocation(inventory.getLocationId() != null ? inventory.getLocationId().toString() : null);
         dto.setIsBelowMinimum(inventory.isBelowMinimum());
         dto.setIsAboveMaximum(inventory.isAboveMaximum());
         dto.setCreatedAt(inventory.getCreatedAt());
