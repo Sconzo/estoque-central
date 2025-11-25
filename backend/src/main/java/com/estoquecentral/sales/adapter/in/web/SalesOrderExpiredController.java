@@ -56,7 +56,7 @@ public class SalesOrderExpiredController {
     @GetMapping("/expiring-soon")
     public ResponseEntity<List<ExpiringSalesOrderDTO>> getExpiringSoon(
             @RequestParam(defaultValue = "2") int days) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
         // Get auto-release configuration
         int autoReleaseDays = tenantSettingsService.getAutoReleaseDays(tenantId);
@@ -90,7 +90,7 @@ public class SalesOrderExpiredController {
     public ResponseEntity<Map<String, String>> extendOrder(
             @PathVariable UUID id,
             @RequestParam(defaultValue = "7") int extensionDays) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
         if (extensionDays <= 0) {
             return ResponseEntity.badRequest().body(Map.of("error", "Extension days must be positive"));

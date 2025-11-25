@@ -71,6 +71,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pdv/components/pdv-layout/pdv-layout.component').then(m => m.PdvLayoutComponent)
   },
   {
+    path: 'integracoes',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/mercadolivre-integration/mercadolivre-integration.component').then(m => m.MercadoLivreIntegrationComponent)
+  },
+  {
+    path: 'integracoes/mercadolivre/importar',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/mercadolivre-import/mercadolivre-import.component').then(m => m.MercadoLivreImportComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)

@@ -35,7 +35,7 @@ public class TenantSettingsController {
      */
     @GetMapping("/sales-order-release-days")
     public ResponseEntity<Map<String, Integer>> getAutoReleaseDays() {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         int days = tenantSettingsService.getAutoReleaseDays(tenantId);
 
         return ResponseEntity.ok(Map.of("days", days));
@@ -50,7 +50,7 @@ public class TenantSettingsController {
     @PutMapping("/sales-order-release-days")
     public ResponseEntity<Map<String, String>> updateAutoReleaseDays(
             @RequestBody UpdateAutoReleaseDaysRequest request) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
         tenantSettingsService.updateAutoReleaseDays(tenantId, request.days());
 
@@ -66,7 +66,7 @@ public class TenantSettingsController {
      */
     @GetMapping
     public ResponseEntity<List<TenantSettingDTO>> getAllSettings() {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         List<TenantSetting> settings = tenantSettingsService.getAllSettings(tenantId);
 
         List<TenantSettingDTO> dtos = settings.stream()
@@ -89,7 +89,7 @@ public class TenantSettingsController {
      */
     @GetMapping("/{key}")
     public ResponseEntity<Map<String, String>> getSetting(@PathVariable String key) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
         return tenantSettingsService.getSetting(tenantId, key)
             .map(value -> ResponseEntity.ok(Map.of("key", key, "value", value)))
@@ -104,7 +104,7 @@ public class TenantSettingsController {
     public ResponseEntity<Map<String, String>> setSetting(
             @PathVariable String key,
             @RequestBody Map<String, String> body) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         String value = body.get("value");
 
         if (value == null) {
@@ -126,7 +126,7 @@ public class TenantSettingsController {
      */
     @DeleteMapping("/{key}")
     public ResponseEntity<Map<String, String>> deleteSetting(@PathVariable String key) {
-        UUID tenantId = TenantContext.getTenantId();
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
         tenantSettingsService.deleteSetting(tenantId, key);
 

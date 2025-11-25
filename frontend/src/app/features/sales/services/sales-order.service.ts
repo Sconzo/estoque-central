@@ -196,3 +196,47 @@ export enum PaymentTerms {
   DIAS_60 = 'DIAS_60',
   DIAS_90 = 'DIAS_90'
 }
+
+// Story 4.6: Expiring Sales Orders
+export interface ExpiringSalesOrder {
+  id: string;
+  orderNumber: string;
+  customerId: string;
+  customerName: string;
+  stockLocationId: string;
+  locationName: string;
+  orderDate: string;
+  deliveryDateExpected: string | null;
+  totalAmount: number;
+  status: SalesOrderStatus;
+  daysUntilExpiration: number;
+  createdAt: string;
+}
+
+/**
+ * Get sales orders expiring soon (Story 4.6 - AC9)
+ * @param days Days until expiration threshold (default: 2)
+ */
+export function getExpiringSoon(http: HttpClient, days: number = 2): Observable<ExpiringSalesOrder[]> {
+  const apiUrl = `${environment.apiUrl}/sales-orders`;
+  return http.get<ExpiringSalesOrder[]>(`${apiUrl}/expiring-soon`, {
+    params: { days: days.toString() }
+  });
+}
+
+/**
+ * Extend sales order expiration by N days (Story 4.6 - AC10)
+ * @param http HttpClient instance
+ * @param orderId Order ID
+ * @param days Days to extend (default: 7)
+ */
+export function extendOrderExpiration(
+  http: HttpClient,
+  orderId: string,
+  days: number = 7
+): Observable<{ message: string }> {
+  const apiUrl = `${environment.apiUrl}/sales-orders`;
+  return http.put<{ message: string }>(`${apiUrl}/${orderId}/extend`, null, {
+    params: { days: days.toString() }
+  });
+}

@@ -6,6 +6,7 @@ import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.catalog.domain.variant.ProductVariant;
 import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.application.StockAvailabilityService;
+import com.estoquecentral.inventory.application.StockReservationService;
 import com.estoquecentral.inventory.domain.Location;
 import com.estoquecentral.sales.adapter.out.CustomerRepository;
 import com.estoquecentral.sales.adapter.out.SalesOrderItemRepository;
@@ -44,6 +45,7 @@ public class SalesOrderService {
     private final ProductVariantRepository variantRepository;
     private final SalesOrderNumberGenerator numberGenerator;
     private final StockAvailabilityService stockAvailabilityService;
+    private final StockReservationService stockReservationService;
 
     public SalesOrderService(
             SalesOrderRepository salesOrderRepository,
@@ -53,7 +55,8 @@ public class SalesOrderService {
             ProductRepository productRepository,
             ProductVariantRepository variantRepository,
             SalesOrderNumberGenerator numberGenerator,
-            StockAvailabilityService stockAvailabilityService) {
+            StockAvailabilityService stockAvailabilityService,
+            StockReservationService stockReservationService) {
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderItemRepository = salesOrderItemRepository;
         this.customerRepository = customerRepository;
@@ -62,6 +65,7 @@ public class SalesOrderService {
         this.variantRepository = variantRepository;
         this.numberGenerator = numberGenerator;
         this.stockAvailabilityService = stockAvailabilityService;
+        this.stockReservationService = stockReservationService;
     }
 
     /**
@@ -253,7 +257,7 @@ public class SalesOrderService {
             throw new IllegalStateException("Cannot confirm order in status: " + order.getStatus());
         }
 
-        // Validate stock availability for all items
+        // Validate stock availability and reserve stock for all items
         List<SalesOrderItem> items = salesOrderItemRepository.findBySalesOrderId(orderId);
 
         for (SalesOrderItem item : items) {
@@ -277,8 +281,27 @@ public class SalesOrderService {
         // Update status to CONFIRMED
         order.confirm();
         order.setUpdatedBy(userId);
+        salesOrderRepository.save(order);
 
-        return salesOrderRepository.save(order);
+        // Reserve stock for each item (Story 4.6 - AC2)
+        for (SalesOrderItem item : items) {
+            stockReservationService.reserve(
+                tenantId,
+                item.getProductId(),
+                item.getVariantId(),
+                order.getStockLocationId(),
+                item.getQuantityOrdered(),
+                order.getId(),
+                order.getOrderNumber(),
+                userId
+            );
+
+            // Update quantity_reserved in order item
+            item.setQuantityReserved(item.getQuantityOrdered());
+            salesOrderItemRepository.save(item);
+        }
+
+        return order;
     }
 
     /**
@@ -299,11 +322,32 @@ public class SalesOrderService {
             throw new IllegalStateException("Cannot cancel order in status: " + order.getStatus());
         }
 
+        // If order was CONFIRMED, release stock reservations (Story 4.6 - AC3)
+        if (order.getStatus() == SalesOrderStatus.CONFIRMED) {
+            List<SalesOrderItem> items = salesOrderItemRepository.findBySalesOrderId(orderId);
+
+            for (SalesOrderItem item : items) {
+                if (item.getQuantityReserved() != null && item.getQuantityReserved().compareTo(BigDecimal.ZERO) > 0) {
+                    stockReservationService.release(
+                        tenantId,
+                        item.getProductId(),
+                        item.getVariantId(),
+                        order.getStockLocationId(),
+                        item.getQuantityReserved(),
+                        order.getId(),
+                        "Cancelamento manual OV " + order.getOrderNumber(),
+                        userId
+                    );
+
+                    // Reset quantity_reserved in order item
+                    item.setQuantityReserved(BigDecimal.ZERO);
+                    salesOrderItemRepository.save(item);
+                }
+            }
+        }
+
         order.cancel();
         order.setUpdatedBy(userId);
-
-        // Note: If order was CONFIRMED and stock was reserved (Story 4.6),
-        // we would unreserve stock here
 
         return salesOrderRepository.save(order);
     }
