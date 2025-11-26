@@ -177,4 +177,55 @@ public class MercadoLivreApiClient {
             .map(MarketplaceConnection::isActive)
             .orElse(false);
     }
+
+    /**
+     * Upload image to Mercado Livre
+     * AC4: Upload de Imagens - Story 5.3
+     * POST /pictures with image URL in body
+     *
+     * @param imageUrl URL of the image to upload
+     * @param tenantId Tenant ID for auth
+     * @return Picture ID from ML
+     */
+    public String uploadPicture(String imageUrl, UUID tenantId) {
+        try {
+            // ML accepts image URL in request body for upload
+            // POST https://api.mercadolibre.com/pictures
+            // Body: { "source": "http://example.com/image.jpg" }
+
+            MarketplaceConnection connection = getConnection(tenantId);
+            String url = ML_API_BASE + "/pictures";
+            String decryptedAccessToken = encryptedStringConverter.decrypt(connection.getAccessToken());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(decryptedAccessToken);
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+            // Create request body with image URL
+            java.util.Map<String, String> body = new java.util.HashMap<>();
+            body.put("source", imageUrl);
+
+            HttpEntity<java.util.Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+            log.debug("Uploading picture to ML: {}", imageUrl);
+
+            ResponseEntity<com.estoquecentral.marketplace.application.dto.ml.MLUploadPictureResponse> response =
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    com.estoquecentral.marketplace.application.dto.ml.MLUploadPictureResponse.class
+                );
+
+            if (response.getBody() != null && response.getBody().getId() != null) {
+                return response.getBody().getId();
+            }
+
+            throw new RuntimeException("Failed to upload picture: no ID returned");
+
+        } catch (Exception e) {
+            log.error("Error uploading picture to ML: {}", imageUrl, e);
+            return null; // Return null to allow publish without images
+        }
+    }
 }

@@ -5,6 +5,9 @@ import com.estoquecentral.inventory.adapter.out.StockMovementRepository;
 import com.estoquecentral.inventory.domain.Inventory;
 import com.estoquecentral.inventory.domain.MovementType;
 import com.estoquecentral.inventory.domain.StockMovement;
+import com.estoquecentral.marketplace.application.MarketplaceStockSyncService;
+import com.estoquecentral.marketplace.adapter.out.MarketplaceListingRepository;
+import com.estoquecentral.marketplace.domain.Marketplace;
 import com.estoquecentral.sales.adapter.out.FiscalEventRepository;
 import com.estoquecentral.sales.adapter.out.SaleItemRepository;
 import com.estoquecentral.sales.adapter.out.SaleRepository;
@@ -48,6 +51,8 @@ public class SaleService {
     private final NfceService nfceService;
     private final RetryQueueService retryQueueService;
     private final NotificationService notificationService;
+    private final MarketplaceStockSyncService marketplaceStockSyncService;
+    private final MarketplaceListingRepository marketplaceListingRepository;
 
     public SaleService(
             SaleRepository saleRepository,
@@ -58,7 +63,9 @@ public class SaleService {
             SaleNumberGenerator saleNumberGenerator,
             NfceService nfceService,
             RetryQueueService retryQueueService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            MarketplaceStockSyncService marketplaceStockSyncService,
+            MarketplaceListingRepository marketplaceListingRepository) {
         this.saleRepository = saleRepository;
         this.saleItemRepository = saleItemRepository;
         this.inventoryRepository = inventoryRepository;
@@ -68,6 +75,8 @@ public class SaleService {
         this.nfceService = nfceService;
         this.retryQueueService = retryQueueService;
         this.notificationService = notificationService;
+        this.marketplaceStockSyncService = marketplaceStockSyncService;
+        this.marketplaceListingRepository = marketplaceListingRepository;
     }
 
     /**
@@ -103,6 +112,13 @@ public class SaleService {
                     itemRequest.quantity(),
                     sale.getId(),
                     request.userId()
+            );
+
+            // Story 5.4: Enqueue stock sync to marketplaces after sale
+            enqueueMarketplaceStockSync(
+                    request.tenantId(),
+                    itemRequest.productId(),
+                    itemRequest.variantId()
             );
         }
 
@@ -511,6 +527,34 @@ public class SaleService {
         );
         stockMovementRepository.save(movement);
     }
+
+    /**
+     * Enqueue stock sync to marketplaces after sale
+     * Story 5.4: Integration with marketplace stock sync
+     */
+    private void enqueueMarketplaceStockSync(UUID tenantId, UUID productId, UUID variantId) {
+        try {
+            // Check if product has marketplace listings
+            var listings = marketplaceListingRepository.findByProductId(productId);
+
+            if (!listings.isEmpty()) {
+                // Enqueue sync for each marketplace
+                for (var listing : listings) {
+                    marketplaceStockSyncService.enqueueStockSync(
+                            tenantId,
+                            productId,
+                            variantId,
+                            listing.getMarketplace()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            // Log error but don't fail sale if sync enqueue fails
+            // Sync can be triggered manually later if needed
+            System.err.println("Error enqueuing marketplace stock sync: " + e.getMessage());
+        }
+    }
+
     // ==================== Inner Classes ====================
 
     /**

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
+import { MercadoLivreService } from '../../../integrations/services/mercadolivre.service';
 import {
   ProductDTO,
   ProductSearchFilters,
@@ -62,7 +63,8 @@ export class ProductListComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
-    private router: Router
+    private router: Router,
+    private mlService: MercadoLivreService
   ) {
     // Setup search debounce
     this.searchSubject
@@ -200,6 +202,28 @@ export class ProductListComponent implements OnInit {
         alert('Erro ao deletar produto: ' + (err.error?.message || err.message || 'Erro desconhecido'));
         this.loading = false;
         console.error('Error deleting product:', err);
+      }
+    });
+  }
+
+  /**
+   * Sync stock to marketplaces manually
+   * Story 5.4: Manual stock synchronization
+   */
+  syncStockToMarketplace(product: ProductDTO): void {
+    const confirmMessage = `Sincronizar estoque do produto "${product.name}" com os marketplaces agora?\n\nSKU: ${product.sku}\n\nEsta ação enviará o estoque atual para todos os marketplaces onde este produto está publicado.`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    this.mlService.syncStock(product.id).subscribe({
+      next: (response) => {
+        alert(`Sincronização enfileirada com sucesso!\n\n${response.message}`);
+      },
+      error: (err) => {
+        alert('Erro ao sincronizar estoque: ' + (err.error?.error || err.message || 'Erro desconhecido'));
+        console.error('Error syncing stock:', err);
       }
     });
   }

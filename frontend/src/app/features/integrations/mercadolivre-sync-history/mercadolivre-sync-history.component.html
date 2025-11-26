@@ -1,0 +1,100 @@
+<div class="sync-history-container">
+  <div class="header">
+    <h2>Histórico de Sincronização - Mercado Livre</h2>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <label for="statusFilter">Filtrar por Status:</label>
+    <select
+      id="statusFilter"
+      [(ngModel)]="selectedStatus"
+      (change)="onStatusFilterChange()"
+      class="filter-select"
+    >
+      <option value="">Todos</option>
+      <option *ngFor="let status of statuses.slice(1)" [value]="status">
+        {{ status }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Carregando histórico...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="loadSyncLogs()" class="btn-retry">Tentar Novamente</button>
+  </div>
+
+  <!-- Sync Logs Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="sync-logs-table">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Produto ID</th>
+          <th>Marketplace</th>
+          <th>Tipo</th>
+          <th>Valor Anterior</th>
+          <th>Valor Novo</th>
+          <th>Status</th>
+          <th>Tentativas</th>
+          <th>Erro</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td>{{ formatDate(log.createdAt) }}</td>
+          <td class="mono">{{ log.productId.substring(0, 8) }}...</td>
+          <td>{{ log.marketplace }}</td>
+          <td>{{ log.syncType }}</td>
+          <td class="numeric">{{ formatValue(log.oldValue) }}</td>
+          <td class="numeric">{{ formatValue(log.newValue) }}</td>
+          <td>
+            <span [class]="'badge ' + getStatusBadgeClass(log.status)">
+              {{ log.status }}
+            </span>
+          </td>
+          <td class="numeric">{{ log.retryCount }}</td>
+          <td class="error-cell">
+            <span *ngIf="log.errorMessage" [title]="log.errorMessage">
+              {{ log.errorMessage.substring(0, 50) }}{{ log.errorMessage.length > 50 ? '...' : '' }}
+            </span>
+            <span *ngIf="!log.errorMessage">-</span>
+          </td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="9" class="no-data">Nenhum registro de sincronização encontrado</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination">
+      <button
+        (click)="previousPage()"
+        [disabled]="currentPage === 0"
+        class="btn-page"
+      >
+        Anterior
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage + 1 }} de {{ totalPages }}
+        ({{ totalElements }} registros)
+      </span>
+
+      <button
+        (click)="nextPage()"
+        [disabled]="currentPage >= totalPages - 1"
+        class="btn-page"
+      >
+        Próxima
+      </button>
+    </div>
+  </div>
+</div>

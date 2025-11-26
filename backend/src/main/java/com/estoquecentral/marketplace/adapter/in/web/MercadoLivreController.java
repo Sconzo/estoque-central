@@ -1,21 +1,26 @@
 package com.estoquecentral.marketplace.adapter.in.web;
 
 import com.estoquecentral.marketplace.adapter.out.MarketplaceConnectionRepository;
+import com.estoquecentral.marketplace.adapter.out.MarketplaceSyncLogRepository;
 import com.estoquecentral.marketplace.application.MercadoLivreOAuthService;
 import com.estoquecentral.marketplace.application.MercadoLivreProductImportService;
-import com.estoquecentral.marketplace.application.dto.ImportListingsRequest;
-import com.estoquecentral.marketplace.application.dto.ImportListingsResponse;
-import com.estoquecentral.marketplace.application.dto.ListingPreviewResponse;
+import com.estoquecentral.marketplace.application.MercadoLivrePublishService;
+import com.estoquecentral.marketplace.application.dto.*;
 import com.estoquecentral.marketplace.domain.Marketplace;
 import com.estoquecentral.marketplace.domain.MarketplaceConnection;
+import com.estoquecentral.marketplace.domain.MarketplaceSyncLog;
 import com.estoquecentral.shared.tenant.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,15 +38,24 @@ public class MercadoLivreController {
     private final MercadoLivreOAuthService oauthService;
     private final MarketplaceConnectionRepository connectionRepository;
     private final MercadoLivreProductImportService importService;
+    private final MercadoLivrePublishService publishService;
+    private final com.estoquecentral.marketplace.application.MarketplaceStockSyncService stockSyncService;
+    private final MarketplaceSyncLogRepository syncLogRepository;
 
     public MercadoLivreController(
         MercadoLivreOAuthService oauthService,
         MarketplaceConnectionRepository connectionRepository,
-        MercadoLivreProductImportService importService
+        MercadoLivreProductImportService importService,
+        MercadoLivrePublishService publishService,
+        com.estoquecentral.marketplace.application.MarketplaceStockSyncService stockSyncService,
+        MarketplaceSyncLogRepository syncLogRepository
     ) {
         this.oauthService = oauthService;
         this.connectionRepository = connectionRepository;
         this.importService = importService;
+        this.publishService = publishService;
+        this.stockSyncService = stockSyncService;
+        this.syncLogRepository = syncLogRepository;
     }
 
     /**
@@ -183,6 +197,106 @@ public class MercadoLivreController {
             log.error("Error importing listings for tenant: {}", tenantId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ImportListingsResponse());
+        }
+    }
+
+    /**
+     * AC2: Get category suggestion for a product
+     * GET /api/integrations/mercadolivre/category-suggestion?title={title}
+     * Story 5.3: Publish Products to Mercado Livre
+     */
+    @GetMapping("/category-suggestion")
+    public ResponseEntity<CategorySuggestionResponse> getCategorySuggestion(
+        @RequestParam("title") String productTitle
+    ) {
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+        log.info("Getting category suggestion for: {}", productTitle);
+
+        try {
+            CategorySuggestionResponse suggestion = publishService.suggestCategory(tenantId, productTitle);
+            return ResponseEntity.ok(suggestion);
+        } catch (Exception e) {
+            log.error("Error getting category suggestion", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * AC1: Publish products to Mercado Livre
+     * POST /api/integrations/mercadolivre/publish
+     * Story 5.3: Publish Products to Mercado Livre
+     */
+    @PostMapping("/publish")
+    public ResponseEntity<PublishProductResponse> publishProducts(
+        @RequestBody PublishProductRequest request
+    ) {
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+        log.info("Publishing {} products to Mercado Livre", request.getProductIds().size());
+
+        try {
+            PublishProductResponse response = publishService.publishProducts(tenantId, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error publishing products", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new PublishProductResponse(0, new ArrayList<>()));
+        }
+    }
+
+    /**
+     * AC3: Manual stock sync for a product
+     * POST /api/integrations/mercadolivre/sync-stock/{productId}
+     * Story 5.4: Stock Synchronization to Mercado Livre
+     */
+    @PostMapping("/sync-stock/{productId}")
+    public ResponseEntity<Map<String, String>> syncStock(@PathVariable UUID productId) {
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+        log.info("Manual stock sync requested for product: {}", productId);
+
+        try {
+            stockSyncService.syncStockManually(tenantId, productId);
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Stock sync queued successfully",
+                "productId", productId.toString()
+            ));
+
+        } catch (Exception e) {
+            log.error("Error queueing stock sync for product: {}", productId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * AC6: Get sync logs history with pagination and filtering
+     * GET /api/integrations/mercadolivre/sync-logs?page=0&size=20&status=SUCCESS
+     * Story 5.4: Stock Synchronization to Mercado Livre
+     */
+    @GetMapping("/sync-logs")
+    public ResponseEntity<Page<MarketplaceSyncLog>> getSyncLogs(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String status
+    ) {
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+        log.debug("Fetching sync logs for tenant: {} (page={}, size={}, status={})", tenantId, page, size, status);
+
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<MarketplaceSyncLog> logs;
+
+            if (status != null && !status.isEmpty()) {
+                logs = syncLogRepository.findByTenantIdAndStatus(tenantId, status, pageable);
+            } else {
+                logs = syncLogRepository.findByTenantId(tenantId, pageable);
+            }
+
+            return ResponseEntity.ok(logs);
+
+        } catch (Exception e) {
+            log.error("Error fetching sync logs for tenant: {}", tenantId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

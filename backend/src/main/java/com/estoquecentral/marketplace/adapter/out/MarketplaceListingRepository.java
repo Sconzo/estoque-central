@@ -77,4 +77,18 @@ public interface MarketplaceListingRepository extends CrudRepository<Marketplace
         @Param("tenantId") UUID tenantId,
         @Param("marketplace") String marketplace
     );
+
+    /**
+     * Check if product is already published to marketplace
+     * Story 5.3: Publish Products to Mercado Livre
+     */
+    @Query("SELECT COUNT(*) > 0 FROM marketplace_listings " +
+           "WHERE tenant_id = :tenantId " +
+           "AND product_id = :productId " +
+           "AND marketplace = CAST(:marketplace AS VARCHAR)")
+    boolean existsByTenantIdAndProductIdAndMarketplace(
+        @Param("tenantId") UUID tenantId,
+        @Param("productId") UUID productId,
+        @Param("marketplace") String marketplace
+    );
 }

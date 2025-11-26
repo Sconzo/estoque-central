@@ -153,6 +153,14 @@
               <span class="icon">✎</span>
             </button>
             <button
+              class="btn-icon btn-sync"
+              (click)="syncStockToMarketplace(product); $event.stopPropagation()"
+              title="Sincronizar Estoque com Marketplaces"
+              *ngIf="product.controlsInventory"
+            >
+              <span class="icon">🔄</span>
+            </button>
+            <button
               class="btn-icon btn-delete"
               (click)="deleteProduct(product, $event)"
               title="Excluir Produto"

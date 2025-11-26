@@ -229,6 +229,14 @@
     }
   }
 
+  &.btn-sync {
+    color: #10b981;
+
+    &:hover {
+      background: #d1fae5;
+    }
+  }
+
   &.btn-delete {
     color: #dc2626;
 

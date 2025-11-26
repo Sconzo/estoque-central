@@ -81,6 +81,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/integrations/mercadolivre-import/mercadolivre-import.component').then(m => m.MercadoLivreImportComponent)
   },
   {
+    path: 'integracoes/mercadolivre/publicar',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/mercadolivre-publish/mercadolivre-publish-wizard.component').then(m => m.MercadoLivrePublishWizardComponent)
+  },
+  {
+    path: 'integracoes/mercadolivre/historico',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/mercadolivre-sync-history/mercadolivre-sync-history.component').then(m => m.MercadoLivreSyncHistoryComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)

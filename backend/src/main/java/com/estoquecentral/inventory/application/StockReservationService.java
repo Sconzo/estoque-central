@@ -5,6 +5,8 @@ import com.estoquecentral.inventory.adapter.out.StockMovementRepository;
 import com.estoquecentral.inventory.domain.Inventory;
 import com.estoquecentral.inventory.domain.MovementType;
 import com.estoquecentral.inventory.domain.StockMovement;
+import com.estoquecentral.marketplace.application.MarketplaceStockSyncService;
+import com.estoquecentral.marketplace.adapter.out.MarketplaceListingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +38,18 @@ public class StockReservationService {
 
     private final InventoryRepository inventoryRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final MarketplaceStockSyncService marketplaceStockSyncService;
+    private final MarketplaceListingRepository marketplaceListingRepository;
 
     public StockReservationService(
             InventoryRepository inventoryRepository,
-            StockMovementRepository stockMovementRepository) {
+            StockMovementRepository stockMovementRepository,
+            MarketplaceStockSyncService marketplaceStockSyncService,
+            MarketplaceListingRepository marketplaceListingRepository) {
         this.inventoryRepository = inventoryRepository;
         this.stockMovementRepository = stockMovementRepository;
+        this.marketplaceStockSyncService = marketplaceStockSyncService;
+        this.marketplaceListingRepository = marketplaceListingRepository;
     }
 
     /**
@@ -208,6 +216,9 @@ public class StockReservationService {
             "Venda OV " + orderNumber
         );
         stockMovementRepository.save(movement);
+
+        // Story 5.4: Enqueue stock sync to marketplaces after fulfillment
+        enqueueMarketplaceStockSync(tenantId, productId, variantId);
     }
 
     /**
@@ -224,6 +235,33 @@ public class StockReservationService {
                     "Inventory not found for variant " + variantId + " at location " + locationId));
         } else {
             throw new IllegalArgumentException("Either productId or variantId must be provided");
+        }
+    }
+
+    /**
+     * Enqueue stock sync to marketplaces after sale/fulfillment
+     * Story 5.4: Integration with marketplace stock sync
+     */
+    private void enqueueMarketplaceStockSync(UUID tenantId, UUID productId, UUID variantId) {
+        try {
+            // Check if product has marketplace listings
+            var listings = marketplaceListingRepository.findByProductId(productId);
+
+            if (!listings.isEmpty()) {
+                // Enqueue sync for each marketplace
+                for (var listing : listings) {
+                    marketplaceStockSyncService.enqueueStockSync(
+                            tenantId,
+                            productId,
+                            variantId,
+                            listing.getMarketplace()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            // Log error but don't fail fulfillment if sync enqueue fails
+            // Sync can be triggered manually later if needed
+            System.err.println("Error enqueuing marketplace stock sync: " + e.getMessage());
         }
     }
 }
