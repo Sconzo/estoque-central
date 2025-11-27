@@ -54,6 +54,16 @@ public interface MarketplaceConnectionRepository extends CrudRepository<Marketpl
     List<MarketplaceConnection> findAllConnected();
 
     /**
+     * Find connections by marketplace and status
+     * Story 5.5: Order polling job
+     */
+    @Query("SELECT * FROM marketplace_connections WHERE marketplace = CAST(:marketplace AS VARCHAR) AND status = CAST(:status AS VARCHAR)")
+    List<MarketplaceConnection> findByMarketplaceAndStatus(
+        @Param("marketplace") String marketplace,
+        @Param("status") String status
+    );
+
+    /**
      * Check if connection exists for tenant and marketplace
      */
     @Query("SELECT COUNT(*) > 0 FROM marketplace_connections WHERE tenant_id = :tenantId AND marketplace = CAST(:marketplace AS VARCHAR)")

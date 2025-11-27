@@ -91,6 +91,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/integrations/mercadolivre-sync-history/mercadolivre-sync-history.component').then(m => m.MercadoLivreSyncHistoryComponent)
   },
   {
+    path: 'integracoes/mercadolivre/pedidos',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/mercadolivre-orders/mercadolivre-orders.component').then(m => m.MercadoLivreOrdersComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)

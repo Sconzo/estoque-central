@@ -131,6 +131,10 @@ import { ActivatedRoute, Router } from '@angular/router';
               <mat-icon>cloud_download</mat-icon>
               Importar Produtos
             </button>
+            <button mat-raised-button color="accent" (click)="navigateToOrders()">
+              <mat-icon>shopping_cart</mat-icon>
+              Ver Pedidos
+            </button>
             <button mat-raised-button color="warn" (click)="disconnect()">
               <mat-icon>link_off</mat-icon>
               Desconectar
@@ -418,6 +422,14 @@ export class MercadoLivreIntegrationComponent implements OnInit {
    */
   navigateToImport(): void {
     this.router.navigate(['/integracoes/mercadolivre/importar']);
+  }
+
+  /**
+   * Navigate to orders page
+   * Story 5.5: AC6
+   */
+  navigateToOrders(): void {
+    this.router.navigate(['/integracoes/mercadolivre/pedidos']);
   }
 
   /**

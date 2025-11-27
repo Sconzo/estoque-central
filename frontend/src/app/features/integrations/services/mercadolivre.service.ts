@@ -79,6 +79,22 @@ export interface SyncLogsResponse {
   currentPage: number;
 }
 
+export interface OrderPreview {
+  id: string;
+  orderIdMarketplace: string;
+  marketplace: string;
+  customerName: string;
+  customerEmail?: string;
+  totalAmount: number;
+  status: string;
+  paymentStatus?: string;
+  shippingStatus?: string;
+  importedAt: string;
+  saleId?: string;
+  salesOrderId?: string;
+  hasInternalRecord: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -173,5 +189,13 @@ export class MercadoLivreService {
       params.status = status;
     }
     return this.http.get<SyncLogsResponse>(`${this.apiUrl}/sync-logs`, { params });
+  }
+
+  /**
+   * Get imported orders from Mercado Livre
+   * Story 5.5: Import and Process Orders from Mercado Livre - AC6
+   */
+  getOrders(): Observable<OrderPreview[]> {
+    return this.http.get<OrderPreview[]>(`${this.apiUrl}/orders`);
   }
 }

@@ -4,6 +4,7 @@ import com.estoquecentral.marketplace.adapter.out.MarketplaceConnectionRepositor
 import com.estoquecentral.marketplace.adapter.out.MarketplaceSyncLogRepository;
 import com.estoquecentral.marketplace.application.MercadoLivreOAuthService;
 import com.estoquecentral.marketplace.application.MercadoLivreProductImportService;
+import com.estoquecentral.marketplace.application.MercadoLivreOrderImportService;
 import com.estoquecentral.marketplace.application.MercadoLivrePublishService;
 import com.estoquecentral.marketplace.application.dto.*;
 import com.estoquecentral.marketplace.domain.Marketplace;
@@ -38,6 +39,7 @@ public class MercadoLivreController {
     private final MercadoLivreOAuthService oauthService;
     private final MarketplaceConnectionRepository connectionRepository;
     private final MercadoLivreProductImportService importService;
+    private final MercadoLivreOrderImportService orderImportService;
     private final MercadoLivrePublishService publishService;
     private final com.estoquecentral.marketplace.application.MarketplaceStockSyncService stockSyncService;
     private final MarketplaceSyncLogRepository syncLogRepository;
@@ -46,6 +48,7 @@ public class MercadoLivreController {
         MercadoLivreOAuthService oauthService,
         MarketplaceConnectionRepository connectionRepository,
         MercadoLivreProductImportService importService,
+        MercadoLivreOrderImportService orderImportService,
         MercadoLivrePublishService publishService,
         com.estoquecentral.marketplace.application.MarketplaceStockSyncService stockSyncService,
         MarketplaceSyncLogRepository syncLogRepository
@@ -53,6 +56,7 @@ public class MercadoLivreController {
         this.oauthService = oauthService;
         this.connectionRepository = connectionRepository;
         this.importService = importService;
+        this.orderImportService = orderImportService;
         this.publishService = publishService;
         this.stockSyncService = stockSyncService;
         this.syncLogRepository = syncLogRepository;
@@ -296,6 +300,26 @@ public class MercadoLivreController {
 
         } catch (Exception e) {
             log.error("Error fetching sync logs for tenant: {}", tenantId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * AC6: Get imported orders from Mercado Livre
+     * GET /api/integrations/mercadolivre/orders
+     * Story 5.5: Import and Process Orders from Mercado Livre
+     */
+    @GetMapping("/orders")
+    public ResponseEntity<List<com.estoquecentral.marketplace.application.dto.OrderPreviewResponse>> getOrders() {
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+        log.info("Fetching orders for tenant: {}", tenantId);
+
+        try {
+            List<com.estoquecentral.marketplace.application.dto.OrderPreviewResponse> orders =
+                orderImportService.getOrdersPreview(tenantId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            log.error("Error fetching orders for tenant: {}", tenantId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
