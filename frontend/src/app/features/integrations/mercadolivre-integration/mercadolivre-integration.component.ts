@@ -135,6 +135,10 @@ import { ActivatedRoute, Router } from '@angular/router';
               <mat-icon>shopping_cart</mat-icon>
               Ver Pedidos
             </button>
+            <button mat-raised-button (click)="navigateToSafetyMargin()">
+              <mat-icon>security</mat-icon>
+              Margem de Segurança
+            </button>
             <button mat-raised-button color="warn" (click)="disconnect()">
               <mat-icon>link_off</mat-icon>
               Desconectar
@@ -430,6 +434,14 @@ export class MercadoLivreIntegrationComponent implements OnInit {
    */
   navigateToOrders(): void {
     this.router.navigate(['/integracoes/mercadolivre/pedidos']);
+  }
+
+  /**
+   * Navigate to safety margin config page
+   * Story 5.7: AC7
+   */
+  navigateToSafetyMargin(): void {
+    this.router.navigate(['/integracoes/mercadolivre/margem-seguranca']);
   }
 
   /**

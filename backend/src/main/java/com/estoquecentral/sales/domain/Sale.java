@@ -30,6 +30,9 @@ public class Sale {
     private BigDecimal totalAmount;
     private BigDecimal discount;
 
+    // Status
+    private SaleStatus status;
+
     // NFCe
     private NfceStatus nfceStatus;
     private String nfceKey;
@@ -44,6 +47,7 @@ public class Sale {
 
     // Constructors
     public Sale() {
+        this.status = SaleStatus.ACTIVE;
         this.nfceStatus = NfceStatus.PENDING;
         this.discount = BigDecimal.ZERO;
         this.saleDate = LocalDateTime.now();
@@ -196,7 +200,28 @@ public class Sale {
         this.dataAtualizacao = dataAtualizacao;
     }
 
+    public SaleStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SaleStatus status) {
+        this.status = status;
+    }
+
     // Business methods
+    public boolean isActive() {
+        return this.status == SaleStatus.ACTIVE;
+    }
+
+    public boolean isCancelled() {
+        return this.status == SaleStatus.CANCELLED;
+    }
+
+    public void cancel() {
+        this.status = SaleStatus.CANCELLED;
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
     public void calculateChangeAmount() {
         if (this.paymentAmountReceived != null && this.totalAmount != null) {
             this.changeAmount = this.paymentAmountReceived.subtract(this.totalAmount);

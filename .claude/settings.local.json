@@ -17,7 +17,9 @@
       "Bash(docker-compose down:*)",
       "Bash(curl:*)",
       "Bash(mvn flyway:migrate:*)",
-      "Bash(./mvnw compile:*)"
+      "Bash(./mvnw compile:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(./mvnw clean compile:*)"
     ],
     "deny": [],
     "ask": []

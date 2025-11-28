@@ -98,4 +98,34 @@ public class NotificationService {
             // Useful for monitoring system health and identifying issues
         }
     }
+
+    /**
+     * Notify about order cancellation
+     * Story 5.6: Process Mercado Livre Cancellations - AC5
+     *
+     * @param tenantId tenant ID
+     * @param orderId marketplace order ID
+     * @param internalRecordType type of internal record (SALE or SALES_ORDER)
+     * @param internalRecordNumber internal record number (sale number or order number)
+     * @param message cancellation message
+     */
+    public void notifyCancellation(
+            java.util.UUID tenantId,
+            String orderId,
+            String internalRecordType,
+            String internalRecordNumber,
+            String message) {
+
+        logger.info("MARKETPLACE ORDER CANCELLED - Tenant: {}, Order: {}, Type: {}, Record: {}, Message: {}",
+                tenantId, orderId, internalRecordType, internalRecordNumber, message);
+
+        // TODO: Integrate with email service
+        // Example notification message:
+        // "Pedido ML {orderId} cancelado. {message}"
+        // "Registro interno {internalRecordType} {internalRecordNumber} foi cancelado automaticamente."
+        // "Estoque atualizado conforme cancelamento."
+
+        // TODO: Could also send push notification or Slack message
+        // For now, just log for monitoring
+    }
 }

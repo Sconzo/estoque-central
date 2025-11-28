@@ -1,0 +1,108 @@
+<div class="safety-margin-container">
+  <div class="header">
+    <h2>Configuração de Margens de Segurança</h2>
+    <button (click)="openCreateModal()" class="btn-primary">
+      ➕ Nova Regra
+    </button>
+  </div>
+
+  <div class="info-box">
+    <p>
+      💡 <strong>Margem de segurança</strong> permite anunciar menos estoque do que o disponível para evitar overselling.
+      Exemplo: com margem de 90%, um produto com 100 unidades será anunciado com 90 unidades no marketplace.
+    </p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <label for="marketplaceFilter">Filtrar por Marketplace:</label>
+    <select
+      id="marketplaceFilter"
+      [(ngModel)]="selectedMarketplace"
+      (change)="onMarketplaceFilterChange()"
+      class="filter-select"
+    >
+      <option value="">Todos</option>
+      <option *ngFor="let marketplace of marketplaces.slice(1)" [value]="marketplace">
+        {{ marketplace }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <p>✅ {{ successMessage }}</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Carregando regras...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="loadRules()" class="btn-retry">Tentar Novamente</button>
+  </div>
+
+  <!-- Rules Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="rules-table">
+      <thead>
+        <tr>
+          <th>Nível</th>
+          <th>Marketplace</th>
+          <th>Nome/Escopo</th>
+          <th>Margem %</th>
+          <th>Criada em</th>
+          <th>Atualizada em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rule of rules">
+          <td>
+            <span [class]="'badge ' + getPriorityBadgeClass(rule.priority)">
+              {{ getPriorityLabel(rule.priority) }}
+            </span>
+          </td>
+          <td>{{ rule.marketplace }}</td>
+          <td>{{ getScopeName(rule) }}</td>
+          <td>
+            <span [class]="'margin-badge ' + getMarginBadgeClass(rule.marginPercentage)">
+              {{ rule.marginPercentage }}%
+            </span>
+            <span class="margin-info" [title]="'Publica ' + rule.marginPercentage + '% do estoque disponível'">
+              ℹ️
+            </span>
+          </td>
+          <td>{{ formatDate(rule.createdAt) }}</td>
+          <td>{{ formatDate(rule.updatedAt) }}</td>
+          <td class="actions-cell">
+            <button (click)="openEditModal(rule)" class="btn-edit" title="Editar">
+              ✏️
+            </button>
+            <button (click)="deleteRule(rule)" class="btn-delete" title="Deletar">
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="rules.length === 0">
+          <td colspan="7" class="no-data">
+            Nenhuma regra de margem de segurança configurada.
+            <br>
+            <small>Clique em "Nova Regra" para criar a primeira regra.</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Component (if needed) -->
+<app-safety-margin-modal
+  *ngIf="showModal"
+  [editingRule]="editingRule"
+  (close)="closeModal()"
+  (saved)="onRuleSaved()"
+></app-safety-margin-modal>

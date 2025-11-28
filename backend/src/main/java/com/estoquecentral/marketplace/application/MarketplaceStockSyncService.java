@@ -28,6 +28,7 @@ public class MarketplaceStockSyncService {
     private final MarketplaceListingRepository listingRepository;
     private final InventoryRepository inventoryRepository;
     private final MercadoLivreApiClient apiClient;
+    private SafetyMarginService safetyMarginService;  // Lazy injection to avoid circular dependency
 
     public MarketplaceStockSyncService(
         MarketplaceSyncQueueRepository queueRepository,
@@ -41,6 +42,14 @@ public class MarketplaceStockSyncService {
         this.listingRepository = listingRepository;
         this.inventoryRepository = inventoryRepository;
         this.apiClient = apiClient;
+    }
+
+    /**
+     * Setter for SafetyMarginService (lazy injection to avoid circular dependency)
+     * Story 5.7: Integration with safety margin calculation
+     */
+    public void setSafetyMarginService(SafetyMarginService safetyMarginService) {
+        this.safetyMarginService = safetyMarginService;
     }
 
     /**
@@ -166,27 +175,40 @@ public class MarketplaceStockSyncService {
         // AC2: quantity_available - quantity_reserved
         BigDecimal availableStock = calculateAvailableStock(item.getTenantId(), item.getProductId(), item.getVariantId());
 
-        // Apply safety margin (Story 5.7 - for now, use 100% = no margin)
-        BigDecimal syncQuantity = availableStock;
+        // Story 5.7: Apply safety margin
+        int syncQuantity;
+        if (safetyMarginService != null) {
+            syncQuantity = safetyMarginService.calculateQuantityToPublish(
+                item.getTenantId(),
+                item.getMarketplace(),
+                item.getProductId(),
+                availableStock
+            );
+            log.debug("Applied safety margin: available={}, to_publish={}", availableStock, syncQuantity);
+        } else {
+            // Fallback if service not injected yet (should not happen in production)
+            syncQuantity = availableStock.intValue();
+            log.warn("SafetyMarginService not available, using 100% margin");
+        }
 
-        BigDecimal oldQuantity = listing.getQuantity() != null ? BigDecimal.valueOf(listing.getQuantity()) : BigDecimal.ZERO;
+        int oldQuantity = listing.getQuantity() != null ? listing.getQuantity() : 0;
 
         // Only sync if quantity changed
-        if (syncQuantity.compareTo(oldQuantity) == 0) {
+        if (syncQuantity == oldQuantity) {
             log.debug("Stock unchanged for product {}, skipping sync", item.getProductId());
-            createSyncLog(item, SyncStatus.SUCCESS, oldQuantity, syncQuantity, "Stock unchanged, skipped");
+            createSyncLog(item, SyncStatus.SUCCESS, BigDecimal.valueOf(oldQuantity), BigDecimal.valueOf(syncQuantity), "Stock unchanged, skipped");
             return;
         }
 
         // AC2.3: PUT /items/{listing_id} to update stock in ML
-        updateStockInMarketplace(item.getTenantId(), listing, syncQuantity);
+        updateStockInMarketplace(item.getTenantId(), listing, BigDecimal.valueOf(syncQuantity));
 
         // Update local listing
-        listing.setQuantity(syncQuantity.intValue());
+        listing.setQuantity(syncQuantity);
         listingRepository.save(listing);
 
         // Create success log
-        createSyncLog(item, SyncStatus.SUCCESS, oldQuantity, syncQuantity, null);
+        createSyncLog(item, SyncStatus.SUCCESS, BigDecimal.valueOf(oldQuantity), BigDecimal.valueOf(syncQuantity), null);
 
         log.info("Synced stock for product {}: {} -> {}", item.getProductId(), oldQuantity, syncQuantity);
     }

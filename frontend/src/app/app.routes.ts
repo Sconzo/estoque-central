@@ -96,6 +96,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/integrations/mercadolivre-orders/mercadolivre-orders.component').then(m => m.MercadoLivreOrdersComponent)
   },
   {
+    path: 'integracoes/mercadolivre/margem-seguranca',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./features/integrations/safety-margin-config/safety-margin-config.component').then(m => m.SafetyMarginConfigComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./app.component').then(m => m.AppComponent)

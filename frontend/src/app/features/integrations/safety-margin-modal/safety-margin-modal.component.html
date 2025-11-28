@@ -1,0 +1,146 @@
+<div class="modal-overlay" (click)="onCloseClick()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingRule ? 'Editar Regra de Margem' : 'Nova Regra de Margem' }}</h3>
+      <button class="btn-close" (click)="onCloseClick()" title="Fechar">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-message">
+        <p>⚠️ {{ error }}</p>
+      </div>
+
+      <!-- Form -->
+      <form>
+        <!-- Marketplace (disabled when editing) -->
+        <div class="form-group">
+          <label for="marketplace">Marketplace *</label>
+          <select
+            id="marketplace"
+            [(ngModel)]="marketplace"
+            name="marketplace"
+            class="form-control"
+            [disabled]="editingRule !== null"
+          >
+            <option value="MERCADO_LIVRE">Mercado Livre</option>
+          </select>
+          <small class="form-hint">
+            Marketplace onde a regra será aplicada
+          </small>
+        </div>
+
+        <!-- Priority/Level (disabled when editing) -->
+        <div class="form-group">
+          <label for="priority">Nível da Regra *</label>
+          <select
+            id="priority"
+            [(ngModel)]="priority"
+            name="priority"
+            class="form-control"
+            (change)="onPriorityChange()"
+            [disabled]="editingRule !== null"
+          >
+            <option value="PRODUCT">🎯 Produto Específico (prioridade mais alta)</option>
+            <option value="CATEGORY">📁 Categoria (prioridade média)</option>
+            <option value="GLOBAL">🌐 Global - Todos os Produtos (prioridade mais baixa)</option>
+          </select>
+          <small class="form-hint">
+            Regras mais específicas (produto) sobrescrevem regras gerais (categoria/global)
+          </small>
+        </div>
+
+        <!-- Product Selection (only if priority = PRODUCT) -->
+        <div *ngIf="priority === 'PRODUCT'" class="form-group">
+          <label for="productSearch">Buscar Produto *</label>
+          <input
+            type="text"
+            id="productSearch"
+            [(ngModel)]="productSearchTerm"
+            name="productSearch"
+            (ngModelChange)="onProductSearchChange()"
+            placeholder="Digite o nome ou SKU do produto..."
+            class="form-control"
+            [disabled]="editingRule !== null"
+          >
+
+          <label for="product" style="margin-top: 10px;">Produto *</label>
+          <select
+            id="product"
+            [(ngModel)]="selectedProductId"
+            name="product"
+            class="form-control"
+            [disabled]="editingRule !== null || loadingProducts"
+          >
+            <option [ngValue]="null">Selecione um produto...</option>
+            <option *ngFor="let product of filteredProducts" [ngValue]="product.id">
+              {{ product.name }} {{ product.sku ? '(' + product.sku + ')' : '' }}
+            </option>
+          </select>
+          <small class="form-hint" *ngIf="loadingProducts">
+            Carregando produtos...
+          </small>
+        </div>
+
+        <!-- Category Selection (only if priority = CATEGORY) -->
+        <div *ngIf="priority === 'CATEGORY'" class="form-group">
+          <label for="category">Categoria *</label>
+          <select
+            id="category"
+            [(ngModel)]="selectedCategoryId"
+            name="category"
+            class="form-control"
+            [disabled]="editingRule !== null || loadingCategories"
+          >
+            <option [ngValue]="null">Selecione uma categoria...</option>
+            <option *ngFor="let category of categories" [ngValue]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+          <small class="form-hint" *ngIf="loadingCategories">
+            Carregando categorias...
+          </small>
+        </div>
+
+        <!-- Margin Percentage -->
+        <div class="form-group">
+          <label for="marginPercentage">Margem de Segurança (%) *</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              id="marginPercentage"
+              [(ngModel)]="marginPercentage"
+              name="marginPercentage"
+              min="0"
+              max="100"
+              step="5"
+              class="form-slider"
+            >
+            <span class="slider-value">{{ marginPercentage }}%</span>
+          </div>
+          <div class="margin-label">{{ getMarginLabel() }}</div>
+          <small class="form-hint example-text">
+            {{ getExampleText() }}
+          </small>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        (click)="onCloseClick()"
+        class="btn-secondary"
+        [disabled]="saving"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="onSaveClick()"
+        class="btn-primary"
+        [disabled]="saving || loadingProducts || loadingCategories"
+      >
+        {{ saving ? 'Salvando...' : (editingRule ? 'Atualizar' : 'Criar') }}
+      </button>
+    </div>
+  </div>
+</div>

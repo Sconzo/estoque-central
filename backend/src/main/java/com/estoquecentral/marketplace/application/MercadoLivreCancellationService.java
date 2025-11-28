@@ -15,6 +15,8 @@ import com.estoquecentral.sales.domain.Sale;
 import com.estoquecentral.sales.domain.SaleItem;
 import com.estoquecentral.sales.domain.SalesOrder;
 import com.estoquecentral.sales.domain.SalesOrderItem;
+import com.estoquecentral.sales.application.NotificationService;
+import com.estoquecentral.marketplace.domain.Marketplace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,8 @@ public class MercadoLivreCancellationService {
     private final SaleItemRepository saleItemRepository;
     private final SalesOrderRepository salesOrderRepository;
     private final SalesOrderItemRepository salesOrderItemRepository;
+    private final NotificationService notificationService;
+    private final MarketplaceStockSyncService marketplaceStockSyncService;
 
     public MercadoLivreCancellationService(
         MarketplaceOrderRepository orderRepository,
@@ -49,7 +53,9 @@ public class MercadoLivreCancellationService {
         SaleRepository saleRepository,
         SaleItemRepository saleItemRepository,
         SalesOrderRepository salesOrderRepository,
-        SalesOrderItemRepository salesOrderItemRepository
+        SalesOrderItemRepository salesOrderItemRepository,
+        NotificationService notificationService,
+        MarketplaceStockSyncService marketplaceStockSyncService
     ) {
         this.orderRepository = orderRepository;
         this.stockAdjustmentService = stockAdjustmentService;
@@ -58,6 +64,8 @@ public class MercadoLivreCancellationService {
         this.saleItemRepository = saleItemRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderItemRepository = salesOrderItemRepository;
+        this.notificationService = notificationService;
+        this.marketplaceStockSyncService = marketplaceStockSyncService;
     }
 
     /**
@@ -167,17 +175,39 @@ public class MercadoLivreCancellationService {
                     log.info("Created stock adjustment INCREASE for product {} variant {} quantity {}",
                         item.getProductId(), item.getVariantId(), item.getQuantity());
 
+                    // Enqueue stock sync to ML after reversal
+                    try {
+                        marketplaceStockSyncService.enqueueStockSync(
+                            order.getTenantId(),
+                            item.getProductId(),
+                            item.getVariantId(),
+                            Marketplace.MERCADO_LIVRE
+                        );
+                        log.debug("Enqueued stock sync for product {} after cancellation reversal", item.getProductId());
+                    } catch (Exception syncEx) {
+                        log.warn("Failed to enqueue stock sync, will sync later: {}", syncEx.getMessage());
+                    }
+
                 } catch (Exception e) {
                     log.error("Error creating stock adjustment for sale item {}", item.getId(), e);
                     // Continue processing other items even if one fails
                 }
             }
 
-            // 4. TODO: Update sale.status = CANCELLED (if Sale entity supports status field)
-            // Currently Sale doesn't have a status field in the entity
-            // This would require a migration to add status to sales table
-            log.info("Sale {} items reverted successfully. Note: Sale status update requires migration.",
-                sale.getSaleNumber());
+            // 4. Update sale.status = CANCELLED
+            sale.cancel();
+            saleRepository.save(sale);
+
+            // 5. Send cancellation notification
+            notificationService.notifyCancellation(
+                order.getTenantId(),
+                order.getOrderIdMarketplace(),
+                "SALE",
+                sale.getSaleNumber(),
+                "Estoque estornado automaticamente"
+            );
+
+            log.info("Sale {} items reverted and status set to CANCELLED successfully", sale.getSaleNumber());
 
         } catch (Exception e) {
             log.error("Error processing sale cancellation for order {}", order.getOrderIdMarketplace(), e);
@@ -233,6 +263,19 @@ public class MercadoLivreCancellationService {
 
                             log.info("Released stock reservation for product {} variant {} quantity {}",
                                 item.getProductId(), item.getVariantId(), item.getQuantityReserved());
+
+                            // Enqueue stock sync to ML after releasing reservation
+                            try {
+                                marketplaceStockSyncService.enqueueStockSync(
+                                    order.getTenantId(),
+                                    item.getProductId(),
+                                    item.getVariantId(),
+                                    Marketplace.MERCADO_LIVRE
+                                );
+                                log.debug("Enqueued stock sync for product {} after reservation release", item.getProductId());
+                            } catch (Exception syncEx) {
+                                log.warn("Failed to enqueue stock sync, will sync later: {}", syncEx.getMessage());
+                            }
                         } else {
                             log.debug("No reservation to release for item {}", item.getId());
                         }
@@ -247,6 +290,15 @@ public class MercadoLivreCancellationService {
             // 4. Update sales_order.status = CANCELLED
             salesOrder.cancel();
             salesOrderRepository.save(salesOrder);
+
+            // 5. Send cancellation notification
+            notificationService.notifyCancellation(
+                order.getTenantId(),
+                order.getOrderIdMarketplace(),
+                "SALES_ORDER",
+                salesOrder.getOrderNumber(),
+                "Reserva liberada automaticamente"
+            );
 
             log.info("Sales order {} cancelled successfully", salesOrder.getOrderNumber());
 
