@@ -9,6 +9,7 @@ import com.estoquecentral.purchasing.adapter.in.dto.ProcessReceivingRequest;
 import com.estoquecentral.purchasing.adapter.out.*;
 import com.estoquecentral.purchasing.domain.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -216,15 +217,27 @@ public class ReceivingService {
             String status,
             Pageable pageable) {
 
-        return receivingRepository.search(
+        List<Receiving> content = receivingRepository.search(
                 tenantId,
                 purchaseOrderId,
                 stockLocationId,
                 receivingDateFrom,
                 receivingDateTo,
                 status,
-                pageable
+                pageable.getPageSize(),
+                pageable.getOffset()
         );
+
+        long total = receivingRepository.countSearch(
+                tenantId,
+                purchaseOrderId,
+                stockLocationId,
+                receivingDateFrom,
+                receivingDateTo,
+                status
+        );
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

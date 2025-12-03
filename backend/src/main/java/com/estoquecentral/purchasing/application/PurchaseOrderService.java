@@ -15,6 +15,7 @@ import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.domain.Location;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -183,15 +184,27 @@ public class PurchaseOrderService {
             String poNumber,
             Pageable pageable) {
 
-        return purchaseOrderRepository.search(
+        List<PurchaseOrder> content = purchaseOrderRepository.search(
             tenantId,
             supplierId,
             status,
             orderDateFrom,
             orderDateTo,
             poNumber,
-            pageable
+            pageable.getPageSize(),
+            pageable.getOffset()
         );
+
+        long total = purchaseOrderRepository.countSearch(
+            tenantId,
+            supplierId,
+            status,
+            orderDateFrom,
+            orderDateTo,
+            poNumber
+        );
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

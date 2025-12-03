@@ -33,7 +33,15 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    Page<InventoryMovement> findByProductIdOrderByCreatedAtDesc(UUID productId, Pageable pageable);
+    @Query("SELECT * FROM inventory_movements WHERE product_id = :productId ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findByProductIdOrderByCreatedAtDesc(
+        @Param("productId") UUID productId,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM inventory_movements WHERE product_id = :productId")
+    long countByProductId(@Param("productId") UUID productId);
 
     /**
      * Finds all movements for a product and location (paginated)
@@ -43,9 +51,16 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    Page<InventoryMovement> findByProductIdAndLocationOrderByCreatedAtDesc(UUID productId,
-                                                         String location,
-                                                         Pageable pageable);
+    @Query("SELECT * FROM inventory_movements WHERE product_id = :productId AND location = :location ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findByProductIdAndLocationOrderByCreatedAtDesc(
+        @Param("productId") UUID productId,
+        @Param("location") String location,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM inventory_movements WHERE product_id = :productId AND location = :location")
+    long countByProductIdAndLocation(@Param("productId") UUID productId, @Param("location") String location);
 
     /**
      * Finds movements by type (paginated)
@@ -54,7 +69,15 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    Page<InventoryMovement> findByTypeOrderByCreatedAtDesc(MovementType type, Pageable pageable);
+    @Query("SELECT * FROM inventory_movements WHERE type = CAST(:type AS VARCHAR) ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findByTypeOrderByCreatedAtDesc(
+        @Param("type") String type,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM inventory_movements WHERE type = CAST(:type AS VARCHAR)")
+    long countByType(@Param("type") String type);
 
     /**
      * Finds movements by date range (paginated)
@@ -64,9 +87,16 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    Page<InventoryMovement> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate,
-                                             LocalDateTime endDate,
-                                             Pageable pageable);
+    @Query("SELECT * FROM inventory_movements WHERE created_at BETWEEN :startDate AND :endDate ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findByCreatedAtBetweenOrderByCreatedAtDesc(
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM inventory_movements WHERE created_at BETWEEN :startDate AND :endDate")
+    long countByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     /**
      * Finds movements by reference (e.g., purchase order, sale)
@@ -90,7 +120,15 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of movements
      */
-    Page<InventoryMovement> findByCreatedByOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    @Query("SELECT * FROM inventory_movements WHERE created_by = :userId ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findByCreatedByOrderByCreatedAtDesc(
+        @Param("userId") UUID userId,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM inventory_movements WHERE created_by = :userId")
+    long countByCreatedBy(@Param("userId") UUID userId);
 
     /**
      * Finds recent movements (paginated)
@@ -98,31 +136,14 @@ public interface InventoryMovementRepository extends CrudRepository<InventoryMov
      * @param pageable pagination parameters
      * @return page of recent movements
      */
-    Page<InventoryMovement> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    @Query("SELECT * FROM inventory_movements ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<InventoryMovement> findAllByOrderByCreatedAtDesc(
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
 
-    /**
-     * Counts movements by product
-     *
-     * @param productId product ID
-     * @return count of movements
-     */
-    @Query("""
-        SELECT COUNT(*) FROM inventory_movements
-        WHERE product_id = :productId
-        """)
-    long countByProductId(@Param("productId") UUID productId);
-
-    /**
-     * Counts movements by type
-     *
-     * @param type movement type
-     * @return count of movements
-     */
-    @Query("""
-        SELECT COUNT(*) FROM inventory_movements
-        WHERE type = :type
-        """)
-    long countByType(@Param("type") String type);
+    @Query("SELECT COUNT(*) FROM inventory_movements")
+    long countAll();
 
     /**
      * Counts movements in date range

@@ -16,6 +16,7 @@ import com.estoquecentral.sales.domain.SalesOrder;
 import com.estoquecentral.sales.domain.SalesOrderItem;
 import com.estoquecentral.sales.domain.SalesOrderStatus;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -388,15 +389,27 @@ public class SalesOrderService {
             String orderNumber,
             Pageable pageable) {
 
-        return salesOrderRepository.search(
+        List<SalesOrder> content = salesOrderRepository.search(
             tenantId,
             customerId,
             status,
             orderDateFrom,
             orderDateTo,
             orderNumber,
-            pageable
+            pageable.getPageSize(),
+            pageable.getOffset()
         );
+
+        long total = salesOrderRepository.countSearch(
+            tenantId,
+            customerId,
+            status,
+            orderDateFrom,
+            orderDateTo,
+            orderNumber
+        );
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

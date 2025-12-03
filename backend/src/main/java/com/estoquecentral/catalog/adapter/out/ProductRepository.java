@@ -41,7 +41,11 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of active products
      */
-    Page<Product> findByAtivoTrue(Pageable pageable);
+    @Query("SELECT * FROM products WHERE ativo = true ORDER BY name LIMIT :limit OFFSET :offset")
+    java.util.List<Product> findByAtivoTrue(@Param("limit") int limit, @Param("offset") long offset);
+
+    @Query("SELECT COUNT(*) FROM products WHERE ativo = true")
+    long countByAtivoTrue();
 
     /**
      * Finds product by ID and active status
@@ -109,7 +113,15 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products in category
      */
-    Page<Product> findByCategoryIdAndAtivoTrue(UUID categoryId, Pageable pageable);
+    @Query("SELECT * FROM products WHERE category_id = :categoryId AND ativo = true ORDER BY name LIMIT :limit OFFSET :offset")
+    java.util.List<Product> findByCategoryIdAndAtivoTrue(
+        @Param("categoryId") UUID categoryId,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM products WHERE category_id = :categoryId AND ativo = true")
+    long countByCategoryIdAndAtivoTrue(@Param("categoryId") UUID categoryId);
 
     /**
      * Finds products by category ID and all its descendants
@@ -141,7 +153,15 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products with status
      */
-    Page<Product> findByStatusAndAtivoTrue(ProductStatus status, Pageable pageable);
+    @Query("SELECT * FROM products WHERE status = CAST(:status AS VARCHAR) AND ativo = true ORDER BY name LIMIT :limit OFFSET :offset")
+    java.util.List<Product> findByStatusAndAtivoTrue(
+        @Param("status") String status,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM products WHERE status = CAST(:status AS VARCHAR) AND ativo = true")
+    long countByStatusAndAtivoTrue(@Param("status") String status);
 
     /**
      * Finds products by type with pagination
@@ -150,7 +170,15 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param pageable pagination parameters
      * @return page of products with type
      */
-    Page<Product> findByTypeAndAtivoTrue(ProductType type, Pageable pageable);
+    @Query("SELECT * FROM products WHERE type = CAST(:type AS VARCHAR) AND ativo = true ORDER BY name LIMIT :limit OFFSET :offset")
+    java.util.List<Product> findByTypeAndAtivoTrue(
+        @Param("type") String type,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM products WHERE type = CAST(:type AS VARCHAR) AND ativo = true")
+    long countByTypeAndAtivoTrue(@Param("type") String type);
 
     /**
      * Checks if SKU exists for another product (used for validation on update)

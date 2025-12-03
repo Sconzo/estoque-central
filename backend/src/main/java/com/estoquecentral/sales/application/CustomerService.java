@@ -8,6 +8,7 @@ import com.estoquecentral.shared.tenant.TenantContext;
 import com.estoquecentral.shared.validator.CnpjValidator;
 import com.estoquecentral.shared.validator.CpfValidator;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -149,7 +150,13 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Page<Customer> findAll(Pageable pageable) {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
-        Page<Customer> page = customerRepository.findByTenantId(tenantId, pageable);
+        List<Customer> content = customerRepository.findByTenantIdPaginated(
+            tenantId,
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = customerRepository.countByTenantIdAndAtivo(tenantId, true);
+        Page<Customer> page = new PageImpl<>(content, pageable, total);
         page.forEach(this::decryptCustomer);
         return page;
     }
@@ -166,15 +173,35 @@ public class CustomerService {
     public Page<Customer> findWithFilters(CustomerType customerType, Boolean ativo, Pageable pageable) {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
 
-        Page<Customer> page;
+        List<Customer> content;
+        long total;
+
         if (customerType != null) {
-            page = customerRepository.findByTenantIdAndCustomerType(tenantId, customerType.name(), pageable);
+            content = customerRepository.findByTenantIdAndCustomerType(
+                tenantId,
+                customerType.name(),
+                pageable.getPageSize(),
+                pageable.getOffset()
+            );
+            total = customerRepository.countByTenantIdAndCustomerType(tenantId, customerType.name());
         } else if (ativo != null) {
-            page = customerRepository.findByTenantIdAndAtivo(tenantId, ativo, pageable);
+            content = customerRepository.findByTenantIdAndAtivo(
+                tenantId,
+                ativo,
+                pageable.getPageSize(),
+                pageable.getOffset()
+            );
+            total = customerRepository.countByTenantIdAndAtivo(tenantId, ativo);
         } else {
-            page = customerRepository.findByTenantId(tenantId, pageable);
+            content = customerRepository.findByTenantIdPaginated(
+                tenantId,
+                pageable.getPageSize(),
+                pageable.getOffset()
+            );
+            total = customerRepository.countByTenantIdAndAtivo(tenantId, true);
         }
 
+        Page<Customer> page = new PageImpl<>(content, pageable, total);
         page.forEach(this::decryptCustomer);
         return page;
     }

@@ -1,9 +1,9 @@
 package com.estoquecentral.inventory.application;
 
+import com.estoquecentral.inventory.adapter.out.InventoryRepository;
 import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.domain.Location;
 import com.estoquecentral.inventory.domain.LocationType;
-import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +27,13 @@ import java.util.UUID;
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final EntityManager entityManager;
+    private final InventoryRepository inventoryRepository;
 
     @Autowired
     public LocationService(LocationRepository locationRepository,
-                          EntityManager entityManager) {
+                          InventoryRepository inventoryRepository) {
         this.locationRepository = locationRepository;
-        this.entityManager = entityManager;
+        this.inventoryRepository = inventoryRepository;
     }
 
     /**
@@ -132,12 +132,7 @@ public class LocationService {
     @Transactional(readOnly = true)
     public List<Location> listAll(UUID tenantId, boolean includeInactive) {
         if (includeInactive) {
-            // Custom query to include inactive
-            return entityManager.createQuery(
-                    "SELECT l FROM Location l WHERE l.tenantId = :tenantId ORDER BY l.name",
-                    Location.class)
-                    .setParameter("tenantId", tenantId)
-                    .getResultList();
+            return locationRepository.findAllByTenantIdIncludingInactive(tenantId);
         }
         return listAll(tenantId);
     }
@@ -175,15 +170,7 @@ public class LocationService {
      */
     @Transactional(readOnly = true)
     public boolean hasAllocatedStock(UUID locationId) {
-        Long count = entityManager.createQuery(
-                "SELECT COUNT(i) FROM Inventory i " +
-                "WHERE i.locationId = :locationId " +
-                "AND i.availableQuantity > 0",
-                Long.class)
-                .setParameter("locationId", locationId)
-                .getSingleResult();
-
-        return count > 0;
+        return inventoryRepository.countByLocationIdWithAvailableStock(locationId) > 0;
     }
 
     /**

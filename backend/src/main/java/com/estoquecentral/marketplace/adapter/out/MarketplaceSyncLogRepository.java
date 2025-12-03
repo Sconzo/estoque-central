@@ -26,14 +26,21 @@ public interface MarketplaceSyncLogRepository extends
 
     /**
      * Find logs by tenant with pagination
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations with @Query
      */
     @Query("SELECT * FROM marketplace_sync_logs " +
            "WHERE tenant_id = :tenantId " +
-           "ORDER BY created_at DESC")
-    Page<MarketplaceSyncLog> findByTenantId(
+           "ORDER BY created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    List<MarketplaceSyncLog> findByTenantId(
         @Param("tenantId") UUID tenantId,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
     );
+
+    @Query("SELECT COUNT(*) FROM marketplace_sync_logs " +
+           "WHERE tenant_id = :tenantId")
+    long countByTenantId(@Param("tenantId") UUID tenantId);
 
     /**
      * Find logs by product
@@ -49,29 +56,52 @@ public interface MarketplaceSyncLogRepository extends
 
     /**
      * Find logs by status
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations with @Query
      */
     @Query("SELECT * FROM marketplace_sync_logs " +
            "WHERE tenant_id = :tenantId " +
            "AND status = CAST(:status AS VARCHAR) " +
-           "ORDER BY created_at DESC")
-    Page<MarketplaceSyncLog> findByTenantIdAndStatus(
+           "ORDER BY created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    List<MarketplaceSyncLog> findByTenantIdAndStatus(
         @Param("tenantId") UUID tenantId,
         @Param("status") String status,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM marketplace_sync_logs " +
+           "WHERE tenant_id = :tenantId " +
+           "AND status = CAST(:status AS VARCHAR)")
+    long countByTenantIdAndStatus(
+        @Param("tenantId") UUID tenantId,
+        @Param("status") String status
     );
 
     /**
      * Find logs by date range
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations with @Query
      */
     @Query("SELECT * FROM marketplace_sync_logs " +
            "WHERE tenant_id = :tenantId " +
            "AND created_at BETWEEN :startDate AND :endDate " +
-           "ORDER BY created_at DESC")
-    Page<MarketplaceSyncLog> findByTenantIdAndDateRange(
+           "ORDER BY created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    List<MarketplaceSyncLog> findByTenantIdAndDateRange(
         @Param("tenantId") UUID tenantId,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("SELECT COUNT(*) FROM marketplace_sync_logs " +
+           "WHERE tenant_id = :tenantId " +
+           "AND created_at BETWEEN :startDate AND :endDate")
+    long countByTenantIdAndDateRange(
+        @Param("tenantId") UUID tenantId,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
     );
 
     /**

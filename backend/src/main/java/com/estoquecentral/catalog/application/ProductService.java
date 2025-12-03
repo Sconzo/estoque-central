@@ -58,7 +58,9 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> listAll(Pageable pageable) {
-        return productRepository.findByAtivoTrue(pageable);
+        List<Product> content = productRepository.findByAtivoTrue(pageable.getPageSize(), pageable.getOffset());
+        long total = productRepository.countByAtivoTrue();
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -127,7 +129,13 @@ public class ProductService {
             List<Product> results = productRepository.findByCategoryIdIncludingDescendants(categoryId);
             return new PageImpl<>(results, pageable, results.size());
         } else {
-            return productRepository.findByCategoryIdAndAtivoTrue(categoryId, pageable);
+            List<Product> content = productRepository.findByCategoryIdAndAtivoTrue(
+                categoryId,
+                pageable.getPageSize(),
+                pageable.getOffset()
+            );
+            long total = productRepository.countByCategoryIdAndAtivoTrue(categoryId);
+            return new PageImpl<>(content, pageable, total);
         }
     }
 
@@ -140,7 +148,13 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Page<Product> findByStatus(ProductStatus status, Pageable pageable) {
-        return productRepository.findByStatusAndAtivoTrue(status, pageable);
+        List<Product> content = productRepository.findByStatusAndAtivoTrue(
+            status.name(),
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = productRepository.countByStatusAndAtivoTrue(status.name());
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

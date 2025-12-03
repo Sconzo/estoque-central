@@ -14,6 +14,7 @@ import com.estoquecentral.shared.tenant.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -288,14 +289,27 @@ public class MercadoLivreController {
 
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<MarketplaceSyncLog> logs;
+            List<MarketplaceSyncLog> content;
+            long total;
 
             if (status != null && !status.isEmpty()) {
-                logs = syncLogRepository.findByTenantIdAndStatus(tenantId, status, pageable);
+                content = syncLogRepository.findByTenantIdAndStatus(
+                    tenantId,
+                    status,
+                    pageable.getPageSize(),
+                    pageable.getOffset()
+                );
+                total = syncLogRepository.countByTenantIdAndStatus(tenantId, status);
             } else {
-                logs = syncLogRepository.findByTenantId(tenantId, pageable);
+                content = syncLogRepository.findByTenantId(
+                    tenantId,
+                    pageable.getPageSize(),
+                    pageable.getOffset()
+                );
+                total = syncLogRepository.countByTenantId(tenantId);
             }
 
+            Page<MarketplaceSyncLog> logs = new PageImpl<>(content, pageable, total);
             return ResponseEntity.ok(logs);
 
         } catch (Exception e) {

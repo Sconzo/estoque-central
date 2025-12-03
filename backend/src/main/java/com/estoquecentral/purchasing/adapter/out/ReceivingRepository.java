@@ -73,15 +73,35 @@ public interface ReceivingRepository extends
           AND (:receivingDateTo IS NULL OR receiving_date <= :receivingDateTo)
           AND (:status IS NULL OR status = :status)
         ORDER BY receiving_date DESC, created_at DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<Receiving> search(
+    java.util.List<Receiving> search(
         @Param("tenantId") UUID tenantId,
         @Param("purchaseOrderId") UUID purchaseOrderId,
         @Param("stockLocationId") UUID stockLocationId,
         @Param("receivingDateFrom") LocalDate receivingDateFrom,
         @Param("receivingDateTo") LocalDate receivingDateTo,
         @Param("status") String status,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("""
+        SELECT COUNT(*) FROM receivings
+        WHERE tenant_id = :tenantId
+          AND (:purchaseOrderId IS NULL OR purchase_order_id = :purchaseOrderId)
+          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
+          AND (:receivingDateFrom IS NULL OR receiving_date >= :receivingDateFrom)
+          AND (:receivingDateTo IS NULL OR receiving_date <= :receivingDateTo)
+          AND (:status IS NULL OR status = :status)
+        """)
+    long countSearch(
+        @Param("tenantId") UUID tenantId,
+        @Param("purchaseOrderId") UUID purchaseOrderId,
+        @Param("stockLocationId") UUID stockLocationId,
+        @Param("receivingDateFrom") LocalDate receivingDateFrom,
+        @Param("receivingDateTo") LocalDate receivingDateTo,
+        @Param("status") String status
     );
 
     /**

@@ -84,8 +84,8 @@ class ProductServiceTest {
     void shouldListAllProductsWithPagination() {
         // Given
         Pageable pageable = PageRequest.of(0, 20);
-        Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findByAtivoTrue(pageable)).thenReturn(page);
+        when(productRepository.findByAtivoTrue(pageable.getPageSize(), pageable.getOffset())).thenReturn(List.of(product));
+        when(productRepository.countByAtivoTrue()).thenReturn(1L);
 
         // When
         Page<Product> result = productService.listAll(pageable);
@@ -94,7 +94,8 @@ class ProductServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getName()).isEqualTo("Notebook Dell");
-        verify(productRepository, times(1)).findByAtivoTrue(pageable);
+        verify(productRepository, times(1)).findByAtivoTrue(pageable.getPageSize(), pageable.getOffset());
+        verify(productRepository, times(1)).countByAtivoTrue();
     }
 
     @Test
@@ -182,8 +183,8 @@ class ProductServiceTest {
     void shouldFindProductsByCategory() {
         // Given
         Pageable pageable = PageRequest.of(0, 20);
-        Page<Product> page = new PageImpl<>(List.of(product), pageable, 1);
-        when(productRepository.findByCategoryIdAndAtivoTrue(categoryId, pageable)).thenReturn(page);
+        when(productRepository.findByCategoryIdAndAtivoTrue(categoryId, pageable.getPageSize(), pageable.getOffset())).thenReturn(List.of(product));
+        when(productRepository.countByCategoryIdAndAtivoTrue(categoryId)).thenReturn(1L);
 
         // When
         Page<Product> result = productService.findByCategory(categoryId, false, pageable);
@@ -191,7 +192,8 @@ class ProductServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        verify(productRepository, times(1)).findByCategoryIdAndAtivoTrue(categoryId, pageable);
+        verify(productRepository, times(1)).findByCategoryIdAndAtivoTrue(categoryId, pageable.getPageSize(), pageable.getOffset());
+        verify(productRepository, times(1)).countByCategoryIdAndAtivoTrue(categoryId);
     }
 
     @Test

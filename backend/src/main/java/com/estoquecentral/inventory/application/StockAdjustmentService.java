@@ -8,6 +8,7 @@ import com.estoquecentral.inventory.adapter.out.LocationRepository;
 import com.estoquecentral.inventory.adapter.out.StockMovementRepository;
 import com.estoquecentral.inventory.domain.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -182,17 +183,36 @@ public class StockAdjustmentService {
             UUID userId,
             Pageable pageable) {
 
-        return adjustmentRepository.search(
+        String adjustmentTypeStr = adjustmentType != null ? adjustmentType.name() : null;
+        String reasonCodeStr = reasonCode != null ? reasonCode.name() : null;
+
+        // Get paginated data
+        List<StockAdjustment> content = adjustmentRepository.search(
                 tenantId,
                 productId,
                 stockLocationId,
-                adjustmentType != null ? adjustmentType.name() : null,
-                reasonCode != null ? reasonCode.name() : null,
+                adjustmentTypeStr,
+                reasonCodeStr,
                 adjustmentDateFrom,
                 adjustmentDateTo,
                 userId,
-                pageable
+                pageable.getPageSize(),
+                pageable.getOffset()
         );
+
+        // Get total count
+        long total = adjustmentRepository.countSearch(
+                tenantId,
+                productId,
+                stockLocationId,
+                adjustmentTypeStr,
+                reasonCodeStr,
+                adjustmentDateFrom,
+                adjustmentDateTo,
+                userId
+        );
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

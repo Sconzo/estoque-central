@@ -9,6 +9,7 @@ import com.estoquecentral.inventory.domain.*;
 import com.estoquecentral.shared.tenant.TenantContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -440,7 +441,13 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public Page<InventoryMovement> getMovementHistory(UUID productId, Pageable pageable) {
-        return movementRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable);
+        List<InventoryMovement> content = movementRepository.findByProductIdOrderByCreatedAtDesc(
+            productId,
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = movementRepository.countByProductId(productId);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -451,7 +458,12 @@ public class InventoryService {
      */
     @Transactional(readOnly = true)
     public Page<InventoryMovement> getRecentMovements(Pageable pageable) {
-        return movementRepository.findAllByOrderByCreatedAtDesc(pageable);
+        List<InventoryMovement> content = movementRepository.findAllByOrderByCreatedAtDesc(
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = movementRepository.countAll();
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**

@@ -36,7 +36,32 @@ public interface SaleRepository extends CrudRepository<Sale, UUID> {
     );
 
     // Story 4.4: NFCe Retry and Cancellation
-    Page<Sale> findByTenantIdAndNfceStatus(UUID tenantId, NfceStatus status, Pageable pageable);
+    // Note: Returns List instead of Page due to Spring Data JDBC limitations
+    @Query("""
+        SELECT *
+        FROM sales
+        WHERE tenant_id = :tenantId
+          AND nfce_status = CAST(:status AS VARCHAR)
+        ORDER BY sale_date DESC
+        LIMIT :limit OFFSET :offset
+        """)
+    java.util.List<Sale> findByTenantIdAndNfceStatus(
+            @Param("tenantId") UUID tenantId,
+            @Param("status") String status,
+            @Param("limit") int limit,
+            @Param("offset") long offset
+    );
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM sales
+        WHERE tenant_id = :tenantId
+          AND nfce_status = CAST(:status AS VARCHAR)
+        """)
+    long countByTenantIdAndNfceStatus(
+            @Param("tenantId") UUID tenantId,
+            @Param("status") String status
+    );
 
     @Query("""
         SELECT *
@@ -44,9 +69,19 @@ public interface SaleRepository extends CrudRepository<Sale, UUID> {
         WHERE tenant_id = :tenantId
           AND (nfce_status = 'PENDING' OR nfce_status = 'FAILED')
         ORDER BY sale_date DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<Sale> findByTenantIdAndNfceStatusPendingOrFailed(
+    java.util.List<Sale> findByTenantIdAndNfceStatusPendingOrFailed(
             @Param("tenantId") UUID tenantId,
-            Pageable pageable
+            @Param("limit") int limit,
+            @Param("offset") long offset
     );
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM sales
+        WHERE tenant_id = :tenantId
+          AND (nfce_status = 'PENDING' OR nfce_status = 'FAILED')
+        """)
+    long countByTenantIdAndNfceStatusPendingOrFailed(@Param("tenantId") UUID tenantId);
 }

@@ -16,6 +16,9 @@ public interface LocationRepository extends CrudRepository<Location, UUID> {
     @Query("SELECT * FROM locations WHERE tenant_id = :tenantId AND ativo = true ORDER BY name")
     List<Location> findAllByTenantId(@Param("tenantId") UUID tenantId);
 
+    @Query("SELECT * FROM locations WHERE tenant_id = :tenantId ORDER BY name")
+    List<Location> findAllByTenantIdIncludingInactive(@Param("tenantId") UUID tenantId);
+
     @Query("SELECT * FROM locations WHERE tenant_id = :tenantId AND code = :code AND ativo = true")
     Optional<Location> findByTenantIdAndCode(@Param("tenantId") UUID tenantId, @Param("code") String code);
 

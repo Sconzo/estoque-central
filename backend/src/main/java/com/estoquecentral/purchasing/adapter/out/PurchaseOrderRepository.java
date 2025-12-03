@@ -37,15 +37,18 @@ public interface PurchaseOrderRepository extends
 
     /**
      * Find purchase orders by tenant with pagination
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations
      */
     @Query("""
         SELECT * FROM purchase_orders
         WHERE tenant_id = :tenantId
         ORDER BY created_at DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<PurchaseOrder> findByTenantId(
+    List<PurchaseOrder> findByTenantIdPaginated(
         @Param("tenantId") UUID tenantId,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
     );
 
     /**
@@ -108,6 +111,7 @@ public interface PurchaseOrderRepository extends
 
     /**
      * Search purchase orders with filters
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations
      */
     @Query("""
         SELECT * FROM purchase_orders
@@ -118,15 +122,38 @@ public interface PurchaseOrderRepository extends
           AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
           AND (:poNumber IS NULL OR po_number = :poNumber)
         ORDER BY created_at DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<PurchaseOrder> search(
+    List<PurchaseOrder> search(
         @Param("tenantId") UUID tenantId,
         @Param("supplierId") UUID supplierId,
         @Param("status") String status,
         @Param("orderDateFrom") LocalDate orderDateFrom,
         @Param("orderDateTo") LocalDate orderDateTo,
         @Param("poNumber") String poNumber,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    /**
+     * Count purchase orders matching search filters
+     */
+    @Query("""
+        SELECT COUNT(*) FROM purchase_orders
+        WHERE tenant_id = :tenantId
+          AND (:supplierId IS NULL OR supplier_id = :supplierId)
+          AND (:status IS NULL OR status = :status)
+          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
+          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
+          AND (:poNumber IS NULL OR po_number = :poNumber)
+        """)
+    long countSearch(
+        @Param("tenantId") UUID tenantId,
+        @Param("supplierId") UUID supplierId,
+        @Param("status") String status,
+        @Param("orderDateFrom") LocalDate orderDateFrom,
+        @Param("orderDateTo") LocalDate orderDateTo,
+        @Param("poNumber") String poNumber
     );
 
     /**

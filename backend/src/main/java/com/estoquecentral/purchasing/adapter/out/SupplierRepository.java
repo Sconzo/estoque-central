@@ -56,10 +56,12 @@ public interface SupplierRepository extends
         WHERE tenant_id = :tenantId
           AND ativo = true
         ORDER BY company_name
+        LIMIT :limit OFFSET :offset
         """)
-    Page<Supplier> findByTenantId(
+    java.util.List<Supplier> findByTenantIdPaginated(
         @Param("tenantId") UUID tenantId,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
     );
 
     /**
@@ -135,13 +137,32 @@ public interface SupplierRepository extends
           AND (:status IS NULL OR status = :status)
           AND (:ativo IS NULL OR ativo = :ativo)
         ORDER BY company_name
+        LIMIT :limit OFFSET :offset
         """)
-    Page<Supplier> search(
+    java.util.List<Supplier> search(
         @Param("tenantId") UUID tenantId,
         @Param("searchTerm") String searchTerm,
         @Param("status") String status,
         @Param("ativo") Boolean ativo,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    @Query("""
+        SELECT COUNT(*) FROM suppliers
+        WHERE tenant_id = :tenantId
+          AND (:searchTerm IS NULL OR
+               LOWER(company_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+               LOWER(trade_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+               cnpj LIKE CONCAT('%', :searchTerm, '%'))
+          AND (:status IS NULL OR status = :status)
+          AND (:ativo IS NULL OR ativo = :ativo)
+        """)
+    long countSearch(
+        @Param("tenantId") UUID tenantId,
+        @Param("searchTerm") String searchTerm,
+        @Param("status") String status,
+        @Param("ativo") Boolean ativo
     );
 
     /**

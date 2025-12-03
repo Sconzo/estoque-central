@@ -226,6 +226,19 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     long countOutOfStock(@Param("tenantId") UUID tenantId);
 
     /**
+     * Counts inventory records with available stock at a location
+     *
+     * @param locationId location ID
+     * @return count of inventory with quantity_available > 0
+     */
+    @Query("""
+        SELECT COUNT(*) FROM inventory
+        WHERE location_id = :locationId
+          AND quantity_available > 0
+        """)
+    long countByLocationIdWithAvailableStock(@Param("locationId") UUID locationId);
+
+    /**
      * Gets total inventory value by location
      * Calculates value for both simple products and variants
      *

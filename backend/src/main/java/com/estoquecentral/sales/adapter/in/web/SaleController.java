@@ -12,6 +12,7 @@ import com.estoquecentral.sales.domain.Sale;
 import com.estoquecentral.sales.domain.SaleItem;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -137,7 +138,8 @@ public class SaleController {
 
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<Sale> sales;
+            List<Sale> content;
+            long total;
 
             if (status != null) {
                 // Filter by specific status
@@ -147,20 +149,30 @@ public class SaleController {
                             "message", "Status must be PENDING or FAILED"
                     ));
                 }
-                sales = saleRepository.findByTenantIdAndNfceStatus(
+                content = saleRepository.findByTenantIdAndNfceStatus(
                         currentUser.getTenantId(),
-                        status,
-                        pageable
+                        status.name(),
+                        pageable.getPageSize(),
+                        pageable.getOffset()
+                );
+                total = saleRepository.countByTenantIdAndNfceStatus(
+                        currentUser.getTenantId(),
+                        status.name()
                 );
             } else {
                 // Get all PENDING or FAILED sales
-                sales = saleRepository.findByTenantIdAndNfceStatusPendingOrFailed(
+                content = saleRepository.findByTenantIdAndNfceStatusPendingOrFailed(
                         currentUser.getTenantId(),
-                        pageable
+                        pageable.getPageSize(),
+                        pageable.getOffset()
+                );
+                total = saleRepository.countByTenantIdAndNfceStatusPendingOrFailed(
+                        currentUser.getTenantId()
                 );
             }
 
-            // Map to response DTOs
+            // Build Page and map to response DTOs
+            Page<Sale> sales = new PageImpl<>(content, pageable, total);
             Page<SaleResponseDTO> responsePage = sales.map(this::mapToResponseDTO);
 
             return ResponseEntity.ok(responsePage);

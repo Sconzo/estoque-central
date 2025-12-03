@@ -77,6 +77,7 @@ public interface SalesOrderRepository extends
 
     /**
      * Search sales orders with filters and pagination
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations with @Query
      */
     @Query("""
         SELECT * FROM sales_orders
@@ -87,15 +88,38 @@ public interface SalesOrderRepository extends
           AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
           AND (:orderNumber IS NULL OR order_number ILIKE CONCAT('%', :orderNumber, '%'))
         ORDER BY data_criacao DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<SalesOrder> search(
+    List<SalesOrder> search(
         @Param("tenantId") UUID tenantId,
         @Param("customerId") UUID customerId,
         @Param("status") String status,
         @Param("orderDateFrom") LocalDate orderDateFrom,
         @Param("orderDateTo") LocalDate orderDateTo,
         @Param("orderNumber") String orderNumber,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    /**
+     * Count sales orders matching search filters
+     */
+    @Query("""
+        SELECT COUNT(*) FROM sales_orders
+        WHERE tenant_id = :tenantId
+          AND (:customerId IS NULL OR customer_id = :customerId)
+          AND (:status IS NULL OR status = :status)
+          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
+          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
+          AND (:orderNumber IS NULL OR order_number ILIKE CONCAT('%', :orderNumber, '%'))
+        """)
+    long countSearch(
+        @Param("tenantId") UUID tenantId,
+        @Param("customerId") UUID customerId,
+        @Param("status") String status,
+        @Param("orderDateFrom") LocalDate orderDateFrom,
+        @Param("orderDateTo") LocalDate orderDateTo,
+        @Param("orderNumber") String orderNumber
     );
 
     /**

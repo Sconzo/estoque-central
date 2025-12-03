@@ -10,6 +10,7 @@ import com.estoquecentral.purchasing.domain.Supplier;
 import com.estoquecentral.purchasing.domain.SupplierStatus;
 import com.estoquecentral.purchasing.domain.SupplierType;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -229,8 +230,14 @@ public class SupplierService {
      * Get suppliers with pagination
      */
     public Page<SupplierResponse> getSuppliers(UUID tenantId, Pageable pageable) {
-        return supplierRepository.findByTenantId(tenantId, pageable)
-                .map(SupplierResponse::fromEntity);
+        List<Supplier> content = supplierRepository.findByTenantIdPaginated(
+            tenantId,
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = supplierRepository.countByTenantId(tenantId);
+        Page<Supplier> page = new PageImpl<>(content, pageable, total);
+        return page.map(SupplierResponse::fromEntity);
     }
 
     /**
@@ -238,8 +245,17 @@ public class SupplierService {
      */
     public Page<SupplierResponse> searchSuppliers(UUID tenantId, String searchTerm,
                                                    String status, Boolean ativo, Pageable pageable) {
-        return supplierRepository.search(tenantId, searchTerm, status, ativo, pageable)
-                .map(SupplierResponse::fromEntity);
+        List<Supplier> content = supplierRepository.search(
+            tenantId,
+            searchTerm,
+            status,
+            ativo,
+            pageable.getPageSize(),
+            pageable.getOffset()
+        );
+        long total = supplierRepository.countSearch(tenantId, searchTerm, status, ativo);
+        Page<Supplier> page = new PageImpl<>(content, pageable, total);
+        return page.map(SupplierResponse::fromEntity);
     }
 
     /**

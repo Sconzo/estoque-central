@@ -42,12 +42,16 @@ public interface CustomerRepository extends
      * @param pageable pagination parameters
      * @return Page of customers
      */
-    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND ativo = :ativo ORDER BY created_at DESC")
-    Page<Customer> findByTenantIdAndAtivo(
+    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND ativo = :ativo ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<Customer> findByTenantIdAndAtivo(
         @Param("tenantId") UUID tenantId,
         @Param("ativo") Boolean ativo,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
     );
+
+    @Query("SELECT COUNT(*) FROM customers WHERE tenant_id = :tenantId AND ativo = :ativo")
+    long countByTenantIdAndAtivo(@Param("tenantId") UUID tenantId, @Param("ativo") Boolean ativo);
 
     /**
      * Finds customers by tenant ID (all active customers by default).
@@ -56,8 +60,12 @@ public interface CustomerRepository extends
      * @param pageable pagination parameters
      * @return Page of active customers
      */
-    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND ativo = true ORDER BY created_at DESC")
-    Page<Customer> findByTenantId(@Param("tenantId") UUID tenantId, Pageable pageable);
+    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND ativo = true ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<Customer> findByTenantIdPaginated(
+        @Param("tenantId") UUID tenantId,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
 
     /**
      * Finds customer by tenant ID and CPF (encrypted field).
@@ -97,12 +105,16 @@ public interface CustomerRepository extends
      * @param pageable pagination parameters
      * @return Page of customers
      */
-    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND customer_type = :customerType AND ativo = true ORDER BY created_at DESC")
-    Page<Customer> findByTenantIdAndCustomerType(
+    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND customer_type = :customerType AND ativo = true ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    java.util.List<Customer> findByTenantIdAndCustomerType(
         @Param("tenantId") UUID tenantId,
         @Param("customerType") String customerType,
-        Pageable pageable
+        @Param("limit") int limit,
+        @Param("offset") long offset
     );
+
+    @Query("SELECT COUNT(*) FROM customers WHERE tenant_id = :tenantId AND customer_type = :customerType AND ativo = true")
+    long countByTenantIdAndCustomerType(@Param("tenantId") UUID tenantId, @Param("customerType") String customerType);
 
     /**
      * Quick search for customers by name (first_name, last_name, company_name, or trade_name).

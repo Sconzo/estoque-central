@@ -39,6 +39,7 @@ public interface StockAdjustmentRepository extends
 
     /**
      * Search adjustments with filters
+     * Note: Returns List instead of Page due to Spring Data JDBC limitations with @Query
      */
     @Query("""
         SELECT *
@@ -52,8 +53,9 @@ public interface StockAdjustmentRepository extends
           AND (:adjustmentDateTo IS NULL OR adjustment_date <= :adjustmentDateTo)
           AND (:userId IS NULL OR adjusted_by_user_id = :userId)
         ORDER BY adjustment_date DESC, created_at DESC
+        LIMIT :limit OFFSET :offset
         """)
-    Page<StockAdjustment> search(
+    List<StockAdjustment> search(
             @Param("tenantId") UUID tenantId,
             @Param("productId") UUID productId,
             @Param("stockLocationId") UUID stockLocationId,
@@ -62,7 +64,34 @@ public interface StockAdjustmentRepository extends
             @Param("adjustmentDateFrom") LocalDate adjustmentDateFrom,
             @Param("adjustmentDateTo") LocalDate adjustmentDateTo,
             @Param("userId") UUID userId,
-            Pageable pageable
+            @Param("limit") int limit,
+            @Param("offset") long offset
+    );
+
+    /**
+     * Count total adjustments matching filters (for pagination)
+     */
+    @Query("""
+        SELECT COUNT(*)
+        FROM stock_adjustments
+        WHERE tenant_id = :tenantId
+          AND (:productId IS NULL OR product_id = :productId)
+          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
+          AND (:adjustmentType IS NULL OR adjustment_type = :adjustmentType)
+          AND (:reasonCode IS NULL OR reason_code = :reasonCode)
+          AND (:adjustmentDateFrom IS NULL OR adjustment_date >= :adjustmentDateFrom)
+          AND (:adjustmentDateTo IS NULL OR adjustment_date <= :adjustmentDateTo)
+          AND (:userId IS NULL OR adjusted_by_user_id = :userId)
+        """)
+    long countSearch(
+            @Param("tenantId") UUID tenantId,
+            @Param("productId") UUID productId,
+            @Param("stockLocationId") UUID stockLocationId,
+            @Param("adjustmentType") String adjustmentType,
+            @Param("reasonCode") String reasonCode,
+            @Param("adjustmentDateFrom") LocalDate adjustmentDateFrom,
+            @Param("adjustmentDateTo") LocalDate adjustmentDateTo,
+            @Param("userId") UUID userId
     );
 
     /**
