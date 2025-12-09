@@ -36,9 +36,25 @@ public interface MarketplaceConnectionRepository extends CrudRepository<Marketpl
     List<MarketplaceConnection> findByTenantId(@Param("tenantId") UUID tenantId);
 
     /**
-     * Find connections with tokens expiring soon (for refresh job)
+     * Find connections with tokens expiring soon for a specific tenant (for refresh job)
      * AC4: Scheduled job queries connections with token_expires_at < NOW() + threshold
      */
+    @Query("SELECT * FROM marketplace_connections " +
+           "WHERE tenant_id = :tenantId " +
+           "AND status = CAST(:status AS VARCHAR) " +
+           "AND token_expires_at < :expirationThreshold")
+    List<MarketplaceConnection> findExpiringConnectionsByTenant(
+        @Param("tenantId") UUID tenantId,
+        @Param("status") String status,
+        @Param("expirationThreshold") LocalDateTime expirationThreshold
+    );
+
+    /**
+     * Find connections with tokens expiring soon (for refresh job)
+     * AC4: Scheduled job queries connections with token_expires_at < NOW() + threshold
+     * @deprecated Use findExpiringConnectionsByTenant() instead to ensure proper tenant context
+     */
+    @Deprecated
     @Query("SELECT * FROM marketplace_connections " +
            "WHERE status = CAST(:status AS VARCHAR) " +
            "AND token_expires_at < :expirationThreshold")
@@ -48,15 +64,36 @@ public interface MarketplaceConnectionRepository extends CrudRepository<Marketpl
     );
 
     /**
-     * Find all active (CONNECTED) connections
+     * Find all active (CONNECTED) connections for a specific tenant
      */
+    @Query("SELECT * FROM marketplace_connections WHERE tenant_id = :tenantId AND status = 'CONNECTED'")
+    List<MarketplaceConnection> findAllConnectedByTenant(@Param("tenantId") UUID tenantId);
+
+    /**
+     * Find all active (CONNECTED) connections
+     * @deprecated Use findAllConnectedByTenant() instead to ensure proper tenant context
+     */
+    @Deprecated
     @Query("SELECT * FROM marketplace_connections WHERE status = 'CONNECTED'")
     List<MarketplaceConnection> findAllConnected();
 
     /**
-     * Find connections by marketplace and status
+     * Find connections by tenant, marketplace and status
      * Story 5.5: Order polling job
      */
+    @Query("SELECT * FROM marketplace_connections WHERE tenant_id = :tenantId AND marketplace = CAST(:marketplace AS VARCHAR) AND status = CAST(:status AS VARCHAR)")
+    List<MarketplaceConnection> findByTenantAndMarketplaceAndStatus(
+        @Param("tenantId") UUID tenantId,
+        @Param("marketplace") String marketplace,
+        @Param("status") String status
+    );
+
+    /**
+     * Find connections by marketplace and status
+     * Story 5.5: Order polling job
+     * @deprecated Use findByTenantAndMarketplaceAndStatus() instead to ensure proper tenant context
+     */
+    @Deprecated
     @Query("SELECT * FROM marketplace_connections WHERE marketplace = CAST(:marketplace AS VARCHAR) AND status = CAST(:status AS VARCHAR)")
     List<MarketplaceConnection> findByMarketplaceAndStatus(
         @Param("marketplace") String marketplace,

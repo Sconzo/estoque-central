@@ -1,5 +1,7 @@
 package com.estoquecentral.marketplace.application;
 
+import com.estoquecentral.auth.adapter.out.TenantRepository;
+import com.estoquecentral.auth.domain.Tenant;
 import com.estoquecentral.marketplace.adapter.out.MarketplaceConnectionRepository;
 import com.estoquecentral.marketplace.domain.ConnectionStatus;
 import com.estoquecentral.marketplace.domain.Marketplace;
@@ -26,13 +28,16 @@ public class OrderPollingScheduledJob {
 
     private final MarketplaceConnectionRepository connectionRepository;
     private final MercadoLivreOrderImportService orderImportService;
+    private final TenantRepository tenantRepository;
 
     public OrderPollingScheduledJob(
         MarketplaceConnectionRepository connectionRepository,
-        MercadoLivreOrderImportService orderImportService
+        MercadoLivreOrderImportService orderImportService,
+        TenantRepository tenantRepository
     ) {
         this.connectionRepository = connectionRepository;
         this.orderImportService = orderImportService;
+        this.tenantRepository = tenantRepository;
     }
 
     /**
@@ -45,22 +50,44 @@ public class OrderPollingScheduledJob {
         log.debug("Starting order polling job");
 
         try {
-            // Find all active ML connections
-            List<MarketplaceConnection> connections = connectionRepository
-                .findByMarketplaceAndStatus(
-                    Marketplace.MERCADO_LIVRE.name(),
-                    ConnectionStatus.CONNECTED.name()
-                );
+            // Get all active tenants
+            List<Tenant> activeTenants = tenantRepository.findAllActive();
 
-            log.info("Found {} active ML connections to poll", connections.size());
+            if (activeTenants.isEmpty()) {
+                log.debug("No active tenants found");
+                return;
+            }
 
-            for (MarketplaceConnection connection : connections) {
+            log.debug("Polling orders for {} active tenants", activeTenants.size());
+
+            // Process each tenant
+            for (Tenant tenant : activeTenants) {
                 try {
-                    TenantContext.setTenantId(connection.getTenantId().toString());
-                    pollOrdersForTenant(connection.getTenantId());
+                    // Set tenant context
+                    TenantContext.setTenantId(tenant.getId().toString());
+
+                    // Find active ML connections for this tenant
+                    List<MarketplaceConnection> connections = connectionRepository
+                        .findByTenantAndMarketplaceAndStatus(
+                            tenant.getId(),
+                            Marketplace.MERCADO_LIVRE.name(),
+                            ConnectionStatus.CONNECTED.name()
+                        );
+
+                    if (connections.isEmpty()) {
+                        continue;
+                    }
+
+                    log.info("Found {} active ML connections to poll for tenant {}",
+                        connections.size(), tenant.getId());
+
+                    // Poll orders for this tenant
+                    pollOrdersForTenant(tenant.getId());
+
                 } catch (Exception e) {
-                    log.error("Error polling orders for tenant: {}", connection.getTenantId(), e);
+                    log.error("Error polling orders for tenant: {}", tenant.getId(), e);
                 } finally {
+                    // Always clear tenant context
                     TenantContext.clear();
                 }
             }

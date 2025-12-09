@@ -1,5 +1,7 @@
 package com.estoquecentral.marketplace.application;
 
+import com.estoquecentral.auth.adapter.out.TenantRepository;
+import com.estoquecentral.auth.domain.Tenant;
 import com.estoquecentral.marketplace.adapter.out.MarketplaceConnectionRepository;
 import com.estoquecentral.marketplace.domain.ConnectionStatus;
 import com.estoquecentral.marketplace.domain.MarketplaceConnection;
@@ -27,13 +29,16 @@ public class TokenRefreshScheduledJob {
 
     private final MarketplaceConnectionRepository connectionRepository;
     private final MercadoLivreOAuthService oauthService;
+    private final TenantRepository tenantRepository;
 
     public TokenRefreshScheduledJob(
         MarketplaceConnectionRepository connectionRepository,
-        MercadoLivreOAuthService oauthService
+        MercadoLivreOAuthService oauthService,
+        TenantRepository tenantRepository
     ) {
         this.connectionRepository = connectionRepository;
         this.oauthService = oauthService;
+        this.tenantRepository = tenantRepository;
     }
 
     /**
@@ -45,50 +50,74 @@ public class TokenRefreshScheduledJob {
         log.info("Starting token refresh job");
 
         try {
-            // Find connections with tokens expiring within 30 minutes
+            // Get all active tenants
+            List<Tenant> activeTenants = tenantRepository.findAllActive();
+
+            if (activeTenants.isEmpty()) {
+                log.debug("No active tenants found");
+                return;
+            }
+
+            log.debug("Checking token expiration for {} active tenants", activeTenants.size());
+
             LocalDateTime expirationThreshold = LocalDateTime.now().plusMinutes(REFRESH_THRESHOLD_MINUTES);
+            int totalSuccessCount = 0;
+            int totalFailureCount = 0;
 
-            List<MarketplaceConnection> expiringConnections = connectionRepository.findExpiringConnections(
-                ConnectionStatus.CONNECTED.name(),
-                expirationThreshold
-            );
-
-            log.info("Found {} connections with tokens expiring soon", expiringConnections.size());
-
-            int successCount = 0;
-            int failureCount = 0;
-
-            for (MarketplaceConnection connection : expiringConnections) {
+            // Process each tenant
+            for (Tenant tenant : activeTenants) {
                 try {
-                    log.debug("Refreshing token for connection: {} (tenant: {}, marketplace: {})",
-                        connection.getId(),
-                        connection.getTenantId(),
-                        connection.getMarketplace());
+                    // Set tenant context
+                    TenantContext.setTenantId(tenant.getId().toString());
 
-                    // Set tenant context for this operation
-                    TenantContext.setTenantId(connection.getTenantId().toString());
+                    // Find connections with tokens expiring within 30 minutes for this tenant
+                    List<MarketplaceConnection> expiringConnections = connectionRepository.findExpiringConnectionsByTenant(
+                        tenant.getId(),
+                        ConnectionStatus.CONNECTED.name(),
+                        expirationThreshold
+                    );
 
-                    // Refresh token
-                    oauthService.refreshToken(connection.getId());
+                    if (expiringConnections.isEmpty()) {
+                        continue;
+                    }
 
-                    successCount++;
-                    log.debug("Token refreshed successfully for connection: {}", connection.getId());
+                    log.info("Found {} connections with tokens expiring soon for tenant {}",
+                        expiringConnections.size(), tenant.getId());
+
+                    for (MarketplaceConnection connection : expiringConnections) {
+                        try {
+                            log.debug("Refreshing token for connection: {} (tenant: {}, marketplace: {})",
+                                connection.getId(),
+                                connection.getTenantId(),
+                                connection.getMarketplace());
+
+                            // Refresh token
+                            oauthService.refreshToken(connection.getId());
+
+                            totalSuccessCount++;
+                            log.debug("Token refreshed successfully for connection: {}", connection.getId());
+
+                        } catch (Exception e) {
+                            totalFailureCount++;
+                            log.error("Failed to refresh token for connection: {} (tenant: {})",
+                                connection.getId(),
+                                connection.getTenantId(),
+                                e);
+
+                            // Error status is already updated by oauthService.refreshToken()
+                            // TODO: Send notification to user about failed refresh
+                        }
+                    }
 
                 } catch (Exception e) {
-                    failureCount++;
-                    log.error("Failed to refresh token for connection: {} (tenant: {})",
-                        connection.getId(),
-                        connection.getTenantId(),
-                        e);
-
-                    // Error status is already updated by oauthService.refreshToken()
-                    // TODO: Send notification to user about failed refresh
+                    log.error("Error processing token refresh for tenant: {}", tenant.getId(), e);
                 } finally {
+                    // Always clear tenant context
                     TenantContext.clear();
                 }
             }
 
-            log.info("Token refresh job completed. Success: {}, Failures: {}", successCount, failureCount);
+            log.info("Token refresh job completed. Success: {}, Failures: {}", totalSuccessCount, totalFailureCount);
 
         } catch (Exception e) {
             log.error("Error in token refresh job", e);

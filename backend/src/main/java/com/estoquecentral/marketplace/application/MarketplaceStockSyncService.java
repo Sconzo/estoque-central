@@ -103,8 +103,28 @@ public class MarketplaceStockSyncService {
     }
 
     /**
-     * AC2: Process sync queue (called by scheduled worker)
+     * AC2: Process sync queue for a specific tenant (called by scheduled worker)
      */
+    @Transactional
+    public void processSyncQueueForTenant(UUID tenantId) {
+        List<MarketplaceSyncQueue> pendingItems = queueRepository.findPendingItemsByTenant(tenantId, BATCH_SIZE);
+
+        if (pendingItems.isEmpty()) {
+            return;
+        }
+
+        log.info("Processing {} items from sync queue for tenant {}", pendingItems.size(), tenantId);
+
+        for (MarketplaceSyncQueue item : pendingItems) {
+            processSyncItem(item);
+        }
+    }
+
+    /**
+     * AC2: Process sync queue (called by scheduled worker)
+     * @deprecated Use processSyncQueueForTenant() instead to ensure proper tenant context
+     */
+    @Deprecated
     @Transactional
     public void processSyncQueue() {
         List<MarketplaceSyncQueue> pendingItems = queueRepository.findPendingItems(BATCH_SIZE);
