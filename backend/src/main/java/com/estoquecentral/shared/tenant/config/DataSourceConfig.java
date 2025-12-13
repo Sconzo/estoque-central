@@ -1,6 +1,7 @@
 package com.estoquecentral.shared.tenant.config;
 
 import com.estoquecentral.shared.tenant.TenantRoutingDataSource;
+import com.estoquecentral.shared.tenant.TenantAwareDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -93,25 +94,14 @@ public class DataSourceConfig {
     @Primary
     @Bean(name = "dataSource")
     public DataSource dataSource(DataSource defaultDataSource) {
-        TenantRoutingDataSource routingDataSource = new TenantRoutingDataSource();
+        // Wrap the defaultDataSource with TenantAwareDataSource to set search_path
+        TenantAwareDataSource tenantAwareDataSource = new TenantAwareDataSource(defaultDataSource);
 
-        // Set up target datasources map
-        // NOTE: In schema-per-tenant, we use the SAME datasource for all schemas
-        // The routing happens via PostgreSQL search_path, not separate connections
-        Map<Object, Object> targetDataSources = new HashMap<>();
-        targetDataSources.put("public", defaultDataSource);
+        // The tenant-aware datasource will automatically set the PostgreSQL search_path
+        // based on TenantContext whenever a connection is obtained
+        // This ensures all queries run against the correct tenant schema
 
-        // Additional tenant datasources will be added dynamically
-        // For now, all tenants use the same datasource with different search_path
-        // This is handled by TenantRoutingDataSource.determineCurrentLookupKey()
-
-        routingDataSource.setTargetDataSources(targetDataSources);
-        routingDataSource.setDefaultTargetDataSource(defaultDataSource);
-
-        // Initialize the datasource
-        routingDataSource.afterPropertiesSet();
-
-        return routingDataSource;
+        return tenantAwareDataSource;
     }
 
     /**

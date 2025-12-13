@@ -12,6 +12,7 @@ buildNumber.properties
 
 # Environment files
 .env
+*.env
 .env.local
 .env.*.local
 *.key

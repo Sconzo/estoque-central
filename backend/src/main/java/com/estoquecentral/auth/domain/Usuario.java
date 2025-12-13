@@ -1,6 +1,8 @@
 package com.estoquecentral.auth.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -35,7 +37,7 @@ import java.util.UUID;
  * @see Role
  */
 @Table("usuarios")
-public class Usuario {
+public class Usuario implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -90,6 +92,16 @@ public class Usuario {
     private Instant dataAtualizacao;
 
     /**
+     * Transient field to track if this entity is new (for Persistable interface).
+     * Not persisted to database.
+     *
+     * <p>Defaults to false when loaded from DB (since @Transient fields aren't persisted).
+     * Set to true explicitly in constructors that create new instances.
+     */
+    @Transient
+    private boolean isNew = false;
+
+    /**
      * Default constructor for Spring Data JDBC.
      */
     public Usuario() {
@@ -117,6 +129,7 @@ public class Usuario {
         this.ativo = true;
         this.dataCriacao = Instant.now();
         this.dataAtualizacao = Instant.now();
+        this.isNew = true; // Mark as new entity for Persistable interface
     }
 
     /**
@@ -234,6 +247,31 @@ public class Usuario {
 
     public void setDataAtualizacao(Instant dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    // ========================================================================
+    // Persistable Interface Implementation
+    // ========================================================================
+
+    /**
+     * Determines if this entity is new (not yet persisted to database).
+     *
+     * <p>An entity is considered new if the isNew flag is true.
+     * After save, Spring Data JDBC will set this to false via the callback.
+     *
+     * @return true if entity is new, false if it already exists in database
+     */
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    /**
+     * Marks this entity as persisted (not new).
+     * Called by Spring Data JDBC after successful save.
+     */
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     @Override
