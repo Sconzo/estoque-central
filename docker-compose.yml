@@ -14,7 +14,7 @@ services:
     image: estoque-central:latest
     container_name: estoque-central-app
     ports:
-      - "8080:8080"
+      - "8080:8081"
     environment:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: dev
@@ -25,6 +25,7 @@ services:
       # Redis configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_ADDRESS: redis://redis:6379
       # OAuth 2.0 configuration
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-your-client-id.apps.googleusercontent.com}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-your-client-secret}
@@ -61,6 +62,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-scripts:/docker-entrypoint-initdb.d
     networks:
       - estoque-network
     healthcheck:

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
+import { environment } from '../../../../environments/environment';
 
 declare const google: any;
 
@@ -17,12 +18,12 @@ declare const google: any;
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   isLoading = false;
   errorMessage: string | null = null;
 
-  // IMPORTANT: Replace with your actual Google Client ID
-  private readonly GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+  // Get Google Client ID from environment
+  private readonly GOOGLE_CLIENT_ID = environment.googleClientId;
 
   // IMPORTANT: Replace with actual tenant ID (or get from subdomain/user selection)
   private readonly TENANT_ID = '00000000-0000-0000-0000-000000000000';
@@ -38,8 +39,10 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/dashboard']);
       return;
     }
+  }
 
-    // Load Google Sign-In script
+  ngAfterViewInit(): void {
+    // Load Google Sign-In script after view is initialized
     this.loadGoogleSignInScript();
   }
 
