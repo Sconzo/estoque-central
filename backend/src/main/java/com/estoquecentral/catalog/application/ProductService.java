@@ -51,15 +51,27 @@ public class ProductService {
     }
 
     /**
-     * Lists all active products with pagination
+     * Lists all products with pagination, optionally filtered by status
      *
      * @param pageable pagination parameters
+     * @param status optional status filter (null = show only active)
      * @return page of products
      */
     @Transactional(readOnly = true)
-    public Page<Product> listAll(Pageable pageable) {
-        List<Product> content = productRepository.findByAtivoTrue(pageable.getPageSize(), pageable.getOffset());
-        long total = productRepository.countByAtivoTrue();
+    public Page<Product> listAll(Pageable pageable, ProductStatus status) {
+        List<Product> content;
+        long total;
+
+        if (status != null) {
+            // Filter by specific status
+            content = productRepository.findByStatus(status, pageable.getPageSize(), pageable.getOffset());
+            total = productRepository.countByStatus(status);
+        } else {
+            // Default: show only active products
+            content = productRepository.findByAtivoTrue(pageable.getPageSize(), pageable.getOffset());
+            total = productRepository.countByAtivoTrue();
+        }
+
         return new PageImpl<>(content, pageable, total);
     }
 

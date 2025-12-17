@@ -2,16 +2,30 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { LocationService } from '../../services/location.service';
 import { LocationType, LOCATION_TYPE_LABELS } from '../../models/location.model';
 
 /**
  * LocationFormComponent - Create/Edit stock location
+ * Refactored with Material Design (UX-4)
  */
 @Component({
   selector: 'app-location-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule
+  ],
   templateUrl: './location-form.component.html',
   styleUrls: ['./location-form.component.scss']
 })

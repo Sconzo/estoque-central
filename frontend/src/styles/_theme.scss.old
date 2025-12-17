@@ -1,0 +1,375 @@
+// ============================================================================
+// ESTOQUE CENTRAL - DESIGN SYSTEM
+// Color Theme & Variables
+// ============================================================================
+
+// ============================================================================
+// COLOR PALETTE
+// ============================================================================
+
+// Primary Colors (Brand Identity)
+$primary-50: #e3f2fd;
+$primary-100: #bbdefb;
+$primary-200: #90caf9;
+$primary-300: #64b5f6;
+$primary-400: #42a5f5;
+$primary-500: #1976d2;  // Main brand color
+$primary-600: #1565c0;
+$primary-700: #0d47a1;
+$primary-800: #0a3d91;
+$primary-900: #063270;
+
+// Secondary Colors (Accents)
+$secondary-50: #f3e5f5;
+$secondary-100: #e1bee7;
+$secondary-200: #ce93d8;
+$secondary-300: #ba68c8;
+$secondary-400: #ab47bc;
+$secondary-500: #9c27b0;  // Main secondary
+$secondary-600: #8e24aa;
+$secondary-700: #7b1fa2;
+$secondary-800: #6a1b9a;
+$secondary-900: #4a148c;
+
+// Neutral Colors (Grays)
+$neutral-0: #ffffff;
+$neutral-50: #fafafa;
+$neutral-100: #f5f5f5;
+$neutral-200: #eeeeee;
+$neutral-300: #e0e0e0;
+$neutral-400: #bdbdbd;
+$neutral-500: #9e9e9e;
+$neutral-600: #757575;
+$neutral-700: #616161;
+$neutral-800: #424242;
+$neutral-900: #212121;
+$neutral-1000: #000000;
+
+// Semantic Colors - Success
+$success-50: #e8f5e9;
+$success-100: #c8e6c9;
+$success-200: #a5d6a7;
+$success-300: #81c784;
+$success-400: #66bb6a;
+$success-500: #4caf50;  // Main success
+$success-600: #43a047;
+$success-700: #388e3c;
+$success-800: #2e7d32;
+$success-900: #1b5e20;
+
+// Semantic Colors - Warning
+$warning-50: #fff3e0;
+$warning-100: #ffe0b2;
+$warning-200: #ffcc80;
+$warning-300: #ffb74d;
+$warning-400: #ffa726;
+$warning-500: #ff9800;  // Main warning
+$warning-600: #fb8c00;
+$warning-700: #f57c00;
+$warning-800: #ef6c00;
+$warning-900: #e65100;
+
+// Semantic Colors - Error
+$error-50: #ffebee;
+$error-100: #ffcdd2;
+$error-200: #ef9a9a;
+$error-300: #e57373;
+$error-400: #ef5350;
+$error-500: #f44336;  // Main error
+$error-600: #e53935;
+$error-700: #d32f2f;
+$error-800: #c62828;
+$error-900: #b71c1c;
+
+// Semantic Colors - Info
+$info-50: #e1f5fe;
+$info-100: #b3e5fc;
+$info-200: #81d4fa;
+$info-300: #4fc3f7;
+$info-400: #29b6f6;
+$info-500: #03a9f4;  // Main info
+$info-600: #039be5;
+$info-700: #0288d1;
+$info-800: #0277bd;
+$info-900: #01579b;
+
+// ============================================================================
+// MODULE-SPECIFIC COLORS
+// ============================================================================
+
+// Products Module
+$products-primary: $success-500;
+$products-light: $success-100;
+$products-dark: $success-700;
+$products-border: $success-300;
+
+// Inventory Module
+$inventory-primary: $warning-500;
+$inventory-light: $warning-100;
+$inventory-dark: $warning-700;
+$inventory-border: $warning-300;
+
+// Sales Module
+$sales-primary: $primary-500;
+$sales-light: $primary-100;
+$sales-dark: $primary-700;
+$sales-border: $primary-300;
+
+// Customers Module
+$customers-primary: $secondary-500;
+$customers-light: $secondary-100;
+$customers-dark: $secondary-700;
+$customers-border: $secondary-300;
+
+// Integrations Module
+$integrations-primary: #00acc1; // Cyan
+$integrations-light: #b2ebf2;
+$integrations-dark: #00838f;
+$integrations-border: #4dd0e1;
+
+// ============================================================================
+// FUNCTIONAL COLORS
+// ============================================================================
+
+// Backgrounds
+$bg-primary: $neutral-0;
+$bg-secondary: $neutral-50;
+$bg-tertiary: $neutral-100;
+$bg-elevated: $neutral-0;
+$bg-overlay: rgba(0, 0, 0, 0.5);
+$bg-disabled: $neutral-200;
+
+// Text Colors
+$text-primary: $neutral-900;
+$text-secondary: $neutral-600;
+$text-tertiary: $neutral-500;
+$text-disabled: $neutral-400;
+$text-inverse: $neutral-0;
+$text-link: $primary-500;
+$text-link-hover: $primary-600;
+
+// Border Colors
+$border-light: $neutral-200;
+$border-medium: $neutral-300;
+$border-dark: $neutral-400;
+$border-focus: $primary-500;
+$border-error: $error-500;
+$border-success: $success-500;
+
+// ============================================================================
+// COMPONENT COLORS
+// ============================================================================
+
+// Buttons
+$btn-primary-bg: $primary-500;
+$btn-primary-bg-hover: $primary-600;
+$btn-primary-bg-active: $primary-700;
+$btn-primary-text: $neutral-0;
+
+$btn-secondary-bg: $neutral-100;
+$btn-secondary-bg-hover: $neutral-200;
+$btn-secondary-bg-active: $neutral-300;
+$btn-secondary-text: $neutral-900;
+
+$btn-danger-bg: $error-500;
+$btn-danger-bg-hover: $error-600;
+$btn-danger-bg-active: $error-700;
+$btn-danger-text: $neutral-0;
+
+$btn-success-bg: $success-500;
+$btn-success-bg-hover: $success-600;
+$btn-success-bg-active: $success-700;
+$btn-success-text: $neutral-0;
+
+// Inputs
+$input-bg: $neutral-0;
+$input-border: $neutral-300;
+$input-border-hover: $neutral-400;
+$input-border-focus: $primary-500;
+$input-text: $neutral-900;
+$input-placeholder: $neutral-500;
+$input-disabled-bg: $neutral-100;
+$input-disabled-text: $neutral-400;
+
+// Cards
+$card-bg: $neutral-0;
+$card-border: $neutral-200;
+$card-shadow: rgba(0, 0, 0, 0.1);
+$card-hover-shadow: rgba(0, 0, 0, 0.15);
+
+// Sidebar
+$sidebar-bg: #2c3e50;
+$sidebar-text: rgba(255, 255, 255, 0.8);
+$sidebar-text-hover: rgba(255, 255, 255, 1);
+$sidebar-text-active: rgba(255, 255, 255, 1);
+$sidebar-bg-hover: rgba(255, 255, 255, 0.1);
+$sidebar-bg-active: rgba(255, 255, 255, 0.15);
+$sidebar-border-active: $primary-500;
+
+// Header
+$header-bg: $primary-500;
+$header-text: $neutral-0;
+$header-shadow: rgba(0, 0, 0, 0.1);
+
+// Tables
+$table-header-bg: $neutral-100;
+$table-row-hover: $neutral-50;
+$table-border: $neutral-200;
+
+// Badges/Tags
+$badge-success-bg: $success-100;
+$badge-success-text: $success-800;
+$badge-warning-bg: $warning-100;
+$badge-warning-text: $warning-800;
+$badge-error-bg: $error-100;
+$badge-error-text: $error-800;
+$badge-info-bg: $info-100;
+$badge-info-text: $info-800;
+
+// ============================================================================
+// SHADOWS
+// ============================================================================
+
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-base: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+// ============================================================================
+// SPACING
+// ============================================================================
+
+$spacing-0: 0;
+$spacing-1: 0.25rem;   // 4px
+$spacing-2: 0.5rem;    // 8px
+$spacing-3: 0.75rem;   // 12px
+$spacing-4: 1rem;      // 16px
+$spacing-5: 1.25rem;   // 20px
+$spacing-6: 1.5rem;    // 24px
+$spacing-8: 2rem;      // 32px
+$spacing-10: 2.5rem;   // 40px
+$spacing-12: 3rem;     // 48px
+$spacing-16: 4rem;     // 64px
+$spacing-20: 5rem;     // 80px
+$spacing-24: 6rem;     // 96px
+
+// ============================================================================
+// TYPOGRAPHY
+// ============================================================================
+
+// Font Families
+$font-primary: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+$font-mono: 'Roboto Mono', 'Courier New', monospace;
+
+// Font Sizes
+$text-xs: 0.75rem;     // 12px
+$text-sm: 0.875rem;    // 14px
+$text-base: 1rem;      // 16px
+$text-lg: 1.125rem;    // 18px
+$text-xl: 1.25rem;     // 20px
+$text-2xl: 1.5rem;     // 24px
+$text-3xl: 1.875rem;   // 30px
+$text-4xl: 2.25rem;    // 36px
+$text-5xl: 3rem;       // 48px
+
+// Font Weights
+$font-light: 300;
+$font-normal: 400;
+$font-medium: 500;
+$font-semibold: 600;
+$font-bold: 700;
+
+// Line Heights
+$leading-none: 1;
+$leading-tight: 1.25;
+$leading-snug: 1.375;
+$leading-normal: 1.5;
+$leading-relaxed: 1.625;
+$leading-loose: 2;
+
+// ============================================================================
+// BORDER RADIUS
+// ============================================================================
+
+$radius-none: 0;
+$radius-sm: 0.125rem;   // 2px
+$radius-base: 0.25rem;  // 4px
+$radius-md: 0.375rem;   // 6px
+$radius-lg: 0.5rem;     // 8px
+$radius-xl: 0.75rem;    // 12px
+$radius-2xl: 1rem;      // 16px
+$radius-full: 9999px;
+
+// ============================================================================
+// TRANSITIONS
+// ============================================================================
+
+$transition-fast: 150ms;
+$transition-base: 200ms;
+$transition-slow: 300ms;
+$transition-slower: 500ms;
+
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ============================================================================
+// Z-INDEX LAYERS
+// ============================================================================
+
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+
+// ============================================================================
+// BREAKPOINTS
+// ============================================================================
+
+$breakpoint-xs: 0;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-2xl: 1400px;
+
+// ============================================================================
+// CSS CUSTOM PROPERTIES (for runtime theming)
+// ============================================================================
+
+:root {
+  // Primary
+  --color-primary: #{$primary-500};
+  --color-primary-hover: #{$primary-600};
+  --color-primary-light: #{$primary-100};
+
+  // Backgrounds
+  --bg-primary: #{$bg-primary};
+  --bg-secondary: #{$bg-secondary};
+
+  // Text
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+
+  // Borders
+  --border-color: #{$border-light};
+
+  // Shadows
+  --shadow-base: #{$shadow-base};
+}
+
+// Dark mode (future implementation)
+// @media (prefers-color-scheme: dark) {
+//   :root {
+//     --bg-primary: #{$neutral-900};
+//     --bg-secondary: #{$neutral-800};
+//     --text-primary: #{$neutral-50};
+//     --text-secondary: #{$neutral-300};
+//   }
+// }

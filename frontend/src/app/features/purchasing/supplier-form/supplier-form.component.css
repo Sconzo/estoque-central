@@ -73,6 +73,10 @@ mat-hint {
   color: #666;
 }
 
+.required {
+  color: #dc2626;
+}
+
 /* Dialog actions */
 mat-dialog-actions {
   padding: 16px 20px;

@@ -41,3 +41,11 @@ mat-hint {
   color: #666;
   font-size: 12px;
 }
+
+.required {
+  color: #dc2626;
+}
+
+button {
+  min-height: 48px;
+}

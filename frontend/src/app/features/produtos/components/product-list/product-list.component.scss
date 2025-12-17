@@ -15,7 +15,7 @@
     margin: 0;
     font-size: 24px;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--mat-sys-on-surface);
   }
 }
 
@@ -30,41 +30,39 @@
   gap: 16px;
   margin-bottom: 16px;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
-.filter-group {
+.filter-search {
+  flex: 2;
+  min-width: 300px;
+}
+
+.filter-select {
   flex: 1;
   min-width: 200px;
-
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #374151;
-    font-size: 14px;
-  }
 }
 
 .filter-actions {
   display: flex;
   align-items: flex-end;
+  padding-top: 8px;
 }
 
 // ==================== Results Summary ====================
 .results-summary {
   margin-bottom: 16px;
   padding: 12px;
-  background: #f3f4f6;
-  border-radius: 6px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 8px;
 
   p {
     margin: 0;
-    color: #6b7280;
+    color: var(--mat-sys-on-surface-variant);
     font-size: 14px;
 
     strong {
-      color: #1f2937;
+      color: var(--mat-sys-on-surface);
     }
   }
 }
@@ -77,24 +75,9 @@
   justify-content: center;
   padding: 48px;
 
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
   p {
     margin-top: 16px;
-    color: #6b7280;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+    color: var(--mat-sys-on-surface-variant);
   }
 }
 
@@ -104,33 +87,42 @@
   align-items: center;
   justify-content: center;
   padding: 48px;
-  background: #fef2f2;
+  background: var(--mat-sys-error-container);
   border-radius: 8px;
-  border: 1px solid #fecaca;
+  gap: 16px;
 
   .error-icon {
     font-size: 48px;
-    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
   }
 
   p {
-    color: #991b1b;
-    margin-bottom: 16px;
+    color: var(--mat-sys-on-error-container);
+    margin: 0;
   }
 }
 
 // ==================== Table ====================
 .table-container {
-  background: white;
+  background: var(--mat-sys-surface);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--mat-sys-outline-variant);
   overflow: hidden;
 }
 
 .empty-state {
   padding: 48px;
   text-align: center;
-  color: #6b7280;
+  color: var(--mat-sys-on-surface-variant);
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    color: var(--mat-sys-outline);
+  }
 
   p {
     margin: 8px 0;
@@ -138,251 +130,114 @@
 
   .hint {
     font-size: 14px;
-    color: #9ca3af;
+    color: var(--mat-sys-outline);
     margin-bottom: 24px;
   }
 }
 
 .product-table {
   width: 100%;
-  border-collapse: collapse;
 
-  thead {
-    background: #f9fafb;
-    border-bottom: 2px solid #e5e7eb;
-
-    th {
-      padding: 12px 16px;
-      text-align: left;
-      font-weight: 600;
-      color: #374151;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  tbody {
-    tr {
-      border-bottom: 1px solid #f3f4f6;
-      transition: background 0.2s;
-
-      &.clickable {
-        cursor: pointer;
-
-        &:hover {
-          background: #f9fafb;
-        }
-      }
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    td {
-      padding: 12px 16px;
-      color: #1f2937;
-      font-size: 14px;
-
-      strong {
-        font-weight: 600;
-      }
-
-      .subtitle {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 4px;
-      }
-
-      .text-muted {
-        color: #9ca3af;
-      }
-
-      &.actions {
-        width: 100px;
-      }
-    }
-  }
-}
-
-.actions {
-  display: flex;
-  gap: 4px;
-  justify-content: flex-end;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: background 0.2s;
-  font-size: 16px;
-
-  &.btn-edit {
-    color: #3b82f6;
-
-    &:hover {
-      background: #dbeafe;
-    }
-  }
-
-  &.btn-sync {
-    color: #10b981;
-
-    &:hover {
-      background: #d1fae5;
-    }
-  }
-
-  &.btn-delete {
-    color: #dc2626;
-
-    &:hover {
-      background: #fee2e2;
-    }
-  }
-
-  .icon {
-    display: block;
-  }
-}
-
-// ==================== Badges ====================
-.badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-
-  &.badge-success {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  &.badge-warning {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  &.badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  &.badge-secondary {
-    background: #e5e7eb;
-    color: #4b5563;
-  }
-}
-
-// ==================== Pagination ====================
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin-top: 24px;
-  padding: 16px;
-}
-
-.page-numbers {
-  display: flex;
-  gap: 4px;
-}
-
-.btn-page {
-  min-width: 40px;
-  padding: 8px 12px;
-  background: white;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: #f3f4f6;
-    color: #1f2937;
-  }
-
-  &.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
+  .mat-mdc-header-cell {
     font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
+  .mat-mdc-row {
+    cursor: pointer;
+    transition: background 0.2s;
 
-// ==================== Buttons ====================
-.btn {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.btn-primary {
-    background: #3b82f6;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #2563eb;
+    &:hover {
+      background: var(--mat-sys-surface-container);
     }
   }
 
-  &.btn-secondary {
-    background: #e5e7eb;
-    color: #1f2937;
+  .mat-mdc-cell {
+    color: var(--mat-sys-on-surface);
 
-    &:hover:not(:disabled) {
-      background: #d1d5db;
+    strong {
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--mat-sys-on-surface-variant);
+      margin-top: 4px;
+    }
+
+    .text-muted {
+      color: var(--mat-sys-outline);
     }
   }
 
-  .icon {
-    font-size: 18px;
+  .actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+
+    .mat-mdc-icon-button {
+      width: 36px;
+      height: 36px;
+    }
   }
 }
 
-// ==================== Form Controls ====================
-.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
+// ==================== Status Badges ====================
+.badge-success {
+  background-color: var(--mat-sys-tertiary-container) !important;
+  color: var(--mat-sys-on-tertiary-container) !important;
 }
 
-select.form-control {
-  cursor: pointer;
+.badge-warning {
+  background-color: var(--mat-sys-secondary-container) !important;
+  color: var(--mat-sys-on-secondary-container) !important;
+}
+
+.badge-danger {
+  background-color: var(--mat-sys-error-container) !important;
+  color: var(--mat-sys-on-error-container) !important;
+}
+
+.badge-secondary {
+  background-color: var(--mat-sys-surface-container-high) !important;
+  color: var(--mat-sys-on-surface-variant) !important;
+}
+
+// ==================== Responsive ====================
+@media (max-width: 768px) {
+  .product-list-container {
+    padding: 12px;
+  }
+
+  .filters {
+    flex-direction: column;
+
+    .filter-search,
+    .filter-select {
+      width: 100%;
+    }
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-actions {
+      width: 100%;
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  // Make table scrollable on mobile
+  .table-container {
+    overflow-x: auto;
+  }
 }

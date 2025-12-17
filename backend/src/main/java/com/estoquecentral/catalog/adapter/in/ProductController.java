@@ -66,13 +66,14 @@ public class ProductController {
      * @return page of products
      */
     @GetMapping
-    @Operation(summary = "List all products", description = "Returns paginated list of all active products")
+    @Operation(summary = "List all products", description = "Returns paginated list of products optionally filtered by status")
     public ResponseEntity<Page<ProductDTO>> listAll(
             @RequestParam(defaultValue = "0") @Parameter(description = "Page number") int page,
-            @RequestParam(defaultValue = "20") @Parameter(description = "Page size") int size) {
+            @RequestParam(defaultValue = "20") @Parameter(description = "Page size") int size,
+            @RequestParam(required = false) @Parameter(description = "Filter by status (ACTIVE, INACTIVE, DISCONTINUED)") ProductStatus status) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Product> products = productService.listAll(pageable);
+        Page<Product> products = productService.listAll(pageable, status);
 
         Page<ProductDTO> dtos = products.map(ProductDTO::fromEntity);
 

@@ -1,0 +1,192 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Bem-vindo ao Estoque Central</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Carregando dados...</p>
+    </div>
+  } @else {
+    <!-- Cards de Estatísticas -->
+    <div class="stats-grid">
+      <app-metric-card
+        title="Total de Produtos"
+        [value]="stats().totalProdutos.toString()"
+        icon="inventory_2"
+        color="#6A1B9A">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Estoque Total"
+        [value]="stats().estoqueTotal.toString()"
+        [changePercent]="stats().alertasEstoque > 0 ? -((stats().alertasEstoque / stats().estoqueTotal) * 100) : undefined"
+        icon="warehouse"
+        [color]="stats().alertasEstoque > 0 ? '#C62828' : '#F9A825'">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Vendas do Mês"
+        [value]="stats().vendasMes.toString()"
+        [changePercent]="12.5"
+        icon="point_of_sale"
+        color="#6A1B9A">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Clientes Ativos"
+        [value]="stats().clientesAtivos.toString()"
+        [changePercent]="8.3"
+        icon="people"
+        color="#2E7D32">
+      </app-metric-card>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="dashboard-content">
+      <!-- Produtos com Estoque Baixo -->
+      <div class="card">
+        <div class="card-header">
+          <h2>
+            <mat-icon class="header-icon">warning</mat-icon>
+            Alertas de Estoque
+          </h2>
+          <button mat-stroked-button [routerLink]="['/estoque']">
+            Ver todos
+          </button>
+        </div>
+        <div class="card-body">
+          @if (produtosEstoqueBaixo().length > 0) {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Produto</th>
+                    <th>Estoque</th>
+                    <th>Mínimo</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (produto of produtosEstoqueBaixo(); track produto.id) {
+                    <tr>
+                      <td>{{ produto.codigo }}</td>
+                      <td>{{ produto.nome }}</td>
+                      <td>{{ produto.estoque }}</td>
+                      <td>{{ produto.minimo }}</td>
+                      <td>
+                        <span class="badge" [class]="getAlertClass(produto.estoque, produto.minimo)">
+                          @if (produto.estoque < produto.minimo * 0.3) {
+                            Crítico
+                          } @else if (produto.estoque < produto.minimo * 0.6) {
+                            Baixo
+                          } @else {
+                            OK
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <p>✅ Nenhum alerta de estoque no momento</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Grid de 2 Colunas -->
+      <div class="two-column-grid">
+        <!-- Produtos Mais Vendidos -->
+        <div class="card">
+          <div class="card-header">
+            <h2>
+              <mat-icon class="header-icon">emoji_events</mat-icon>
+              Mais Vendidos
+            </h2>
+            <button mat-stroked-button [routerLink]="['/produtos']">
+              Ver todos
+            </button>
+          </div>
+          <div class="card-body">
+            @if (produtosMaisVendidos().length > 0) {
+              <div class="list">
+                @for (produto of produtosMaisVendidos(); track produto.id) {
+                  <div class="list-item">
+                    <div class="list-item-content">
+                      <div class="list-item-title">{{ produto.nome }}</div>
+                      <div class="list-item-subtitle">{{ produto.codigo }}</div>
+                    </div>
+                    <div class="list-item-badge">{{ produto.vendas }} vendas</div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <p>Nenhum dado disponível</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Atividades Recentes -->
+        <div class="card">
+          <div class="card-header">
+            <h2>
+              <mat-icon class="header-icon">history</mat-icon>
+              Atividades Recentes
+            </h2>
+          </div>
+          <div class="card-body">
+            @if (atividadesRecentes().length > 0) {
+              <div class="timeline">
+                @for (atividade of atividadesRecentes(); track $index) {
+                  <div class="timeline-item">
+                    <div class="timeline-marker" [class]="'marker-' + atividade.tipo"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">{{ atividade.descricao }}</div>
+                      <div class="timeline-time">{{ atividade.tempo }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <p>Nenhuma atividade recente</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="quick-actions">
+      <h2>Ações Rápidas</h2>
+      <div class="actions-grid">
+        <button mat-raised-button color="primary" [routerLink]="['/produtos/novo']">
+          <mat-icon>add</mat-icon>
+          Novo Produto
+        </button>
+        <button mat-raised-button color="primary" [routerLink]="['/pdv']">
+          <mat-icon>point_of_sale</mat-icon>
+          Abrir PDV
+        </button>
+        <button mat-raised-button color="accent" [routerLink]="['/clientes']">
+          <mat-icon>person_add</mat-icon>
+          Cadastrar Cliente
+        </button>
+        <button mat-stroked-button [routerLink]="['/estoque/ajustes']">
+          <mat-icon>edit_note</mat-icon>
+          Ajustar Estoque
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -72,7 +72,8 @@ export class AuthService {
    * @returns JWT token or null if not found
    */
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    return token ? token.trim() : null;
   }
 
   /**

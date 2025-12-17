@@ -2,47 +2,57 @@
   <!-- Header -->
   <div class="header">
     <h2>Categorias de Produtos</h2>
-    <button class="btn btn-primary" (click)="openCreateRootModal()" [disabled]="loading">
-      <span class="icon">+</span>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="openCreateRootModal()"
+      [disabled]="loading"
+      aria-label="Criar nova categoria raiz">
+      <mat-icon>add</mat-icon>
       Nova Categoria Raiz
     </button>
   </div>
 
   <!-- Breadcrumb -->
   <div class="breadcrumb-container" *ngIf="breadcrumb.length > 0">
-    <div class="breadcrumb">
-      <button class="breadcrumb-close" (click)="clearBreadcrumb()" title="Limpar seleção">
-        ×
+    <nav class="breadcrumb" aria-label="Caminho de navegação da categoria">
+      <button mat-icon-button class="breadcrumb-close" (click)="clearBreadcrumb()" aria-label="Limpar seleção de categoria">
+        <mat-icon>close</mat-icon>
       </button>
       <span class="breadcrumb-label">Caminho:</span>
       <ng-container *ngFor="let cat of breadcrumb; let last = last">
         <button
-          class="breadcrumb-item"
+          mat-button
           [class.active]="last"
           (click)="navigateToBreadcrumb(cat)"
+          [attr.aria-label]="'Navegar para categoria ' + cat.name"
+          [attr.aria-current]="last ? 'page' : null"
         >
           {{ cat.name }}
         </button>
-        <span class="breadcrumb-separator" *ngIf="!last"> / </span>
+        <mat-icon class="breadcrumb-separator" *ngIf="!last" aria-hidden="true">chevron_right</mat-icon>
       </ng-container>
-    </div>
+    </nav>
   </div>
 
   <!-- Loading Spinner -->
-  <div class="loading-spinner" *ngIf="loading && tree.length === 0">
-    <div class="spinner"></div>
+  <div class="loading-spinner" *ngIf="loading && tree.length === 0" role="status" aria-live="polite">
+    <mat-spinner diameter="50"></mat-spinner>
     <p>Carregando categorias...</p>
   </div>
 
   <!-- Error Message -->
-  <div class="error-message" *ngIf="error">
-    <span class="error-icon">⚠</span>
+  <div class="error-message" *ngIf="error" role="alert">
+    <mat-icon class="error-icon" color="warn">warning</mat-icon>
     <p>{{ error }}</p>
-    <button class="btn btn-secondary" (click)="loadTree()">Tentar Novamente</button>
+    <button mat-stroked-button (click)="loadTree()" aria-label="Tentar carregar categorias novamente">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
   </div>
 
   <!-- Category Tree -->
-  <div class="tree" *ngIf="!loading && !error">
+  <div class="tree" *ngIf="!loading && !error" role="tree" aria-label="Árvore de categorias de produtos">
     <div class="empty-state" *ngIf="tree.length === 0">
       <p>Nenhuma categoria cadastrada.</p>
       <p class="hint">Clique em "Nova Categoria Raiz" para começar.</p>
@@ -56,23 +66,26 @@
 
 <!-- Recursive Category Node Template -->
 <ng-template #categoryNode let-node let-level="level">
-  <div class="tree-node" [class.selected]="node.category.id === selectedCategoryId">
+  <div class="tree-node" [class.selected]="node.category.id === selectedCategoryId" role="treeitem" [attr.aria-level]="level + 1" [attr.aria-expanded]="node.children && node.children.length > 0 ? node.expanded : null">
     <!-- Node Content -->
     <div class="node-content" [style.paddingLeft.px]="level * 24">
       <!-- Expand/Collapse Button -->
       <button
+        mat-icon-button
         class="node-toggle"
         *ngIf="node.children && node.children.length > 0"
         (click)="toggleNode(node)"
+        [attr.aria-label]="(node.expanded ? 'Recolher' : 'Expandir') + ' categoria ' + node.category.name"
       >
-        <span class="icon" [class.expanded]="node.expanded">
-          {{ node.expanded ? '▼' : '▶' }}
-        </span>
+        <mat-icon [class.expanded]="node.expanded">
+          {{ node.expanded ? 'expand_more' : 'chevron_right' }}
+        </mat-icon>
       </button>
       <span class="node-placeholder" *ngIf="!node.children || node.children.length === 0"></span>
 
-      <!-- Category Name -->
-      <span class="node-name" (click)="loadBreadcrumb(node.category.id)">
+      <!-- Category Icon & Name -->
+      <mat-icon class="node-icon">folder</mat-icon>
+      <span class="node-name" (click)="loadBreadcrumb(node.category.id)" tabindex="0" role="button" [attr.aria-label]="'Selecionar categoria ' + node.category.name">
         {{ node.category.name }}
       </span>
 
@@ -85,35 +98,38 @@
       <div class="node-actions">
         <!-- Add Child Button -->
         <button
-          class="btn-icon btn-add"
+          mat-icon-button
+          class="btn-add"
           (click)="openCreateChildModal(node.category)"
-          title="Adicionar Subcategoria"
+          [attr.aria-label]="'Adicionar subcategoria em ' + node.category.name"
         >
-          <span class="icon">+</span>
+          <mat-icon>add_circle_outline</mat-icon>
         </button>
 
         <!-- Edit Button -->
         <button
-          class="btn-icon btn-edit"
+          mat-icon-button
+          class="btn-edit"
           (click)="openEditModal(node.category)"
-          title="Editar Categoria"
+          [attr.aria-label]="'Editar categoria ' + node.category.name"
         >
-          <span class="icon">✎</span>
+          <mat-icon>edit</mat-icon>
         </button>
 
         <!-- Delete Button -->
         <button
-          class="btn-icon btn-delete"
+          mat-icon-button
+          class="btn-delete"
           (click)="deleteCategory(node.category, $event)"
-          title="Excluir Categoria"
+          [attr.aria-label]="'Excluir categoria ' + node.category.name"
         >
-          <span class="icon">🗑</span>
+          <mat-icon>delete</mat-icon>
         </button>
       </div>
     </div>
 
     <!-- Children (recursively) -->
-    <div class="node-children" *ngIf="node.expanded && node.children && node.children.length > 0">
+    <div class="node-children" *ngIf="node.expanded && node.children && node.children.length > 0" role="group">
       <ng-container *ngFor="let childNode of node.children">
         <ng-container *ngTemplateOutlet="categoryNode; context: { $implicit: childNode, level: level + 1 }"></ng-container>
       </ng-container>
@@ -123,53 +139,72 @@
 
 <!-- Create/Edit Modal -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>{{ modalTitle }}</h3>
-      <button class="modal-close" (click)="closeModal()">×</button>
-    </div>
+  <mat-card class="modal" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <mat-card-header class="modal-header">
+      <mat-card-title id="modal-title">{{ modalTitle }}</mat-card-title>
+      <button mat-icon-button class="modal-close" (click)="closeModal()" aria-label="Fechar modal de categoria">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-card-header>
 
-    <div class="modal-body">
+    <mat-card-content class="modal-body">
       <!-- Parent Info (for create-child mode) -->
-      <div class="form-group" *ngIf="modalMode === 'create-child' && parentCategory">
-        <label>Categoria Pai:</label>
-        <div class="parent-info">{{ parentCategory.name }}</div>
+      <div class="parent-info-container" *ngIf="modalMode === 'create-child' && parentCategory">
+        <label id="parent-category-label">Categoria Pai:</label>
+        <div class="parent-info" aria-labelledby="parent-category-label">
+          <mat-icon>folder</mat-icon>
+          {{ parentCategory.name }}
+        </div>
       </div>
 
       <!-- Name Field -->
-      <div class="form-group">
-        <label for="categoryName">Nome: <span class="required">*</span></label>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nome <span class="required">*</span></mat-label>
         <input
-          id="categoryName"
-          type="text"
-          class="form-control"
+          matInput
           [(ngModel)]="formData.name"
           placeholder="Ex: Eletrônicos, Alimentos, etc."
           required
           autofocus
+          aria-label="Nome da categoria"
+          aria-required="true"
         />
-      </div>
+        <mat-error *ngIf="!formData.name">Nome é obrigatório</mat-error>
+      </mat-form-field>
 
       <!-- Description Field -->
-      <div class="form-group">
-        <label for="categoryDescription">Descrição:</label>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descrição</mat-label>
         <textarea
-          id="categoryDescription"
-          class="form-control"
+          matInput
           [(ngModel)]="formData.description"
           placeholder="Descrição opcional da categoria"
           rows="3"
+          aria-label="Descrição da categoria (opcional)"
         ></textarea>
-      </div>
-    </div>
+      </mat-form-field>
+    </mat-card-content>
 
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()" [disabled]="loading">
+    <mat-card-actions class="modal-footer">
+      <button
+        mat-stroked-button
+        (click)="closeModal()"
+        [disabled]="loading"
+        aria-label="Cancelar e fechar modal">
         Cancelar
       </button>
-      <button class="btn btn-primary" (click)="saveCategory()" [disabled]="loading || !formData.name">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="saveCategory()"
+        [disabled]="loading || !formData.name"
+        [attr.aria-label]="loading ? 'Salvando categoria...' : 'Salvar categoria'"
+        [attr.aria-disabled]="loading || !formData.name">
+        <mat-icon *ngIf="loading">
+          <mat-spinner diameter="20"></mat-spinner>
+        </mat-icon>
         {{ loading ? 'Salvando...' : 'Salvar' }}
       </button>
-    </div>
-  </div>
+    </mat-card-actions>
+  </mat-card>
 </div>

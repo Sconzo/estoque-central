@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque Central - Temas Roxos (Purple Innovation)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 24px;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #A72DFF 0%, #9161FF 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(167, 45, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .themes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .theme-header {
+            margin-bottom: 24px;
+        }
+
+        .theme-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-personality {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .theme-description {
+            font-size: 14px;
+            color: #424242;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+
+        .color-palette {
+            margin-bottom: 32px;
+        }
+
+        .palette-section {
+            margin-bottom: 24px;
+        }
+
+        .palette-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #757575;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .color-swatches {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .color-box {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .color-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #424242;
+            margin-bottom: 4px;
+        }
+
+        .color-hex {
+            font-size: 11px;
+            color: #757575;
+            font-family: monospace;
+        }
+
+        .components-preview {
+            margin-bottom: 24px;
+        }
+
+        .preview-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #212121;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid;
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-width: 2px;
+        }
+
+        .form-input.error {
+            border-color: #d32f2f;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-demo {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .card-content {
+            color: #616161;
+            font-size: 14px;
+        }
+
+        .comparison-note {
+            background: #F3E5F5;
+            border-left: 4px solid #A72DFF;
+            padding: 16px;
+            margin-top: 32px;
+            border-radius: 4px;
+        }
+
+        .comparison-note strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #212121;
+        }
+
+        .differentiation-box {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            border: 2px solid #A72DFF;
+        }
+
+        .differentiation-box h2 {
+            color: #A72DFF;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .differentiation-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .differentiation-box li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .differentiation-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #A72DFF;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .themes-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💜 Estoque Central - Temas Roxos (Inovação)</h1>
+        <p>Diferenciação ousada: roxo transmite <strong>inovação, qualidade premium e modernidade</strong></p>
+    </div>
+
+    <div class="differentiation-box">
+        <h2>🎯 Por Que Roxo é Estratégico</h2>
+        <ul>
+            <li><strong>Diferenciação Total:</strong> Conta Azul, Bling e Olist usam azul - roxo destaca você</li>
+            <li><strong>Inovação:</strong> Roxo transmite modernidade e pensamento à frente</li>
+            <li><strong>Qualidade Premium:</strong> Associado a marcas de luxo e qualidade superior</li>
+            <li><strong>Criatividade + Confiança:</strong> Equilibra inovação com seriedade</li>
+            <li><strong>Memorável:</strong> Usuários lembram de interfaces roxas (ex: Twitch, Nubank roxo)</li>
+        </ul>
+    </div>
+
+    <div class="themes-container">
+        <!-- Theme 1: Innovative Purple (A72DFF) -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #A72DFF;">Tema 1: Roxo Inovador ⭐</div>
+                <div class="theme-personality">Vibrante • Inovador • Premium</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Roxo vibrante (#A72DFF) que você sugeriu! Transmite inovação e modernidade, com energia e confiança. Verde mantém a identidade brasileira positiva.<br>
+                    <strong>Melhor para:</strong> PMEs que querem se posicionar como inovadoras e diferentes dos concorrentes tradicionais.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #A72DFF;">#A72DFF</div>
+                            <div class="color-label">Primary (Roxo Vibrante)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #8B1FDB;">#8B1FDB</div>
+                            <div class="color-label">Primary Dark</div>
+                            <div class="color-hex">Hover, ênfase</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #2E7D32;">#2E7D32</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #F57C00;">#F57C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #C62828;">#C62828</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #00BCD4;">#00BCD4</div>
+                            <div class="color-label">Info (Cyan)</div>
+                            <div class="color-hex">Informações, dicas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #A72DFF;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #A72DFF; color: #A72DFF;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #A72DFF;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade" style="border-color: #A72DFF; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #C62828; border-left: 4px solid #C62828;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="alert" style="background: #E1F5FE; color: #0277BD; border-left: 4px solid #00BCD4;">
+                    ℹ Sincronização em andamento...
+                </div>
+
+                <div class="card-demo" style="border-color: #A72DFF;">
+                    <div class="card-title" style="color: #A72DFF;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 2: Tech Premium (9161FF) -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #9161FF;">Tema 2: Premium Tech ⭐</div>
+                <div class="theme-personality">Sofisticado • Moderno • Confiável</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Roxo tech (#9161FF) que você sugeriu! Tom mais suave e sofisticado, equilibra inovação com confiança. Menos vibrante, mais profissional.<br>
+                    <strong>Melhor para:</strong> PMEs que querem modernidade premium sem ser muito ousadas, transmitindo qualidade superior.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #9161FF;">#9161FF</div>
+                            <div class="color-label">Primary (Roxo Tech)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #7243DB;">#7243DB</div>
+                            <div class="color-label">Primary Dark</div>
+                            <div class="color-hex">Hover, ênfase</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #388E3C;">#388E3C</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #F9A825;">#F9A825</div>
+                            <div class="color-label">Warning (Amarelo)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #D32F2F;">#D32F2F</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0288D1;">#0288D1</div>
+                            <div class="color-label">Info (Azul)</div>
+                            <div class="color-hex">Informações, dicas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #9161FF;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #9161FF; color: #9161FF;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #9161FF;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade" style="border-color: #9161FF; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #388E3C; border-left: 4px solid #388E3C;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #D32F2F; border-left: 4px solid #D32F2F;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo" style="border-color: #9161FF;">
+                    <div class="card-title" style="color: #9161FF;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 3: Purple + Blue Hybrid -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #A72DFF;">Tema 3: Híbrido Inovador</div>
+                <div class="theme-personality">Equilibrado • Inovador + Confiável</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Roxo (#A72DFF) como primary + Azul como secondary. Combina inovação do roxo com confiança do azul. Melhor dos dois mundos!<br>
+                    <strong>Melhor para:</strong> PMEs que querem se diferenciar mas manter alguma familiaridade com padrões corporativos tradicionais.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #A72DFF;">#A72DFF</div>
+                            <div class="color-label">Primary (Roxo)</div>
+                            <div class="color-hex">Ações principais</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #1976D2;">#1976D2</div>
+                            <div class="color-label">Secondary (Azul)</div>
+                            <div class="color-hex">Navegação, contexto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #43A047;">#43A047</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #FB8C00;">#FB8C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #E53935;">#E53935</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #A72DFF;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #1976D2; color: #1976D2;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #A72DFF;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade" style="border-color: #A72DFF; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #43A047; border-left: 4px solid #43A047;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #E53935; border-left: 4px solid #E53935;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo">
+                    <div class="card-title" style="color: #A72DFF;">Vendas do Dia</div>
+                    <div class="card-content" style="color: #1976D2;">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 4: Deep Purple Luxury -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #6A1B9A;">Tema 4: Luxo Profundo</div>
+                <div class="theme-personality">Sofisticado • Premium • Sério</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Roxo profundo escuro com dourado/âmbar como accent. Máxima sofisticação e qualidade premium. Visual mais sóbrio e luxuoso.<br>
+                    <strong>Melhor para:</strong> PMEs que querem transmitir qualidade superior e se posicionar como solução premium, diferenciando-se totalmente.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #6A1B9A;">#6A1B9A</div>
+                            <div class="color-label">Primary (Roxo Profundo)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #F9A825; color: #212121;">#F9A825</div>
+                            <div class="color-label">Accent (Dourado)</div>
+                            <div class="color-hex">Destaques, premium features</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #2E7D32;">#2E7D32</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #EF6C00;">#EF6C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #C62828;">#C62828</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #6A1B9A;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #F9A825; color: #F9A825;">Premium</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #6A1B9A;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade" style="border-color: #6A1B9A; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #C62828; border-left: 4px solid #C62828;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo" style="border-color: #6A1B9A;">
+                    <div class="card-title" style="color: #6A1B9A;">Vendas do Dia <span style="color: #F9A825;">✦</span></div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison-note">
+        <strong>💜 Roxo vs Azul - Análise Estratégica:</strong>
+
+        <strong>Vantagens do Roxo:</strong>
+        • <strong>Diferenciação total</strong> - Nenhum concorrente usa (Conta Azul, Bling, Olist = todos azuis)<br>
+        • <strong>Inovação</strong> - Transmite modernidade e pensamento à frente<br>
+        • <strong>Premium</strong> - Associado a qualidade superior (ex: Nubank, Twitch, Vivo)<br>
+        • <strong>Memorável</strong> - Usuários lembram de interfaces roxas<br><br>
+
+        <strong>Trade-offs:</strong>
+        • Menos "tradicional" que azul corporativo<br>
+        • Pode ser polarizante (alguns amam, outros preferem conservador)<br><br>
+
+        <strong>Minha Recomendação:</strong><br>
+        Se você quer se posicionar como <strong>ERP inovador e diferente</strong>, roxo é uma escolha estratégica brilhante!<br>
+        Se precisa de máxima familiaridade/confiança tradicional, azul é mais seguro.<br><br>
+
+        <strong>Qual tema roxo te atrai mais?</strong> (1, 2, 3 ou 4)<br>
+        Ou prefere voltar pros temas azuis?
+    </div>
+</body>
+</html>

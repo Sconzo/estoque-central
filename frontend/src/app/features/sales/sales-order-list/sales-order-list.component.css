@@ -89,6 +89,16 @@ mat-paginator {
   margin-top: 16px;
 }
 
+/* Accessibility */
+button {
+  min-height: 48px;
+}
+
+mat-icon-button {
+  min-height: 48px;
+  min-width: 48px;
+}
+
 @media (max-width: 768px) {
   .sales-order-list-container {
     padding: 16px;

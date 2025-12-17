@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque Central - Explorador de Temas de Cores</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 24px;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            padding: 32px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: #212121;
+        }
+
+        .header p {
+            color: #757575;
+            font-size: 16px;
+        }
+
+        .themes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .theme-header {
+            margin-bottom: 24px;
+        }
+
+        .theme-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-personality {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .theme-description {
+            font-size: 14px;
+            color: #424242;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+
+        .color-palette {
+            margin-bottom: 32px;
+        }
+
+        .palette-section {
+            margin-bottom: 24px;
+        }
+
+        .palette-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #757575;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .color-swatches {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .color-box {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .color-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #424242;
+            margin-bottom: 4px;
+        }
+
+        .color-hex {
+            font-size: 11px;
+            color: #757575;
+            font-family: monospace;
+        }
+
+        .components-preview {
+            margin-bottom: 24px;
+        }
+
+        .preview-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #212121;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid;
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-width: 2px;
+        }
+
+        .form-input.error {
+            border-color: #d32f2f;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-demo {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .card-content {
+            color: #616161;
+            font-size: 14px;
+        }
+
+        .comparison-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin-top: 32px;
+            border-radius: 4px;
+        }
+
+        .comparison-note strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #212121;
+        }
+
+        @media (max-width: 768px) {
+            .themes-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Estoque Central - Explorador de Temas</h1>
+        <p>Escolha a paleta de cores que melhor transmite <strong>confiança, eficiência e tranquilidade</strong> para seu ERP omnichannel</p>
+    </div>
+
+    <div class="themes-container">
+        <!-- Theme 1: Corporate Trust -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #1565C0;">Tema 1: Confiança Corporativa</div>
+                <div class="theme-personality">Profissional • Confiável • Estabelecido</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Azul profundo transmite confiança e estabilidade, ideal para transmitir segurança nos dados. Verde vibrante para confirmações positivas.<br>
+                    <strong>Melhor para:</strong> PMEs que valorizam aparência corporativa tradicional e profissionalismo.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #1565C0;">#1565C0</div>
+                            <div class="color-label">Primary (Azul Corporativo)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0D47A1;">#0D47A1</div>
+                            <div class="color-label">Primary Dark</div>
+                            <div class="color-hex">Hover, ênfase</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #2E7D32;">#2E7D32</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #F57C00;">#F57C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #C62828;">#C62828</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #1565C0;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #1565C0; color: #1565C0;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #1565C0;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade inválida" style="border-color: #C62828; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #C62828; border-left: 4px solid #C62828;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo">
+                    <div class="card-title" style="color: #1565C0;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 2: Brazilian Harmony -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #0277BD;">Tema 2: Harmonia Brasileira</div>
+                <div class="theme-personality">Equilibrado • Acessível • Positivo</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Azul céu balanceado com verde, criando harmonia e acessibilidade. Menos corporativo, mais amigável, mantendo profissionalismo.<br>
+                    <strong>Melhor para:</strong> PMEs que querem ser modernas mas acessíveis, valorizando a "brasilidade" positiva.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0277BD;">#0277BD</div>
+                            <div class="color-label">Primary (Azul Céu)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #00ACC1;">#00ACC1</div>
+                            <div class="color-label">Secondary (Cyan)</div>
+                            <div class="color-hex">Ações secundárias, destaques</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #388E3C;">#388E3C</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #F9A825;">#F9A825</div>
+                            <div class="color-label">Warning (Amarelo)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #D32F2F;">#D32F2F</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #0277BD;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #00ACC1; color: #00ACC1;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #0277BD;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade inválida" style="border-color: #D32F2F; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #388E3C; border-left: 4px solid #388E3C;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #D32F2F; border-left: 4px solid #D32F2F;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo">
+                    <div class="card-title" style="color: #0277BD;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 3: Modern Efficiency -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #0288D1;">Tema 3: Eficiência Moderna</div>
+                <div class="theme-personality">Energético • Produtivo • Atual</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Azul vibrante que transmite energia e modernidade sem perder profissionalismo. Foco em produtividade e ação.<br>
+                    <strong>Melhor para:</strong> PMEs que se veem como inovadoras e querem uma interface mais energética e moderna.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0288D1;">#0288D1</div>
+                            <div class="color-label">Primary (Azul Vibrante)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #7B1FA2;">#7B1FA2</div>
+                            <div class="color-label">Accent (Roxo)</div>
+                            <div class="color-hex">Destaques especiais, badges</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #43A047;">#43A047</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #FB8C00;">#FB8C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #E53935;">#E53935</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #0288D1;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #7B1FA2; color: #7B1FA2;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #0288D1;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade inválida" style="border-color: #E53935; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #43A047; border-left: 4px solid #43A047;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #E53935; border-left: 4px solid #E53935;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo">
+                    <div class="card-title" style="color: #0288D1;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 4: Enterprise Solid -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #01579B;">Tema 4: Solidez Enterprise</div>
+                <div class="theme-personality">Sólido • Seguro • Sofisticado</div>
+                <div class="theme-description">
+                    <strong>Personalidade:</strong> Azul navy escuro com teal como acento, transmitindo solidez máxima e seriedade. Visual mais enterprise e profundo.<br>
+                    <strong>Melhor para:</strong> PMEs que querem transmitir solidez e confiabilidade máximas, competindo com ERPs grandes.
+                </div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Cores Principais</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #01579B;">#01579B</div>
+                            <div class="color-label">Primary (Navy)</div>
+                            <div class="color-hex">Ações principais, navegação</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #00838F;">#00838F</div>
+                            <div class="color-label">Secondary (Teal)</div>
+                            <div class="color-hex">Ações secundárias, destaques</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Cores Semânticas</div>
+                    <div class="color-swatches">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #2E7D32;">#2E7D32</div>
+                            <div class="color-label">Success (Verde)</div>
+                            <div class="color-hex">Estoque OK, sync bem-sucedida</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #EF6C00;">#EF6C00</div>
+                            <div class="color-label">Warning (Laranja)</div>
+                            <div class="color-hex">Estoque baixo, atenção</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #C62828;">#C62828</div>
+                            <div class="color-label">Error (Vermelho)</div>
+                            <div class="color-hex">Falhas, erros críticos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="preview-label">Componentes em Ação</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" style="background: #01579B;">Confirmar Venda</button>
+                    <button class="btn btn-secondary" style="border-color: #00838F; color: #00838F;">Cancelar</button>
+                    <button class="btn btn-primary btn-disabled" style="background: #01579B;">Processando...</button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Buscar produto..." style="border-color: #e0e0e0;">
+                    <input type="text" class="form-input" value="Quantidade inválida" style="border-color: #C62828; margin-top: 8px;">
+                </div>
+
+                <div class="alert" style="background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32;">
+                    ✓ Estoque sincronizado com Mercado Livre
+                </div>
+
+                <div class="alert" style="background: #FFEBEE; color: #C62828; border-left: 4px solid #C62828;">
+                    ✕ Falha ao emitir NFCe - verificar conexão
+                </div>
+
+                <div class="card-demo">
+                    <div class="card-title" style="color: #01579B;">Vendas do Dia</div>
+                    <div class="card-content">R$ 12.450,00 • 47 pedidos • 3 canais ativos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="comparison-note">
+        <strong>💡 Como Escolher:</strong>
+        Olhe para os botões, alertas e cards acima. Qual tema transmite mais <strong>confiança e eficiência</strong> para seus usuários (donos de pet shops, mini-mercados, distribuidoras)?<br><br>
+        • <strong>Tema 1 (Confiança Corporativa):</strong> Mais tradicional e estabelecido<br>
+        • <strong>Tema 2 (Harmonia Brasileira):</strong> Equilibrado e acessível, menos "corporativo"<br>
+        • <strong>Tema 3 (Eficiência Moderna):</strong> Mais energético e produtivo<br>
+        • <strong>Tema 4 (Solidez Enterprise):</strong> Máxima seriedade e profundidade
+    </div>
+</body>
+</html>

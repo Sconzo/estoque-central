@@ -1,0 +1,43 @@
+.showcase-container {
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  h1 {
+    color: #6A1B9A;
+    margin-bottom: 32px;
+    font-size: 32px;
+  }
+
+  .showcase-section {
+    margin-bottom: 48px;
+    padding: 24px;
+    background: #fafafa;
+    border-radius: 8px;
+
+    h2 {
+      color: #212121;
+      margin-bottom: 24px;
+      font-size: 24px;
+    }
+
+    h3 {
+      color: #616161;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+  }
+
+  .showcase-group {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+}

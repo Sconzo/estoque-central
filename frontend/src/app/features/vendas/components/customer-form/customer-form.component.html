@@ -3,78 +3,157 @@
     <h2>{{ isEditMode ? 'Editar Cliente' : 'Novo Cliente' }}</h2>
   </div>
 
+  <!-- Error Message -->
+  <div class="error-banner" *ngIf="error">
+    <mat-icon class="error-icon">warning</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
   <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form">
     <!-- Customer Type -->
-    <div class="form-group">
-      <label>Tipo de Pessoa *</label>
-      <div class="radio-group">
-        <label>
-          <input type="radio" formControlName="customerType" [value]="CustomerType.INDIVIDUAL" />
-          Pessoa Física
-        </label>
-        <label>
-          <input type="radio" formControlName="customerType" [value]="CustomerType.BUSINESS" />
-          Pessoa Jurídica
-        </label>
-      </div>
+    <div class="form-section">
+      <label class="section-label">Tipo de Pessoa <span class="required">*</span></label>
+      <mat-radio-group
+        formControlName="customerType"
+        aria-label="Tipo de pessoa"
+        aria-required="true"
+        class="radio-group">
+        <mat-radio-button [value]="CustomerType.INDIVIDUAL">Pessoa Física</mat-radio-button>
+        <mat-radio-button [value]="CustomerType.BUSINESS">Pessoa Jurídica</mat-radio-button>
+      </mat-radio-group>
     </div>
 
     <!-- PF Fields -->
     <div *ngIf="customerForm.get('customerType')?.value === CustomerType.INDIVIDUAL" class="form-row">
-      <div class="form-group">
-        <label for="firstName">Nome *</label>
-        <input id="firstName" type="text" formControlName="firstName" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="lastName">Sobrenome *</label>
-        <input id="lastName" type="text" formControlName="lastName" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="cpf">CPF</label>
-        <input id="cpf" type="text" formControlName="cpf" class="form-control" placeholder="000.000.000-00" />
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Nome <span class="required">*</span></mat-label>
+        <input
+          matInput
+          formControlName="firstName"
+          required
+          aria-label="Nome do cliente"
+          aria-required="true"
+          [attr.aria-describedby]="customerForm.get('firstName')?.hasError('required') ? 'firstName-error' : null">
+        <mat-error id="firstName-error" role="alert" *ngIf="customerForm.get('firstName')?.hasError('required')">
+          Nome é obrigatório
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Sobrenome <span class="required">*</span></mat-label>
+        <input
+          matInput
+          formControlName="lastName"
+          required
+          aria-label="Sobrenome do cliente"
+          aria-required="true"
+          [attr.aria-describedby]="customerForm.get('lastName')?.hasError('required') ? 'lastName-error' : null">
+        <mat-error id="lastName-error" role="alert" *ngIf="customerForm.get('lastName')?.hasError('required')">
+          Sobrenome é obrigatório
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>CPF</mat-label>
+        <input
+          matInput
+          formControlName="cpf"
+          placeholder="000.000.000-00"
+          aria-label="CPF do cliente">
+      </mat-form-field>
     </div>
 
     <!-- PJ Fields -->
     <div *ngIf="customerForm.get('customerType')?.value === CustomerType.BUSINESS" class="form-row">
-      <div class="form-group">
-        <label for="companyName">Razão Social *</label>
-        <input id="companyName" type="text" formControlName="companyName" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="cnpj">CNPJ *</label>
-        <input id="cnpj" type="text" formControlName="cnpj" class="form-control" placeholder="00.000.000/0000-00" />
-      </div>
-      <div class="form-group">
-        <label for="tradeName">Nome Fantasia</label>
-        <input id="tradeName" type="text" formControlName="tradeName" class="form-control" />
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Razão Social <span class="required">*</span></mat-label>
+        <input
+          matInput
+          formControlName="companyName"
+          required
+          aria-label="Razão Social da empresa"
+          aria-required="true"
+          [attr.aria-describedby]="customerForm.get('companyName')?.hasError('required') ? 'companyName-error' : null">
+        <mat-error id="companyName-error" role="alert" *ngIf="customerForm.get('companyName')?.hasError('required')">
+          Razão Social é obrigatória
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>CNPJ <span class="required">*</span></mat-label>
+        <input
+          matInput
+          formControlName="cnpj"
+          placeholder="00.000.000/0000-00"
+          required
+          aria-label="CNPJ da empresa"
+          aria-required="true"
+          [attr.aria-describedby]="customerForm.get('cnpj')?.hasError('required') ? 'cnpj-error' : null">
+        <mat-error id="cnpj-error" role="alert" *ngIf="customerForm.get('cnpj')?.hasError('required')">
+          CNPJ é obrigatório
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nome Fantasia</mat-label>
+        <input
+          matInput
+          formControlName="tradeName"
+          aria-label="Nome Fantasia da empresa">
+      </mat-form-field>
     </div>
 
     <!-- Contact -->
     <div class="form-row">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input id="email" type="email" formControlName="email" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="phone">Telefone</label>
-        <input id="phone" type="text" formControlName="phone" class="form-control" />
-      </div>
-      <div class="form-group">
-        <label for="mobile">Celular</label>
-        <input id="mobile" type="text" formControlName="mobile" class="form-control" />
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          aria-label="Email do cliente"
+          [attr.aria-describedby]="customerForm.get('email')?.hasError('email') ? 'email-error' : null">
+        <mat-error id="email-error" role="alert" *ngIf="customerForm.get('email')?.hasError('email')">
+          Email inválido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Telefone</mat-label>
+        <input
+          matInput
+          formControlName="phone"
+          aria-label="Telefone do cliente">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Celular</mat-label>
+        <input
+          matInput
+          formControlName="mobile"
+          aria-label="Celular do cliente">
+      </mat-form-field>
     </div>
 
     <!-- Actions -->
     <div class="form-actions">
-      <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="loading">Cancelar</button>
-      <button type="submit" class="btn btn-primary" [disabled]="loading || customerForm.invalid">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="cancel()"
+        [disabled]="loading"
+        aria-label="Cancelar e voltar para lista de clientes">
+        Cancelar
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="loading || customerForm.invalid"
+        [attr.aria-label]="loading ? 'Salvando cliente...' : (isEditMode ? 'Salvar alterações do cliente' : 'Criar novo cliente')">
+        <mat-icon *ngIf="!loading">save</mat-icon>
         {{ loading ? 'Salvando...' : 'Salvar' }}
       </button>
     </div>
-
-    <div *ngIf="error" class="error-message">{{ error }}</div>
   </form>
 </div>

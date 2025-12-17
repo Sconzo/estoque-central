@@ -159,3 +159,17 @@ mat-card {
 mat-card-content {
   padding: 16px;
 }
+
+/* Accessibility */
+.required {
+  color: #dc2626;
+}
+
+button {
+  min-height: 48px;
+}
+
+mat-icon-button {
+  min-height: 48px;
+  min-width: 48px;
+}

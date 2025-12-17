@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocationService } from '../../services/location.service';
 import { Location, LOCATION_TYPE_LABELS, LOCATION_TYPE_COLORS } from '../../models/location.model';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * LocationListComponent - List and manage stock locations
@@ -27,7 +28,8 @@ export class LocationListComponent implements OnInit {
 
   constructor(
     private locationService: LocationService,
-    private router: Router
+    private router: Router,
+    private feedback: FeedbackService
   ) {}
 
   ngOnInit(): void {
@@ -87,7 +89,7 @@ export class LocationListComponent implements OnInit {
           errorMsg = error.error.message;
         }
 
-        alert(errorMsg);
+        this.feedback.showError(errorMsg, () => this.deleteLocation(location));
         this.loading = false;
         console.error('Error deleting location:', error);
       }

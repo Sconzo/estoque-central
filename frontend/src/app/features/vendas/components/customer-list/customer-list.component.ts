@@ -1,7 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CustomerService } from '../../services/customer.service';
 import {
   Customer,
@@ -9,6 +19,7 @@ import {
   CustomerType
 } from '../../models/customer.model';
 import { debounceTime, Subject } from 'rxjs';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * CustomerListComponent - Customer listing with filters and pagination
@@ -16,21 +27,38 @@ import { debounceTime, Subject } from 'rxjs';
  * Story 4.1: Customer Management - AC6 (Frontend Customer List)
  *
  * Features:
- * - Paginated customer table (20 items per page)
- * - Quick search (debounced 300ms)
- * - Filter by customer type (PF/PJ)
+ * - Paginated customer table (20 items per page) using Material Table
+ * - Quick search (debounced 300ms) with Material form field
+ * - Filter by customer type (PF/PJ) with Material select
  * - Filter by status (active/inactive)
  * - Actions: View, Edit, Delete (soft delete)
  * - Navigate to create customer
+ * - Material Design 3 components
+ * - WCAG AA accessibility
  */
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
+  ],
   templateUrl: './customer-list.component.html',
   styleUrls: ['./customer-list.component.scss']
 })
 export class CustomerListComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   // Data
   customers: PagedCustomers | null = null;
 
@@ -51,9 +79,13 @@ export class CustomerListComponent implements OnInit {
   // Enum references for template
   readonly CustomerType = CustomerType;
 
+  // Mat-table columns
+  displayedColumns: string[] = ['type', 'taxId', 'name', 'tradeName', 'email', 'phone', 'status', 'actions'];
+
   constructor(
     private customerService: CustomerService,
-    private router: Router
+    private router: Router,
+    private feedback: FeedbackService
   ) {
     // Setup search debounce
     this.searchSubject
@@ -110,23 +142,12 @@ export class CustomerListComponent implements OnInit {
   }
 
   /**
-   * Navigates to previous page
+   * Handles mat-paginator page change event
    */
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.loadCustomers();
-    }
-  }
-
-  /**
-   * Navigates to next page
-   */
-  nextPage(): void {
-    if (this.customers && this.currentPage < this.customers.totalPages - 1) {
-      this.currentPage++;
-      this.loadCustomers();
-    }
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadCustomers();
   }
 
   /**
@@ -148,7 +169,7 @@ export class CustomerListComponent implements OnInit {
    */
   deleteCustomer(customer: Customer): void {
     if (customer.isDefaultConsumer) {
-      alert('Não é possível excluir o cliente padrão "Consumidor Final".');
+      this.feedback.showWarning('Não é possível excluir o cliente padrão "Consumidor Final".');
       return;
     }
 
@@ -160,7 +181,7 @@ export class CustomerListComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error deleting customer:', err);
-          alert('Erro ao excluir cliente. Tente novamente.');
+          this.feedback.showError('Erro ao excluir cliente.', () => this.deleteCustomer(customer));
         }
       });
     }

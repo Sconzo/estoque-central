@@ -6,40 +6,95 @@
   <mat-card-content>
     <form [formGroup]="transferForm" (ngSubmit)="submitTransfer()">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Produto</mat-label>
-        <mat-select formControlName="stockId" (selectionChange)="onStockSelected($event.value)">
+        <mat-label>Produto <span class="required">*</span></mat-label>
+        <mat-select
+          formControlName="stockId"
+          (selectionChange)="onStockSelected($event.value)"
+          required
+          aria-label="Selecione o produto para transferir"
+          aria-required="true"
+          [attr.aria-describedby]="transferForm.get('stockId')?.hasError('required') ? 'stockId-error' : null">
           <mat-option *ngFor="let item of stockItems()" [value]="item.id">
             {{ item.productName }} - {{ item.productSku }} ({{ item.locationName }})
           </mat-option>
         </mat-select>
+        <mat-error id="stockId-error" role="alert" *ngIf="transferForm.get('stockId')?.hasError('required')">
+          Produto é obrigatório
+        </mat-error>
       </mat-form-field>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
-          <mat-label>Local de Origem</mat-label>
-          <input matInput formControlName="originLocationId" readonly>
-          <mat-hint *ngIf="selectedStock()">Disponível: {{ availableAtOrigin() | number:'1.0-3' }}</mat-hint>
+          <mat-label>Local de Origem <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="originLocationId"
+            readonly
+            required
+            aria-label="Local de origem da transferência (preenchido automaticamente)"
+            aria-required="true"
+            [attr.aria-describedby]="selectedStock() ? 'origin-hint' : null">
+          <mat-hint id="origin-hint" *ngIf="selectedStock()">Disponível: {{ availableAtOrigin() | number:'1.0-3' }}</mat-hint>
+          <mat-error id="originLocationId-error" role="alert" *ngIf="transferForm.get('originLocationId')?.hasError('required')">
+            Local de origem é obrigatório
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
-          <mat-label>Local de Destino</mat-label>
-          <input matInput formControlName="destinationLocationId" placeholder="ID do local de destino">
+          <mat-label>Local de Destino <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="destinationLocationId"
+            placeholder="ID do local de destino"
+            required
+            aria-label="Local de destino da transferência"
+            aria-required="true"
+            [attr.aria-describedby]="transferForm.get('destinationLocationId')?.hasError('required') ? 'destinationLocationId-error' : null">
+          <mat-error id="destinationLocationId-error" role="alert" *ngIf="transferForm.get('destinationLocationId')?.hasError('required')">
+            Local de destino é obrigatório
+          </mat-error>
         </mat-form-field>
       </div>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Quantidade</mat-label>
-        <input matInput type="number" formControlName="quantity" [max]="availableAtOrigin()">
-        <mat-hint>Máximo: {{ availableAtOrigin() | number:'1.0-3' }}</mat-hint>
+        <mat-label>Quantidade <span class="required">*</span></mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="quantity"
+          [max]="availableAtOrigin()"
+          step="0.001"
+          min="0.001"
+          required
+          aria-label="Quantidade a transferir"
+          aria-required="true"
+          aria-describedby="quantity-hint"
+          [attr.aria-describedby]="transferForm.get('quantity')?.hasError('required') || transferForm.get('quantity')?.hasError('min') ? 'quantity-error' : 'quantity-hint'">
+        <mat-hint id="quantity-hint">Máximo: {{ availableAtOrigin() | number:'1.0-3' }}</mat-hint>
+        <mat-error id="quantity-error" role="alert" *ngIf="transferForm.get('quantity')?.hasError('required')">
+          Quantidade é obrigatória
+        </mat-error>
+        <mat-error id="quantity-error" role="alert" *ngIf="transferForm.get('quantity')?.hasError('min')">
+          Quantidade deve ser maior que zero
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Motivo (Opcional)</mat-label>
-        <textarea matInput formControlName="reason" rows="3"></textarea>
+        <textarea
+          matInput
+          formControlName="reason"
+          rows="3"
+          aria-label="Motivo da transferência (opcional)"></textarea>
       </mat-form-field>
 
       <div class="actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="!transferForm.valid || loading()">
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="!transferForm.valid || loading()"
+          [attr.aria-label]="loading() ? 'Transferindo estoque...' : 'Transferir estoque entre locais'">
           {{ loading() ? 'Transferindo...' : 'Transferir' }}
         </button>
       </div>

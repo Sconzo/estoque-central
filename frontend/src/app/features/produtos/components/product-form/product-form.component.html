@@ -1,49 +1,48 @@
 <div class="product-form-container">
   <!-- Header -->
   <div class="header">
-    <h2>{{ isEditMode ? 'Editar Produto' : 'Novo Produto' }}</h2>
+    <h2 id="form-title">{{ isEditMode ? 'Editar Produto' : 'Novo Produto' }}</h2>
   </div>
 
   <!-- Loading -->
-  <div class="loading-spinner" *ngIf="loading">
-    <div class="spinner"></div>
+  <div class="loading-spinner" *ngIf="loading" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
     <p>Carregando produto...</p>
   </div>
 
   <!-- Error Message -->
-  <div class="error-banner" *ngIf="error">
-    <span class="error-icon">⚠</span>
+  <div class="error-banner" *ngIf="error" role="alert">
+    <mat-icon class="error-icon" aria-hidden="true">warning</mat-icon>
     <p>{{ error }}</p>
   </div>
 
   <!-- Form -->
-  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" *ngIf="!loading" aria-labelledby="form-title">
     <div class="form-sections">
       <!-- Product Type (only in create mode) -->
       <div class="form-section" *ngIf="!isEditMode">
         <h3>Tipo de Produto</h3>
 
         <div class="form-row">
-          <div class="form-group full-width">
-            <label for="productType">
-              Tipo: <span class="required">*</span>
-            </label>
-            <select
-              id="productType"
-              class="form-control"
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo <span class="required">*</span></mat-label>
+            <mat-select
               [value]="selectedProductType"
-              (change)="onProductTypeChange($event)"
+              (selectionChange)="onProductTypeChange($event)"
               [disabled]="createdProductId !== null"
-            >
-              <option *ngFor="let option of PRODUCT_TYPE_OPTIONS" [value]="option.value">
+              required
+              aria-label="Tipo de produto"
+              aria-required="true"
+              aria-describedby="product-type-hint">
+              <mat-option *ngFor="let option of PRODUCT_TYPE_OPTIONS" [value]="option.value">
                 {{ option.label }}
-              </option>
-            </select>
-            <span class="help-text">
+              </mat-option>
+            </mat-select>
+            <mat-hint id="product-type-hint">
               <strong>Produto Simples:</strong> produto único sem variações.<br>
               <strong>Produto com Variantes:</strong> produto com múltiplas variações (ex: cores, tamanhos).
-            </span>
-          </div>
+            </mat-hint>
+          </mat-form-field>
         </div>
       </div>
 
@@ -53,70 +52,73 @@
 
         <div class="form-row">
           <!-- Name -->
-          <div class="form-group full-width">
-            <label for="name">
-              Nome do Produto: <span class="required">*</span>
-            </label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome do Produto <span class="required">*</span></mat-label>
             <input
-              id="name"
-              type="text"
-              class="form-control"
+              matInput
               formControlName="name"
-              [class.error]="hasError('name')"
               placeholder="Ex: Notebook Dell Inspiron 15"
-            />
-            <span class="error-message" *ngIf="hasError('name')">
-              {{ getErrorMessage('name') }}
-            </span>
-          </div>
+              required
+              aria-label="Nome do Produto"
+              aria-required="true"
+              [attr.aria-describedby]="productForm.get('name')?.hasError('required') || productForm.get('name')?.hasError('maxlength') ? 'name-error' : null">
+            <mat-error id="name-error" role="alert" *ngIf="productForm.get('name')?.hasError('required')">
+              Nome é obrigatório
+            </mat-error>
+            <mat-error id="name-error" role="alert" *ngIf="productForm.get('name')?.hasError('maxlength')">
+              Máximo de 200 caracteres
+            </mat-error>
+          </mat-form-field>
         </div>
 
         <div class="form-row">
           <!-- SKU -->
-          <div class="form-group">
-            <label for="sku">
-              SKU: <span class="required">*</span>
-            </label>
+          <mat-form-field appearance="outline">
+            <mat-label>SKU <span class="required">*</span></mat-label>
             <input
-              id="sku"
-              type="text"
-              class="form-control"
+              matInput
               formControlName="sku"
-              [class.error]="hasError('sku')"
               placeholder="Ex: NOTE-DELL-I15-001"
-              [attr.readonly]="isEditMode ? true : null"
-            />
-            <span class="help-text" *ngIf="isEditMode">SKU não pode ser alterado</span>
-            <span class="error-message" *ngIf="hasError('sku')">
-              {{ getErrorMessage('sku') }}
-            </span>
-          </div>
+              [readonly]="isEditMode"
+              required
+              aria-label="SKU - Código único do produto"
+              aria-required="true"
+              [attr.aria-describedby]="isEditMode ? 'sku-hint' : (productForm.get('sku')?.hasError('required') || productForm.get('sku')?.hasError('maxlength') ? 'sku-error' : null)">
+            <mat-hint id="sku-hint" *ngIf="isEditMode">SKU não pode ser alterado</mat-hint>
+            <mat-error id="sku-error" role="alert" *ngIf="productForm.get('sku')?.hasError('required')">
+              SKU é obrigatório
+            </mat-error>
+            <mat-error id="sku-error" role="alert" *ngIf="productForm.get('sku')?.hasError('maxlength')">
+              Máximo de 100 caracteres
+            </mat-error>
+          </mat-form-field>
 
           <!-- Barcode -->
-          <div class="form-group">
-            <label for="barcode">Código de Barras:</label>
+          <mat-form-field appearance="outline">
+            <mat-label>Código de Barras</mat-label>
             <input
-              id="barcode"
-              type="text"
-              class="form-control"
+              matInput
               formControlName="barcode"
               placeholder="Ex: 7891234567890"
-            />
-          </div>
+              aria-label="Código de Barras"
+              [attr.aria-describedby]="productForm.get('barcode')?.hasError('maxlength') ? 'barcode-error' : null">
+            <mat-error id="barcode-error" role="alert" *ngIf="productForm.get('barcode')?.hasError('maxlength')">
+              Máximo de 100 caracteres
+            </mat-error>
+          </mat-form-field>
         </div>
 
         <div class="form-row">
           <!-- Description -->
-          <div class="form-group full-width">
-            <label for="description">Descrição:</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descrição</mat-label>
             <textarea
-              id="description"
-              class="form-control"
+              matInput
               formControlName="description"
               placeholder="Descrição detalhada do produto..."
               rows="3"
-            ></textarea>
-          </div>
+              aria-label="Descrição detalhada do produto"></textarea>
+          </mat-form-field>
         </div>
       </div>
 
@@ -126,41 +128,41 @@
 
         <div class="form-row">
           <!-- Category -->
-          <div class="form-group">
-            <label for="category">
-              Categoria: <span class="required">*</span>
-            </label>
-            <select
-              id="category"
-              class="form-control"
+          <mat-form-field appearance="outline">
+            <mat-label>Categoria <span class="required">*</span></mat-label>
+            <mat-select
               formControlName="categoryId"
-              [class.error]="hasError('categoryId')"
-            >
-              <option value="">Selecione uma categoria</option>
-              <option *ngFor="let category of categories" [value]="category.id">
+              required
+              aria-label="Categoria do produto"
+              aria-required="true"
+              [attr.aria-describedby]="productForm.get('categoryId')?.hasError('required') ? 'category-error' : null">
+              <mat-option value="">Selecione uma categoria</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category.id">
                 {{ category.name }}
-              </option>
-            </select>
-            <span class="error-message" *ngIf="hasError('categoryId')">
-              {{ getErrorMessage('categoryId') }}
-            </span>
-          </div>
+              </mat-option>
+            </mat-select>
+            <mat-error id="category-error" role="alert" *ngIf="productForm.get('categoryId')?.hasError('required')">
+              Categoria é obrigatória
+            </mat-error>
+          </mat-form-field>
 
           <!-- Status -->
-          <div class="form-group">
-            <label for="status">
-              Status: <span class="required">*</span>
-            </label>
-            <select
-              id="status"
-              class="form-control"
+          <mat-form-field appearance="outline">
+            <mat-label>Status <span class="required">*</span></mat-label>
+            <mat-select
               formControlName="status"
-            >
-              <option *ngFor="let option of STATUS_OPTIONS" [value]="option.value">
+              required
+              aria-label="Status do produto"
+              aria-required="true"
+              [attr.aria-describedby]="productForm.get('status')?.hasError('required') ? 'status-error' : null">
+              <mat-option *ngFor="let option of STATUS_OPTIONS" [value]="option.value">
                 {{ option.label }}
-              </option>
-            </select>
-          </div>
+              </mat-option>
+            </mat-select>
+            <mat-error id="status-error" role="alert" *ngIf="productForm.get('status')?.hasError('required')">
+              Status é obrigatório
+            </mat-error>
+          </mat-form-field>
         </div>
       </div>
 
@@ -170,44 +172,45 @@
 
         <div class="form-row">
           <!-- Price -->
-          <div class="form-group">
-            <label for="price">
-              Preço de Venda: <span class="required">*</span>
-            </label>
-            <div class="input-prefix">
-              <span class="prefix">R$</span>
-              <input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                class="form-control"
-                formControlName="price"
-                [class.error]="hasError('price')"
-                placeholder="0,00"
-              />
-            </div>
-            <span class="error-message" *ngIf="hasError('price')">
-              {{ getErrorMessage('price') }}
-            </span>
-          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Preço de Venda <span class="required">*</span></mat-label>
+            <span matTextPrefix>R$&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="price"
+              placeholder="0,00"
+              required
+              aria-label="Preço de Venda"
+              aria-required="true"
+              [attr.aria-describedby]="productForm.get('price')?.hasError('required') || productForm.get('price')?.hasError('min') ? 'price-error' : null">
+            <mat-error id="price-error" role="alert" *ngIf="productForm.get('price')?.hasError('required')">
+              Preço é obrigatório
+            </mat-error>
+            <mat-error id="price-error" role="alert" *ngIf="productForm.get('price')?.hasError('min')">
+              Preço deve ser maior ou igual a 0
+            </mat-error>
+          </mat-form-field>
 
           <!-- Cost -->
-          <div class="form-group">
-            <label for="cost">Custo:</label>
-            <div class="input-prefix">
-              <span class="prefix">R$</span>
-              <input
-                id="cost"
-                type="number"
-                step="0.01"
-                min="0"
-                class="form-control"
-                formControlName="cost"
-                placeholder="0,00"
-              />
-            </div>
-          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Custo</mat-label>
+            <span matTextPrefix>R$&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="cost"
+              placeholder="0,00"
+              aria-label="Custo do produto"
+              [attr.aria-describedby]="productForm.get('cost')?.hasError('min') ? 'cost-error' : null">
+            <mat-error id="cost-error" role="alert" *ngIf="productForm.get('cost')?.hasError('min')">
+              Custo deve ser maior ou igual a 0
+            </mat-error>
+          </mat-form-field>
         </div>
       </div>
 
@@ -217,31 +220,32 @@
 
         <div class="form-row">
           <!-- Unit -->
-          <div class="form-group">
-            <label for="unit">
-              Unidade de Medida: <span class="required">*</span>
-            </label>
-            <select
-              id="unit"
-              class="form-control"
+          <mat-form-field appearance="outline">
+            <mat-label>Unidade de Medida <span class="required">*</span></mat-label>
+            <mat-select
               formControlName="unit"
-            >
-              <option *ngFor="let option of UNIT_OPTIONS" [value]="option.value">
+              required
+              aria-label="Unidade de Medida"
+              aria-required="true"
+              [attr.aria-describedby]="productForm.get('unit')?.hasError('required') ? 'unit-error' : null">
+              <mat-option *ngFor="let option of UNIT_OPTIONS" [value]="option.value">
                 {{ option.label }}
-              </option>
-            </select>
-          </div>
+              </mat-option>
+            </mat-select>
+            <mat-error id="unit-error" role="alert" *ngIf="productForm.get('unit')?.hasError('required')">
+              Unidade é obrigatória
+            </mat-error>
+          </mat-form-field>
 
           <!-- Controls Inventory -->
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                formControlName="controlsInventory"
-              />
-              <span>Controla estoque</span>
-            </label>
-            <span class="help-text">
+          <div class="checkbox-group">
+            <mat-checkbox
+              formControlName="controlsInventory"
+              aria-label="Controla estoque do produto"
+              [attr.aria-describedby]="'controls-inventory-hint'">
+              Controla estoque
+            </mat-checkbox>
+            <span class="help-text" id="controls-inventory-hint">
               Marque esta opção se este produto precisa ter controle de estoque.
               Desmarque para produtos de serviço ou sem necessidade de controle.
             </span>
@@ -253,18 +257,20 @@
     <!-- Form Actions (only for simple products or edit mode) -->
     <div class="form-actions" *ngIf="selectedProductType === ProductType.SIMPLE || isEditMode">
       <button
+        mat-stroked-button
         type="button"
-        class="btn btn-secondary"
         (click)="cancel()"
         [disabled]="saving"
-      >
+        aria-label="Cancelar e voltar para lista de produtos">
         Cancelar
       </button>
       <button
+        mat-raised-button
+        color="primary"
         type="submit"
-        class="btn btn-primary"
         [disabled]="saving || productForm.invalid"
-      >
+        [attr.aria-label]="saving ? 'Salvando produto...' : (isEditMode ? 'Salvar alterações do produto' : 'Criar novo produto')">
+        <mat-icon *ngIf="!saving">save</mat-icon>
         {{ saving ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Produto') }}
       </button>
     </div>
@@ -272,18 +278,20 @@
     <!-- Variant Parent Actions (save base product first) -->
     <div class="form-actions" *ngIf="selectedProductType === ProductType.VARIANT_PARENT && !isEditMode && !createdProductId">
       <button
+        mat-stroked-button
         type="button"
-        class="btn btn-secondary"
         (click)="cancel()"
         [disabled]="saving"
-      >
+        aria-label="Cancelar e voltar para lista de produtos">
         Cancelar
       </button>
       <button
+        mat-raised-button
+        color="primary"
         type="submit"
-        class="btn btn-primary"
         [disabled]="saving || productForm.invalid"
-      >
+        [attr.aria-label]="saving ? 'Salvando produto base...' : 'Criar produto base para variantes'">
+        <mat-icon *ngIf="!saving">save</mat-icon>
         {{ saving ? 'Salvando...' : 'Criar Produto Base' }}
       </button>
     </div>

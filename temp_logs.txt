@@ -1,0 +1,300 @@
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.purchasing.adapter.out.ReceivingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.purchasing.adapter.out.SupplierRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.CustomerRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.FiscalEventRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.SaleItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.SaleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.SalesOrderItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.sales.adapter.out.SalesOrderRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.estoquecentral.tenant.adapter.out.TenantSettingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+estoque-central-app  | 2025-12-11 23:19:02 - Finished Spring Data repository scanning in 19 ms. Found 0 Redis repository interfaces.
+estoque-central-app  | 2025-12-11 23:19:03 - Tomcat initialized with port 8080 (http)
+estoque-central-app  | 2025-12-11 23:19:03 - Starting service [Tomcat]
+estoque-central-app  | 2025-12-11 23:19:03 - Starting Servlet engine: [Apache Tomcat/10.1.41]
+estoque-central-app  | 2025-12-11 23:19:03 - Initializing Spring embedded WebApplicationContext
+estoque-central-app  | 2025-12-11 23:19:03 - Root WebApplicationContext: initialization completed in 3263 ms
+estoque-central-app  | Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning for classpath resources at 'classpath:db/callback' ...
+estoque-central-app  | 2025-12-11 23:19:04 - Determining location urls for classpath:db/callback using ClassLoader TomcatEmbeddedWebappClassLoader
+estoque-central-app  |   context: ROOT
+estoque-central-app  |   delegate: true
+estoque-central-app  | ----------> Parent Classloader:
+estoque-central-app  | org.springframework.boot.loader.launch.LaunchedClassLoader@568db2f2
+estoque-central-app  |  ...
+estoque-central-app  | 2025-12-11 23:19:04 - Unable to resolve location classpath:db/callback.
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning for classpath resources at 'classpath:db/migration/public' ...
+estoque-central-app  | 2025-12-11 23:19:04 - Determining location urls for classpath:db/migration/public using ClassLoader TomcatEmbeddedWebappClassLoader
+estoque-central-app  |   context: ROOT
+estoque-central-app  |   delegate: true
+estoque-central-app  | ----------> Parent Classloader:
+estoque-central-app  | org.springframework.boot.loader.launch.LaunchedClassLoader@568db2f2
+estoque-central-app  |  ...
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning URL: jar:nested:/app/app.jar/!BOOT-INF/classes/!/db/migration/public
+estoque-central-app  | 2025-12-11 23:19:04 - Found resource: db/migration/public/
+estoque-central-app  | 2025-12-11 23:19:04 - Found resource: db/migration/public/V001__create_tenants_table.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Found resource: db/migration/public/V002__create_rbac_tables.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Found resource: db/migration/public/V053__create_tenant_settings_table.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning for classes at classpath:db/migration/public
+estoque-central-app  | 2025-12-11 23:19:04 - HikariPool-1 - Starting...
+estoque-central-app  | 2025-12-11 23:19:04 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@63ed5dae
+estoque-central-app  | 2025-12-11 23:19:04 - HikariPool-1 - Start completed.
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Validating V053__create_tenant_settings_table.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Validating V001__create_tenants_table.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Validating V002__create_rbac_tables.sql
+estoque-central-app  | 2025-12-11 23:19:04 - Multiple databases found that handle url 'jdbc:postgresql://postgres:5432/estoque_central': CockroachDB,PostgreSQL
+estoque-central-app  | 2025-12-11 23:19:04 - Database: jdbc:postgresql://postgres:5432/estoque_central (PostgreSQL 17.7)
+estoque-central-app  | 2025-12-11 23:19:04 - Database Type: PostgreSQL
+estoque-central-app  | 2025-12-11 23:19:04 - Driver: PostgreSQL JDBC Driver 42.7.5
+estoque-central-app  | 2025-12-11 23:19:04 - DDL Transactions Supported: true
+estoque-central-app  | 2025-12-11 23:19:04 - Schemas: public
+estoque-central-app  | 2025-12-11 23:19:04 - Default schema: null
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning for script callbacks ...
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Scanning for SQL callbacks ...
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Validating migrations ...
+estoque-central-app  | 2025-12-11 23:19:04 - CherryPickConfigurationExtension not found
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V053__create_tenant_settings_table.sql (filename: V053__create_tenant_settings_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V001__create_tenants_table.sql (filename: V001__create_tenants_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V002__create_rbac_tables.sql (filename: V002__create_rbac_tables.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V053__create_tenant_settings_table.sql (filename: V053__create_tenant_settings_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V001__create_tenants_table.sql (filename: V001__create_tenants_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V002__create_rbac_tables.sql (filename: V002__create_rbac_tables.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V053__create_tenant_settings_table.sql (filename: V053__create_tenant_settings_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V001__create_tenants_table.sql (filename: V001__create_tenants_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V002__create_rbac_tables.sql (filename: V002__create_rbac_tables.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V053__create_tenant_settings_table.sql (filename: V053__create_tenant_settings_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V001__create_tenants_table.sql (filename: V001__create_tenants_table.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/V002__create_rbac_tables.sql (filename: V002__create_rbac_tables.sql)
+estoque-central-app  | 2025-12-11 23:19:04 - Filtering out resource: db/migration/public/ (filename: )
+estoque-central-app  | 2025-12-11 23:19:04 - Successfully validated 3 migrations (execution time 00:00.040s)
+estoque-central-app  | 2025-12-11 23:19:04 - Skipping creation of existing schema: "public"
+estoque-central-app  | 2025-12-11 23:19:04 - CherryPickConfigurationExtension not found
+estoque-central-app  | 2025-12-11 23:19:04 - Current version of schema "public": 053
+estoque-central-app  | 2025-12-11 23:19:04 - Schema "public" is up to date. No migration necessary.
+estoque-central-app  | 2025-12-11 23:19:04 - Memory usage: 90 of 128M
+estoque-central-app  | 2025-12-11 23:19:05 - JwtService initialized with HS256 signing key
+estoque-central-app  | 2025-12-11 23:19:05 - Filter 'jwtAuthenticationFilter' configured for use
+estoque-central-app  | 2025-12-11 23:19:05 - GoogleAuthService initialized with clientId: your-client-id.apps.googleusercontent.com
+estoque-central-app  | 2025-12-11 23:19:06 - Redisson 3.25.2
+estoque-central-app  | 2025-12-11 23:19:07 - 1 connections initialized for redis/172.19.0.3:6379
+estoque-central-app  | 2025-12-11 23:19:07 - 2 connections initialized for redis/172.19.0.3:6379
+estoque-central-app  | 2025-12-11 23:19:07 - RetryQueueService initialized with MAX_ATTEMPTS=10, MAX_DELAY=28800s
+estoque-central-app  | 2025-12-11 23:19:07 - Starting multi-tenant Flyway migrations...
+estoque-central-app  | 2025-12-11 23:19:07 - No tenant schemas found. Skipping tenant migrations.
+estoque-central-app  | 2025-12-11 23:19:08 - Adding welcome page: class path resource [static/index.html]
+estoque-central-app  | 2025-12-11 23:19:08 - Exposing 3 endpoints beneath base path '/actuator'
+estoque-central-app  | 2025-12-11 23:19:08 - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+estoque-central-app  | 2025-12-11 23:19:09 - Tomcat started on port 8080 (http) with context path '/'
+estoque-central-app  | 2025-12-11 23:19:09 - Started EstoqueCentralApplication in 9.534 seconds (process running for 10.23)
+estoque-central-app  | 2025-12-11 23:19:09 - Starting stock sync queue processing
+estoque-central-app  | 2025-12-11 23:19:09 - No active tenants found
+estoque-central-app  | 2025-12-11 23:19:09 - Starting token refresh job
+estoque-central-app  | 2025-12-11 23:19:09 - No active tenants found
+estoque-central-app  | 2025-12-11 23:19:26 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+estoque-central-app  | 2025-12-11 23:19:26 - Initializing Servlet 'dispatcherServlet'
+estoque-central-app  | 2025-12-11 23:19:26 - Completed initialization in 1 ms
+estoque-central-app  | 2025-12-11 23:19:26 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM products WHERE ativo = true ORDER BY name LIMIT ? OFFSET ?]] with root cause
+estoque-central-app  | org.postgresql.util.PSQLException: ERROR: relation "products" does not exist
+estoque-central-app  |   Position: 15
+estoque-central-app  | 	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2733)
+estoque-central-app  | 	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2420)
+estoque-central-app  | 	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:372)
+estoque-central-app  | 	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:517)
+estoque-central-app  | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:434)
+estoque-central-app  | 	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:194)
+estoque-central-app  | 	at org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:137)
+estoque-central-app  | 	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+estoque-central-app  | 	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+estoque-central-app  | 	at org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+estoque-central-app  | 	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+estoque-central-app  | 	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+estoque-central-app  | 	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:748)
+estoque-central-app  | 	at org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate.query(NamedParameterJdbcTemplate.java:178)
+estoque-central-app  | 	at org.springframework.data.jdbc.repository.query.AbstractJdbcQuery.lambda$createSingleReadingQueryExecution$3(AbstractJdbcQuery.java:149)
+estoque-central-app  | 	at org.springframework.data.jdbc.repository.query.StringBasedJdbcQuery.execute(StringBasedJdbcQuery.java:232)
+estoque-central-app  | 	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
+estoque-central-app  | 	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
+estoque-central-app  | 	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:170)
+estoque-central-app  | 	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:149)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+estoque-central-app  | 	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+estoque-central-app  | 	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+estoque-central-app  | 	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+estoque-central-app  | 	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+estoque-central-app  | 	at jdk.proxy2/jdk.proxy2.$Proxy145.findByAtivoTrue(Unknown Source)
+estoque-central-app  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+estoque-central-app  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+estoque-central-app  | 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+estoque-central-app  | 	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+estoque-central-app  | 	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+estoque-central-app  | 	at jdk.proxy2/jdk.proxy2.$Proxy145.findByAtivoTrue(Unknown Source)
+estoque-central-app  | 	at com.estoquecentral.catalog.application.ProductService.listAll(ProductService.java:61)
+estoque-central-app  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+estoque-central-app  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+estoque-central-app  | 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+estoque-central-app  | 	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:380)
+estoque-central-app  | 	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+estoque-central-app  | 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+estoque-central-app  | 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+estoque-central-app  | 	at com.estoquecentral.catalog.application.ProductService$$SpringCGLIB$$0.listAll(<generated>)
+estoque-central-app  | 	at com.estoquecentral.catalog.adapter.in.ProductController.listAll(ProductController.java:75)
+estoque-central-app  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+estoque-central-app  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+estoque-central-app  | 	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+estoque-central-app  | 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:724)
+estoque-central-app  | 	at com.estoquecentral.catalog.adapter.in.ProductController$$SpringCGLIB$$0.listAll(<generated>)
+estoque-central-app  | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+estoque-central-app  | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+estoque-central-app  | 	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258)
+estoque-central-app  | 	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191)
+estoque-central-app  | 	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+estoque-central-app  | 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+estoque-central-app  | 	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+estoque-central-app  | 	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+estoque-central-app  | 	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+estoque-central-app  | 	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+estoque-central-app  | 	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+estoque-central-app  | 	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+estoque-central-app  | 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+estoque-central-app  | 	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+estoque-central-app  | 	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+estoque-central-app  | 	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+estoque-central-app  | 	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:125)
+estoque-central-app  | 	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:119)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+estoque-central-app  | 	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at com.estoquecentral.auth.adapter.in.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:103)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+estoque-central-app  | 	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+estoque-central-app  | 	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+estoque-central-app  | 	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+estoque-central-app  | 	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+estoque-central-app  | 	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+estoque-central-app  | 	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+estoque-central-app  | 	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+estoque-central-app  | 	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:319)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+estoque-central-app  | 	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+estoque-central-app  | 	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+estoque-central-app  | 	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:240)
+estoque-central-app  | 	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+estoque-central-app  | 	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+estoque-central-app  | 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+estoque-central-app  | 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+estoque-central-app  | 	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+estoque-central-app  | 	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+estoque-central-app  | 	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+estoque-central-app  | 	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+estoque-central-app  | 	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+estoque-central-app  | 	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+estoque-central-app  | 	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+estoque-central-app  | 	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+estoque-central-app  | 	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+estoque-central-app  | 	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+estoque-central-app  | 	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+estoque-central-app  | 	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+estoque-central-app  | 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+estoque-central-app  | 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+estoque-central-app  | 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+estoque-central-app  | 	at java.base/java.lang.Thread.run(Unknown Source)

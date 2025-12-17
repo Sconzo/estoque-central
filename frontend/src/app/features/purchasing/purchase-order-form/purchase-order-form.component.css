@@ -88,3 +88,11 @@ mat-dialog-actions {
   padding: 16px 24px;
   margin: 0;
 }
+
+.required {
+  color: #dc2626;
+}
+
+button {
+  min-height: 48px;
+}

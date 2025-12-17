@@ -19,6 +19,7 @@ import {
   AdjustmentType,
   AdjustmentReasonCode
 } from '../../services/stock-adjustment.service';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * StockAdjustmentHistoryComponent - History and list of stock adjustments
@@ -46,25 +47,34 @@ import {
     <div class="history-container">
       <mat-card>
         <mat-card-header>
-          <mat-card-title>
+          <mat-card-title id="page-title">
             Histórico de Ajustes de Estoque
-            <button mat-raised-button color="primary" (click)="createNew()" style="float: right;">
-              <mat-icon>add</mat-icon>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="createNew()"
+              style="float: right;"
+              aria-label="Criar novo ajuste de estoque">
+              <mat-icon aria-hidden="true">add</mat-icon>
               Novo Ajuste
             </button>
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <!-- Filters -->
-          <form [formGroup]="filterForm" class="filters">
+          <form [formGroup]="filterForm" class="filters" aria-labelledby="page-title">
             <mat-form-field appearance="outline">
               <mat-label>Produto</mat-label>
-              <input matInput formControlName="productId" placeholder="ID do produto">
+              <input
+                matInput
+                formControlName="productId"
+                placeholder="ID do produto"
+                aria-label="Filtrar por ID do produto">
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Local</mat-label>
-              <mat-select formControlName="stockLocationId">
+              <mat-select formControlName="stockLocationId" aria-label="Filtrar por local de estoque">
                 <mat-option value="">Todos</mat-option>
                 <mat-option value="loc1">Depósito Central</mat-option>
                 <mat-option value="loc2">Loja Principal</mat-option>
@@ -73,7 +83,7 @@ import {
 
             <mat-form-field appearance="outline">
               <mat-label>Tipo</mat-label>
-              <mat-select formControlName="adjustmentType">
+              <mat-select formControlName="adjustmentType" aria-label="Filtrar por tipo de ajuste">
                 <mat-option value="">Todos</mat-option>
                 <mat-option [value]="AdjustmentType.INCREASE">Entrada</mat-option>
                 <mat-option [value]="AdjustmentType.DECREASE">Saída</mat-option>
@@ -82,7 +92,7 @@ import {
 
             <mat-form-field appearance="outline">
               <mat-label>Motivo</mat-label>
-              <mat-select formControlName="reasonCode">
+              <mat-select formControlName="reasonCode" aria-label="Filtrar por motivo do ajuste">
                 <mat-option value="">Todos</mat-option>
                 <mat-option [value]="AdjustmentReasonCode.INVENTORY">Inventário</mat-option>
                 <mat-option [value]="AdjustmentReasonCode.LOSS">Perda</mat-option>
@@ -93,12 +103,22 @@ import {
               </mat-select>
             </mat-form-field>
 
-            <button mat-raised-button (click)="applyFilters()">Filtrar</button>
-            <button mat-button (click)="clearFilters()">Limpar</button>
+            <button
+              mat-raised-button
+              (click)="applyFilters()"
+              aria-label="Aplicar filtros e buscar ajustes de estoque">
+              Filtrar
+            </button>
+            <button
+              mat-button
+              (click)="clearFilters()"
+              aria-label="Limpar todos os filtros">
+              Limpar
+            </button>
           </form>
 
           <!-- Table -->
-          <table mat-table [dataSource]="adjustments" class="adjustment-table">
+          <table mat-table [dataSource]="adjustments" class="adjustment-table" aria-label="Tabela de ajustes de estoque">
             <!-- Number Column -->
             <ng-container matColumnDef="adjustmentNumber">
               <th mat-header-cell *matHeaderCellDef>Número</th>
@@ -164,8 +184,11 @@ import {
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Ações</th>
               <td mat-cell *matCellDef="let row">
-                <button mat-icon-button (click)="viewDetails(row)">
-                  <mat-icon>visibility</mat-icon>
+                <button
+                  mat-icon-button
+                  (click)="viewDetails(row)"
+                  [attr.aria-label]="'Ver detalhes do ajuste ' + row.adjustmentNumber">
+                  <mat-icon aria-hidden="true">visibility</mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -179,7 +202,8 @@ import {
             [length]="totalElements"
             [pageSize]="pageSize"
             [pageSizeOptions]="[10, 20, 50]"
-            (page)="onPageChange($event)">
+            (page)="onPageChange($event)"
+            aria-label="Navegação de páginas da tabela de ajustes de estoque">
           </mat-paginator>
         </mat-card-content>
       </mat-card>
@@ -193,6 +217,8 @@ import {
     .chip-increase { background-color: #4caf50 !important; color: white !important; }
     .chip-decrease { background-color: #f44336 !important; color: white !important; }
     .chip-critical { background-color: #ff9800 !important; color: white !important; }
+    button { min-height: 48px; }
+    mat-icon-button { min-height: 48px; min-width: 48px; }
   `]
 })
 export class StockAdjustmentHistoryComponent implements OnInit {
@@ -221,7 +247,8 @@ export class StockAdjustmentHistoryComponent implements OnInit {
   constructor(
     private adjustmentService: StockAdjustmentService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private feedback: FeedbackService
   ) {
     this.filterForm = this.fb.group({
       productId: [''],
@@ -272,7 +299,7 @@ export class StockAdjustmentHistoryComponent implements OnInit {
 
   viewDetails(adjustment: StockAdjustmentResponse): void {
     // Navigate to details or open modal
-    alert(`Detalhes: ${adjustment.adjustmentNumber}\n${adjustment.reasonDescription}`);
+    this.feedback.showInfo(`${adjustment.adjustmentNumber}: ${adjustment.reasonDescription}`);
   }
 
   createNew(): void {

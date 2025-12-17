@@ -1,18 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
+import { Router } from '@angular/router';
 
 /**
  * JWT Interceptor - Adds Authorization header with JWT token to all HTTP requests
  *
  * This interceptor automatically includes the JWT token in the Authorization
  * header for all outgoing HTTP requests (except public endpoints).
+ *
+ * Also handles 401/403 errors by redirecting to login page.
  */
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   /**
    * Intercepts HTTP requests and adds Authorization header.
@@ -27,6 +34,12 @@ export class JwtInterceptor implements HttpInterceptor {
     // Skip adding token for public endpoints
     const isPublicEndpoint = this.isPublicUrl(request.url);
 
+    // DEBUG: Log interceptor execution
+    console.log('🔍 JWT Interceptor called for:', request.url);
+    console.log('   - Has token:', !!token);
+    console.log('   - Is public endpoint:', isPublicEndpoint);
+    console.log('   - Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+
     if (token && !isPublicEndpoint) {
       // Clone request and add Authorization header
       request = request.clone({
@@ -34,9 +47,27 @@ export class JwtInterceptor implements HttpInterceptor {
           Authorization: `Bearer ${token}`
         }
       });
+      console.log('   ✅ Authorization header added');
+    } else {
+      console.log('   ❌ Authorization header NOT added - token:', !!token, 'public:', isPublicEndpoint);
     }
 
-    return next.handle(request);
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Handle 401 Unauthorized or 403 Forbidden
+        if (error.status === 401 || error.status === 403) {
+          console.error('❌ Authentication error:', error.status, error.message);
+          console.error('   Request URL:', request.url);
+          console.error('   Has token:', !!token);
+          console.error('   Is public:', isPublicEndpoint);
+
+          // Log user out and redirect to login
+          this.authService.logout();
+        }
+
+        return throwError(() => error);
+      })
+    );
   }
 
   /**

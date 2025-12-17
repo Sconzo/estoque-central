@@ -1,9 +1,128 @@
+/* Angular Material Theme - must be first (SCSS @use rule) */
+@use './styles/theme';
+
 /* Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* You can add global styles to this file, and also import other style files */
+/* Global styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default button styles */
+button {
+  font-family: inherit;
+}
+
+/* Improve text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cores semânticas customizadas */
+.success-text { color: #2E7D32; }
+.warning-text { color: #F9A825; }
+.error-text { color: #C62828; }
+.info-text { color: #0277BD; }
+
+.success-snackbar {
+  background: #2E7D32 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background: #C62828 !important;
+  color: white !important;
+}
+
+.warning-snackbar {
+  background: #F9A825 !important;
+  color: #212121 !important;
+}
+
+.info-snackbar {
+  background: #0277BD !important;
+  color: white !important;
+}
+
+/* ===========================
+   Accessibility - Focus Visible
+   =========================== */
+
+/* Hide focus outline by default (mouse users) */
+body:not(.user-is-tabbing) *:focus {
+  outline: none;
+}
+
+/* Show focus outline only for keyboard users */
+body.user-is-tabbing *:focus,
+*:focus-visible {
+  outline: 2px solid #6A1B9A;
+  outline-offset: 2px;
+}
+
+/* Material Design components focus */
+body.user-is-tabbing .mat-mdc-button:focus,
+body.user-is-tabbing .mat-mdc-icon-button:focus,
+body.user-is-tabbing .mat-mdc-raised-button:focus {
+  outline: 2px solid #6A1B9A;
+  outline-offset: 2px;
+}
+
+/* ===========================
+   Accessibility - Touch Targets
+   =========================== */
+
+/* Mobile touch targets must be at least 48x48px */
+@media (max-width: 1279px) {
+  .mat-mdc-icon-button,
+  .mat-mdc-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Spacing between touch targets */
+  .mat-mdc-icon-button + .mat-mdc-icon-button,
+  .mat-mdc-button + .mat-mdc-button {
+    margin-left: 8px;
+  }
+}
+
+/* ===========================
+   Accessibility - High Contrast
+   =========================== */
+
+@media (prefers-contrast: high) {
+  *:focus,
+  *:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* ===========================
+   Accessibility - Reduced Motion
+   =========================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

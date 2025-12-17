@@ -3,12 +3,22 @@
   <div class="header">
     <h2>Produtos</h2>
     <div class="header-actions">
-      <button class="btn btn-outline-primary" (click)="importProducts()" [disabled]="loading">
-        <span class="icon">📥</span>
+      <button
+        mat-stroked-button
+        color="primary"
+        (click)="importProducts()"
+        [disabled]="loading"
+        aria-label="Importar produtos via CSV">
+        <mat-icon>upload_file</mat-icon>
         Importar CSV
       </button>
-      <button class="btn btn-primary" (click)="createProduct()" [disabled]="loading">
-        <span class="icon">+</span>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createProduct()"
+        [disabled]="loading"
+        aria-label="Criar novo produto">
+        <mat-icon>add</mat-icon>
         Novo Produto
       </button>
     </div>
@@ -17,53 +27,56 @@
   <!-- Filters -->
   <div class="filters">
     <!-- Search -->
-    <div class="filter-group">
-      <label for="search">Busca Rápida:</label>
+    <mat-form-field appearance="outline" class="filter-search">
+      <mat-label>Busca Rápida</mat-label>
       <input
-        id="search"
-        type="text"
-        class="form-control"
+        matInput
         [(ngModel)]="filters.query"
         (ngModelChange)="onSearchChange($event)"
         placeholder="Nome, SKU ou código de barras..."
+        aria-label="Buscar produtos"
       />
-    </div>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
 
     <!-- Category Filter -->
-    <div class="filter-group">
-      <label for="category">Categoria:</label>
-      <select
-        id="category"
-        class="form-control"
+    <mat-form-field appearance="outline" class="filter-select">
+      <mat-label>Categoria</mat-label>
+      <mat-select
         [(ngModel)]="filters.categoryId"
         (ngModelChange)="onCategoryChange()"
-      >
-        <option [value]="undefined">Todas as categorias</option>
-        <option *ngFor="let category of categories" [value]="category.id">
+        aria-label="Filtrar por categoria">
+        <mat-option [value]="undefined">Todas as categorias</mat-option>
+        <mat-option *ngFor="let category of categories" [value]="category.id">
           {{ category.name }}
-        </option>
-      </select>
-    </div>
+        </mat-option>
+      </mat-select>
+      <mat-icon matPrefix>category</mat-icon>
+    </mat-form-field>
 
     <!-- Status Filter -->
-    <div class="filter-group">
-      <label for="status">Status:</label>
-      <select
-        id="status"
-        class="form-control"
+    <mat-form-field appearance="outline" class="filter-select">
+      <mat-label>Status</mat-label>
+      <mat-select
         [(ngModel)]="filters.status"
         (ngModelChange)="onStatusChange()"
-      >
-        <option [value]="undefined">Todos os status</option>
-        <option [value]="ProductStatus.ACTIVE">{{ STATUS_LABELS[ProductStatus.ACTIVE] }}</option>
-        <option [value]="ProductStatus.INACTIVE">{{ STATUS_LABELS[ProductStatus.INACTIVE] }}</option>
-        <option [value]="ProductStatus.DISCONTINUED">{{ STATUS_LABELS[ProductStatus.DISCONTINUED] }}</option>
-      </select>
-    </div>
+        aria-label="Filtrar por status">
+        <mat-option [value]="undefined">Todos os status</mat-option>
+        <mat-option [value]="ProductStatus.ACTIVE">{{ STATUS_LABELS[ProductStatus.ACTIVE] }}</mat-option>
+        <mat-option [value]="ProductStatus.INACTIVE">{{ STATUS_LABELS[ProductStatus.INACTIVE] }}</mat-option>
+        <mat-option [value]="ProductStatus.DISCONTINUED">{{ STATUS_LABELS[ProductStatus.DISCONTINUED] }}</mat-option>
+      </mat-select>
+      <mat-icon matPrefix>filter_list</mat-icon>
+    </mat-form-field>
 
     <!-- Clear Filters -->
     <div class="filter-actions">
-      <button class="btn btn-secondary" (click)="clearFilters()" [disabled]="loading">
+      <button
+        mat-stroked-button
+        (click)="clearFilters()"
+        [disabled]="loading"
+        aria-label="Limpar todos os filtros">
+        <mat-icon>clear</mat-icon>
         Limpar Filtros
       </button>
     </div>
@@ -78,129 +91,145 @@
   </div>
 
   <!-- Loading Spinner -->
-  <div class="loading-spinner" *ngIf="loading && !products">
-    <div class="spinner"></div>
+  <div class="loading-spinner" *ngIf="loading && !products" role="status" aria-live="polite">
+    <mat-spinner diameter="50"></mat-spinner>
     <p>Carregando produtos...</p>
   </div>
 
   <!-- Error Message -->
-  <div class="error-message" *ngIf="error">
-    <span class="error-icon">⚠</span>
+  <div class="error-message" *ngIf="error" role="alert">
+    <mat-icon color="warn" class="error-icon">warning</mat-icon>
     <p>{{ error }}</p>
-    <button class="btn btn-secondary" (click)="loadProducts()">Tentar Novamente</button>
+    <button mat-stroked-button (click)="loadProducts()" aria-label="Tentar carregar produtos novamente">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
   </div>
 
   <!-- Product Table -->
   <div class="table-container" *ngIf="!loading && !error && products">
     <div class="empty-state" *ngIf="products.empty">
+      <mat-icon class="empty-icon">inventory_2</mat-icon>
       <p>Nenhum produto encontrado.</p>
       <p class="hint">Tente ajustar os filtros ou cadastre um novo produto.</p>
-      <button class="btn btn-primary" (click)="createProduct()">
-        <span class="icon">+</span>
+      <button mat-raised-button color="primary" (click)="createProduct()" aria-label="Cadastrar primeiro produto">
+        <mat-icon>add</mat-icon>
         Cadastrar Primeiro Produto
       </button>
     </div>
 
-    <table class="product-table" *ngIf="!products.empty">
-      <thead>
-        <tr>
-          <th>SKU</th>
-          <th>Nome</th>
-          <th>Categoria</th>
-          <th>Preço</th>
-          <th>Custo</th>
-          <th>Estoque</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let product of products.content" (click)="viewProduct(product)" class="clickable">
-          <td>
-            <strong>{{ product.sku }}</strong>
-            <div class="subtitle" *ngIf="product.barcode">{{ product.barcode }}</div>
-          </td>
-          <td>
-            <strong>{{ product.name }}</strong>
-            <div class="subtitle" *ngIf="product.description">{{ product.description | slice:0:50 }}{{ product.description && product.description.length > 50 ? '...' : '' }}</div>
-          </td>
-          <td>
-            <span *ngIf="product.categoryName">{{ product.categoryName }}</span>
-            <span *ngIf="!product.categoryName" class="text-muted">-</span>
-          </td>
-          <td>
-            <strong>{{ formatCurrency(product.price) }}</strong>
-          </td>
-          <td>
-            <span *ngIf="product.cost">{{ formatCurrency(product.cost) }}</span>
-            <span *ngIf="!product.cost" class="text-muted">-</span>
-          </td>
-          <td>
-            <span *ngIf="product.controlsInventory" class="text-muted">Controla</span>
-            <span *ngIf="!product.controlsInventory" class="text-muted">Não controla</span>
-          </td>
-          <td>
-            <span class="badge" [ngClass]="getStatusClass(product.status)">
-              {{ STATUS_LABELS[product.status] }}
-            </span>
-          </td>
-          <td class="actions">
-            <button
-              class="btn-icon btn-edit"
-              (click)="editProduct(product); $event.stopPropagation()"
-              title="Editar Produto"
-            >
-              <span class="icon">✎</span>
-            </button>
-            <button
-              class="btn-icon btn-sync"
-              (click)="syncStockToMarketplace(product); $event.stopPropagation()"
-              title="Sincronizar Estoque com Marketplaces"
-              *ngIf="product.controlsInventory"
-            >
-              <span class="icon">🔄</span>
-            </button>
-            <button
-              class="btn-icon btn-delete"
-              (click)="deleteProduct(product, $event)"
-              title="Excluir Produto"
-            >
-              <span class="icon">🗑</span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
+    <table mat-table [dataSource]="products.content" class="product-table" *ngIf="!products.empty">
+      <!-- SKU Column -->
+      <ng-container matColumnDef="sku">
+        <th mat-header-cell *matHeaderCellDef>SKU</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <strong>{{ product.sku }}</strong>
+          <div class="subtitle" *ngIf="product.barcode">{{ product.barcode }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <strong>{{ product.name }}</strong>
+          <div class="subtitle" *ngIf="product.description">
+            {{ product.description | slice:0:50 }}{{ product.description && product.description.length > 50 ? '...' : '' }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Category Column -->
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>Categoria</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <span *ngIf="product.categoryName">{{ product.categoryName }}</span>
+          <span *ngIf="!product.categoryName" class="text-muted">-</span>
+        </td>
+      </ng-container>
+
+      <!-- Price Column -->
+      <ng-container matColumnDef="price">
+        <th mat-header-cell *matHeaderCellDef>Preço</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <strong>{{ formatCurrency(product.price) }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Cost Column -->
+      <ng-container matColumnDef="cost">
+        <th mat-header-cell *matHeaderCellDef>Custo</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <span *ngIf="product.cost">{{ formatCurrency(product.cost) }}</span>
+          <span *ngIf="!product.cost" class="text-muted">-</span>
+        </td>
+      </ng-container>
+
+      <!-- Inventory Column -->
+      <ng-container matColumnDef="inventory">
+        <th mat-header-cell *matHeaderCellDef>Estoque</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <span *ngIf="product.controlsInventory" class="text-muted">Controla</span>
+          <span *ngIf="!product.controlsInventory" class="text-muted">Não controla</span>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
+          <mat-chip [class]="getStatusClass(product.status)">
+            {{ getStatusLabel(product.status) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let product" class="actions">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="editProduct(product); $event.stopPropagation()"
+            [attr.aria-label]="'Editar produto ' + product.name"
+            matTooltip="Editar Produto">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="accent"
+            (click)="syncStockToMarketplace(product); $event.stopPropagation()"
+            [attr.aria-label]="'Sincronizar estoque do produto ' + product.name"
+            matTooltip="Sincronizar Estoque com Marketplaces"
+            *ngIf="product.controlsInventory">
+            <mat-icon>sync</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="deleteProduct(product, $event)"
+            [attr.aria-label]="'Excluir produto ' + product.name"
+            matTooltip="Excluir Produto">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable"></tr>
     </table>
   </div>
 
   <!-- Pagination -->
-  <div class="pagination" *ngIf="products && !products.empty">
-    <button
-      class="btn btn-secondary"
-      (click)="previousPage()"
-      [disabled]="products.first || loading"
-    >
-      ← Anterior
-    </button>
-
-    <div class="page-numbers">
-      <button
-        *ngFor="let page of getPageNumbers()"
-        class="btn btn-page"
-        [class.active]="page === products.number"
-        (click)="goToPage(page)"
-        [disabled]="loading"
-      >
-        {{ page + 1 }}
-      </button>
-    </div>
-
-    <button
-      class="btn btn-secondary"
-      (click)="nextPage()"
-      [disabled]="products.last || loading"
-    >
-      Próxima →
-    </button>
-  </div>
+  <mat-paginator
+    *ngIf="products && !products.empty"
+    [length]="products.totalElements"
+    [pageSize]="filters.size"
+    [pageIndex]="products.number"
+    [pageSizeOptions]="[10, 20, 50, 100]"
+    (page)="onPageChange($event)"
+    aria-label="Selecionar página de produtos"
+    showFirstLastButtons>
+  </mat-paginator>
 </div>

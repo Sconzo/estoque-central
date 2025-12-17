@@ -1,0 +1,114 @@
+<div class="showcase-container">
+  <h1>Component Showcase - UX Design System</h1>
+
+  <!-- PrimaryButton Examples -->
+  <section class="showcase-section">
+    <h2>PrimaryButton Component</h2>
+
+    <div class="showcase-group">
+      <h3>Colors</h3>
+      <app-primary-button
+        label="Primary Button"
+        color="primary"
+        ariaLabel="Primary action button"
+        (onClick)="handleClick()">
+      </app-primary-button>
+
+      <app-primary-button
+        label="Accent Button"
+        color="accent"
+        ariaLabel="Accent action button"
+        (onClick)="handleSaveClick()">
+      </app-primary-button>
+
+      <app-primary-button
+        label="Warn Button"
+        color="warn"
+        ariaLabel="Delete action button"
+        (onClick)="handleDeleteClick()">
+      </app-primary-button>
+    </div>
+
+    <div class="showcase-group">
+      <h3>With Icons</h3>
+      <app-primary-button
+        label="Salvar"
+        icon="save"
+        color="primary"
+        ariaLabel="Save changes"
+        (onClick)="handleSaveClick()">
+      </app-primary-button>
+
+      <app-primary-button
+        label="Deletar"
+        icon="delete"
+        color="warn"
+        ariaLabel="Delete item"
+        (onClick)="handleDeleteClick()">
+      </app-primary-button>
+    </div>
+
+    <div class="showcase-group">
+      <h3>Loading States</h3>
+      <app-primary-button
+        label="Processar"
+        [loading]="isLoading"
+        loadingText="Processando..."
+        ariaLabel="Process data"
+        (onClick)="handleClick()">
+      </app-primary-button>
+
+      <app-primary-button
+        label="Disabled"
+        [disabled]="true"
+        ariaLabel="Disabled button">
+      </app-primary-button>
+    </div>
+  </section>
+
+  <!-- MetricCard Examples -->
+  <section class="showcase-section">
+    <h2>MetricCard Component</h2>
+
+    <div class="metrics-grid">
+      <app-metric-card
+        title="Total Vendas"
+        value="R$ 45.230"
+        [changePercent]="12.5"
+        icon="trending_up"
+        color="#6A1B9A">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Produtos Cadastrados"
+        value="1.234"
+        [changePercent]="5.2"
+        icon="inventory_2"
+        color="#F9A825">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Estoque Baixo"
+        value="23"
+        [changePercent]="-8.3"
+        icon="warning"
+        color="#C62828">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Clientes Ativos"
+        value="456"
+        [changePercent]="15.7"
+        icon="people"
+        color="#2E7D32">
+      </app-metric-card>
+
+      <app-metric-card
+        title="Pedidos Hoje"
+        value="89"
+        icon="shopping_cart"
+        color="#0277BD">
+      </app-metric-card>
+    </div>
+  </section>
+</div>

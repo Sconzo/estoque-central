@@ -119,6 +119,11 @@ export class ProductService {
       params = params.set('q', filters.query);
     }
 
+    // Add status filter if provided
+    if (filters.status) {
+      params = params.set('status', filters.status);
+    }
+
     if (filters.categoryId) {
       return this.listByCategory(filters.categoryId, filters.page, filters.size);
     }
@@ -127,7 +132,8 @@ export class ProductService {
       return this.search(filters.query, filters.page, filters.size);
     }
 
-    return this.listAll(filters.page, filters.size);
+    // Use GET /api/products with status parameter
+    return this.http.get<Page<ProductDTO>>(this.apiUrl, { params });
   }
 
   /**

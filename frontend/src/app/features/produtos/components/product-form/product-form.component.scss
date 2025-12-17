@@ -58,6 +58,9 @@
 
   .error-icon {
     font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #991b1b;
   }
 
   p {
@@ -232,9 +235,51 @@ select.form-control {
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
   margin-top: 32px;
+
+  button {
+    min-height: 48px; // Touch target mobile
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
 }
 
-// ==================== Buttons ====================
+// ==================== Material Form Fields ====================
+mat-form-field {
+  width: 100%;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.required {
+  color: #dc2626;
+}
+
+// ==================== Checkbox Group ====================
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+
+  mat-checkbox {
+    ::ng-deep .mdc-label {
+      font-weight: 500;
+      color: #374151;
+    }
+  }
+}
+
+// ==================== Buttons (Legacy - kept for backward compatibility) ====================
 .btn {
   padding: 12px 24px;
   border-radius: 6px;

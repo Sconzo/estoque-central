@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Estoque Central - Comparação Temas Roxos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 24px;
+        }
+
+        .intro {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .intro h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #212121;
+        }
+
+        .intro p {
+            color: #757575;
+            font-size: 14px;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .theme-section {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .theme-label {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .dashboard-mockup {
+            background: #fafafa;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Header/Topbar */
+        .topbar {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        /* Main Content */
+        .dashboard-content {
+            padding: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #212121;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 24px;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border-left: 4px solid;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: #757575;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .metric-change.positive {
+            color: #2E7D32;
+        }
+
+        .metric-change.negative {
+            color: #C62828;
+        }
+
+        /* Alerts Section */
+        .alerts-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #212121;
+        }
+
+        .alert-item {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Table */
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #212121;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #757575;
+            background: #fafafa;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-top: 1px solid #f0f0f0;
+            color: #424242;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-pending {
+            background: #FFF3E0;
+            color: #EF6C00;
+        }
+
+        .notes {
+            background: #FFF9C4;
+            border-left: 4px solid #F9A825;
+            padding: 16px;
+            margin-top: 24px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1400px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="intro">
+        <h1>🎨 Dashboard Estoque Central - Comparação Visual</h1>
+        <p>Tema 2 (Premium Tech) vs Tema 4 (Luxo Profundo)</p>
+    </div>
+
+    <div class="comparison-container">
+        <!-- THEME 2: Premium Tech (#9161FF) -->
+        <div class="theme-section">
+            <div class="theme-label" style="background: #9161FF;">
+                Tema 2: Premium Tech (#9161FF)
+            </div>
+
+            <div class="dashboard-mockup">
+                <!-- Topbar -->
+                <div class="topbar" style="background: #9161FF;">
+                    <div class="topbar-left">
+                        <div class="logo">📦 Estoque Central</div>
+                    </div>
+                    <div class="topbar-right">
+                        <span>🔔 3</span>
+                        <span>Sincronizado há 2min</span>
+                        <div class="user-badge">Poly (Admin)</div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="dashboard-content">
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-subtitle">Visão geral das operações • Atualizado em tempo real</div>
+
+                    <!-- Metrics Cards -->
+                    <div class="metrics-grid">
+                        <div class="metric-card" style="border-left-color: #9161FF;">
+                            <div class="metric-label">Vendas Hoje</div>
+                            <div class="metric-value" style="color: #9161FF;">R$ 12.450</div>
+                            <div class="metric-change positive">↑ +15% vs ontem</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #388E3C;">
+                            <div class="metric-label">Estoque Total</div>
+                            <div class="metric-value" style="color: #388E3C;">R$ 87.320</div>
+                            <div class="metric-change">1.247 itens</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #F9A825;">
+                            <div class="metric-label">Estoque Baixo</div>
+                            <div class="metric-value" style="color: #F9A825;">23</div>
+                            <div class="metric-change negative">↑ +3 desde ontem</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #0288D1;">
+                            <div class="metric-label">Pedidos Pendentes</div>
+                            <div class="metric-value" style="color: #0288D1;">8</div>
+                            <div class="metric-change">ML: 5 • B2B: 3</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="action-btn" style="background: #9161FF;">+ Nova Venda (PDV)</button>
+                        <button class="action-btn" style="background: #7243DB;">+ Ordem de Venda</button>
+                        <button class="action-btn" style="background: #0288D1;">📊 Relatórios</button>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="alerts-section">
+                        <div class="section-title">Alertas e Notificações</div>
+                        <div class="alert-item" style="border-left-color: #388E3C; background: #E8F5E9;">
+                            <span>✓</span>
+                            <span><strong>Mercado Livre sincronizado</strong> • Estoque atualizado em todos os anúncios</span>
+                        </div>
+                        <div class="alert-item" style="border-left-color: #F9A825; background: #FFF8E1;">
+                            <span>⚠</span>
+                            <span><strong>23 produtos abaixo do estoque mínimo</strong> • Revisar reposição</span>
+                        </div>
+                        <div class="alert-item" style="border-left-color: #D32F2F; background: #FFEBEE;">
+                            <span>✕</span>
+                            <span><strong>1 NFCe pendente</strong> • Venda #1247 aguardando emissão (retry em 5min)</span>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Table -->
+                    <div class="data-table">
+                        <div class="table-header">Últimas Vendas</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Canal</th>
+                                    <th>Cliente</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#1250</td>
+                                    <td>PDV</td>
+                                    <td>Consumidor Final</td>
+                                    <td>R$ 247,80</td>
+                                    <td><span class="status-badge status-active">NFCe Emitida</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1249</td>
+                                    <td>Mercado Livre</td>
+                                    <td>João Silva</td>
+                                    <td>R$ 189,90</td>
+                                    <td><span class="status-badge status-active">Enviado</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1248</td>
+                                    <td>B2B</td>
+                                    <td>Pet Shop Amigo Fiel</td>
+                                    <td>R$ 1.450,00</td>
+                                    <td><span class="status-badge status-pending">Aguardando Separação</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1247</td>
+                                    <td>PDV</td>
+                                    <td>Maria Santos</td>
+                                    <td>R$ 87,50</td>
+                                    <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">NFCe Falhou</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THEME 4: Deep Luxury (#6A1B9A) -->
+        <div class="theme-section">
+            <div class="theme-label" style="background: #6A1B9A;">
+                Tema 4: Luxo Profundo (#6A1B9A + Dourado)
+            </div>
+
+            <div class="dashboard-mockup">
+                <!-- Topbar -->
+                <div class="topbar" style="background: #6A1B9A;">
+                    <div class="topbar-left">
+                        <div class="logo">📦 Estoque Central</div>
+                    </div>
+                    <div class="topbar-right">
+                        <span>🔔 3</span>
+                        <span>Sincronizado há 2min</span>
+                        <div class="user-badge">Poly (Admin)</div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="dashboard-content">
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-subtitle">Visão geral das operações • Atualizado em tempo real</div>
+
+                    <!-- Metrics Cards -->
+                    <div class="metrics-grid">
+                        <div class="metric-card" style="border-left-color: #6A1B9A;">
+                            <div class="metric-label">Vendas Hoje</div>
+                            <div class="metric-value" style="color: #6A1B9A;">R$ 12.450</div>
+                            <div class="metric-change positive">↑ +15% vs ontem</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #2E7D32;">
+                            <div class="metric-label">Estoque Total</div>
+                            <div class="metric-value" style="color: #2E7D32;">R$ 87.320</div>
+                            <div class="metric-change">1.247 itens</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #F9A825;">
+                            <div class="metric-label">Estoque Baixo</div>
+                            <div class="metric-value" style="color: #F9A825;">23</div>
+                            <div class="metric-change negative">↑ +3 desde ontem</div>
+                        </div>
+                        <div class="metric-card" style="border-left-color: #F9A825;">
+                            <div class="metric-label">Pedidos Pendentes</div>
+                            <div class="metric-value" style="color: #6A1B9A;">8</div>
+                            <div class="metric-change">ML: 5 • B2B: 3</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="action-btn" style="background: #6A1B9A;">+ Nova Venda (PDV)</button>
+                        <button class="action-btn" style="background: #4A148C;">+ Ordem de Venda</button>
+                        <button class="action-btn" style="background: #F9A825; color: #212121;">📊 Relatórios Premium</button>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="alerts-section">
+                        <div class="section-title">Alertas e Notificações</div>
+                        <div class="alert-item" style="border-left-color: #2E7D32; background: #E8F5E9;">
+                            <span>✓</span>
+                            <span><strong>Mercado Livre sincronizado</strong> • Estoque atualizado em todos os anúncios</span>
+                        </div>
+                        <div class="alert-item" style="border-left-color: #F9A825; background: #FFF8E1;">
+                            <span>⚠</span>
+                            <span><strong>23 produtos abaixo do estoque mínimo</strong> • Revisar reposição</span>
+                        </div>
+                        <div class="alert-item" style="border-left-color: #C62828; background: #FFEBEE;">
+                            <span>✕</span>
+                            <span><strong>1 NFCe pendente</strong> • Venda #1247 aguardando emissão (retry em 5min)</span>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Table -->
+                    <div class="data-table">
+                        <div class="table-header">Últimas Vendas</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Canal</th>
+                                    <th>Cliente</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#1250</td>
+                                    <td>PDV</td>
+                                    <td>Consumidor Final</td>
+                                    <td>R$ 247,80</td>
+                                    <td><span class="status-badge status-active">NFCe Emitida</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1249</td>
+                                    <td>Mercado Livre</td>
+                                    <td>João Silva</td>
+                                    <td>R$ 189,90</td>
+                                    <td><span class="status-badge status-active">Enviado</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1248</td>
+                                    <td>B2B</td>
+                                    <td>Pet Shop Amigo Fiel</td>
+                                    <td>R$ 1.450,00</td>
+                                    <td><span class="status-badge status-pending">Aguardando Separação</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#1247</td>
+                                    <td>PDV</td>
+                                    <td>Maria Santos</td>
+                                    <td>R$ 87,50</td>
+                                    <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">NFCe Falhou</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notes">
+        <strong>💡 Análise Comparativa:</strong><br><br>
+        <strong>Tema 2 (Premium Tech - #9161FF):</strong><br>
+        • Roxo mais claro e vibrante<br>
+        • Sensação mais moderna e tech<br>
+        • Azul como info color mantém familiaridade<br>
+        • Visual mais energético e produtivo<br><br>
+
+        <strong>Tema 4 (Luxo Profundo - #6A1B9A):</strong><br>
+        • Roxo escuro mais sóbrio e sofisticado<br>
+        • Dourado como accent cria sensação premium/luxury<br>
+        • Visual mais sério e estabelecido<br>
+        • Transmite máxima qualidade e confiabilidade<br><br>
+
+        <strong>Qual transmite mais "confiança e eficiência" para seus usuários?</strong><br>
+        • Tema 2 = Moderno, inovador, tech-forward<br>
+        • Tema 4 = Sofisticado, premium, estabelecido
+    </div>
+</body>
+</html>

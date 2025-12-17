@@ -256,6 +256,11 @@
   border-radius: 4px;
   transition: background 0.2s;
   font-size: 16px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &.btn-add {
     color: #059669;
@@ -301,6 +306,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 48px;
 
   &:disabled {
     opacity: 0.5;

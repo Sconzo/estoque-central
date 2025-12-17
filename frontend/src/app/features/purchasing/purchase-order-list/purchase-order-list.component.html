@@ -1,8 +1,12 @@
 <div class="purchase-order-list-container">
   <div class="header">
-    <h1>Ordens de Compra</h1>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()">
-      <mat-icon>add</mat-icon>
+    <h1 id="page-title">Ordens de Compra</h1>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="openCreateDialog()"
+      aria-label="Criar nova ordem de compra">
+      <mat-icon aria-hidden="true">add</mat-icon>
       Nova Ordem de Compra
     </button>
   </div>
@@ -10,15 +14,19 @@
   <!-- Filters -->
   <mat-card class="filters-card">
     <mat-card-content>
-      <form [formGroup]="filterForm" class="filters-form">
+      <form [formGroup]="filterForm" class="filters-form" aria-labelledby="page-title">
         <mat-form-field appearance="outline">
           <mat-label>Número da OC</mat-label>
-          <input matInput formControlName="poNumber" placeholder="PO-202511-0001">
+          <input
+            matInput
+            formControlName="poNumber"
+            placeholder="PO-202511-0001"
+            aria-label="Filtrar por número da ordem de compra">
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Status</mat-label>
-          <mat-select formControlName="status">
+          <mat-select formControlName="status" aria-label="Filtrar por status da ordem de compra">
             <mat-option *ngFor="let option of statusOptions" [value]="option.value">
               {{ option.label }}
             </mat-option>
@@ -27,25 +35,40 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Data Início</mat-label>
-          <input matInput [matDatepicker]="pickerFrom" formControlName="orderDateFrom">
+          <input
+            matInput
+            [matDatepicker]="pickerFrom"
+            formControlName="orderDateFrom"
+            aria-label="Filtrar por data inicial do pedido">
           <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
           <mat-datepicker #pickerFrom></mat-datepicker>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Data Fim</mat-label>
-          <input matInput [matDatepicker]="pickerTo" formControlName="orderDateTo">
+          <input
+            matInput
+            [matDatepicker]="pickerTo"
+            formControlName="orderDateTo"
+            aria-label="Filtrar por data final do pedido">
           <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
           <mat-datepicker #pickerTo></mat-datepicker>
         </mat-form-field>
 
         <div class="filter-actions">
-          <button mat-raised-button color="primary" (click)="applyFilters()">
-            <mat-icon>search</mat-icon>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="applyFilters()"
+            aria-label="Aplicar filtros e buscar ordens de compra">
+            <mat-icon aria-hidden="true">search</mat-icon>
             Buscar
           </button>
-          <button mat-button (click)="clearFilters()">
-            <mat-icon>clear</mat-icon>
+          <button
+            mat-button
+            (click)="clearFilters()"
+            aria-label="Limpar todos os filtros">
+            <mat-icon aria-hidden="true">clear</mat-icon>
             Limpar
           </button>
         </div>
@@ -55,7 +78,7 @@
 
   <!-- Table -->
   <div class="table-container">
-    <table mat-table [dataSource]="purchaseOrders()" class="mat-elevation-z2">
+    <table mat-table [dataSource]="purchaseOrders()" class="mat-elevation-z2" aria-label="Tabela de ordens de compra">
       <!-- PO Number Column -->
       <ng-container matColumnDef="poNumber">
         <th mat-header-cell *matHeaderCellDef>Número OC</th>
@@ -96,24 +119,45 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let po">
-          <button mat-icon-button [matMenuTriggerFor]="menu">
-            <mat-icon>more_vert</mat-icon>
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            [attr.aria-label]="'Abrir menu de ações para ordem ' + po.poNumber">
+            <mat-icon aria-hidden="true">more_vert</mat-icon>
           </button>
           <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="viewDetails(po)">
-              <mat-icon>visibility</mat-icon>
+            <button
+              mat-menu-item
+              (click)="viewDetails(po)"
+              [attr.aria-label]="'Ver detalhes da ordem ' + po.poNumber">
+              <mat-icon aria-hidden="true">visibility</mat-icon>
               <span>Ver Detalhes</span>
             </button>
-            <button mat-menu-item (click)="editPurchaseOrder(po)" [disabled]="!canEdit(po)">
-              <mat-icon>edit</mat-icon>
+            <button
+              mat-menu-item
+              (click)="editPurchaseOrder(po)"
+              [disabled]="!canEdit(po)"
+              [attr.aria-label]="'Editar ordem ' + po.poNumber"
+              [attr.aria-disabled]="!canEdit(po)">
+              <mat-icon aria-hidden="true">edit</mat-icon>
               <span>Editar</span>
             </button>
-            <button mat-menu-item (click)="sendToSupplier(po)" [disabled]="!canSend(po)">
-              <mat-icon>send</mat-icon>
+            <button
+              mat-menu-item
+              (click)="sendToSupplier(po)"
+              [disabled]="!canSend(po)"
+              [attr.aria-label]="'Enviar ordem ' + po.poNumber + ' para fornecedor'"
+              [attr.aria-disabled]="!canSend(po)">
+              <mat-icon aria-hidden="true">send</mat-icon>
               <span>Enviar</span>
             </button>
-            <button mat-menu-item (click)="cancelPurchaseOrder(po)" [disabled]="!canCancel(po)">
-              <mat-icon>cancel</mat-icon>
+            <button
+              mat-menu-item
+              (click)="cancelPurchaseOrder(po)"
+              [disabled]="!canCancel(po)"
+              [attr.aria-label]="'Cancelar ordem ' + po.poNumber"
+              [attr.aria-disabled]="!canCancel(po)">
+              <mat-icon aria-hidden="true">cancel</mat-icon>
               <span>Cancelar</span>
             </button>
           </mat-menu>
@@ -127,9 +171,9 @@
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell" [attr.colspan]="displayedColumns.length">
           @if (loading()) {
-            <div class="loading">Carregando...</div>
+            <div class="loading" role="status" aria-live="polite">Carregando...</div>
           } @else {
-            <div class="no-data">Nenhuma ordem de compra encontrada</div>
+            <div class="no-data" role="status">Nenhuma ordem de compra encontrada</div>
           }
         </td>
       </tr>
@@ -141,7 +185,8 @@
       [pageSizeOptions]="[10, 20, 50, 100]"
       [pageIndex]="pageIndex"
       (page)="onPageChange($event)"
-      showFirstLastButtons>
+      showFirstLastButtons
+      aria-label="Navegação de páginas da tabela de ordens de compra">
     </mat-paginator>
   </div>
 </div>

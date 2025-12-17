@@ -157,6 +157,16 @@ mat-card-title {
   font-size: 14px;
 }
 
+/* Accessibility */
+button {
+  min-height: 48px;
+}
+
+mat-icon-button {
+  min-height: 48px;
+  min-width: 48px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .filter-row {

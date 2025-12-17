@@ -3,7 +3,7 @@
     <!-- Product Header -->
     <mat-card class="header-card">
       <mat-card-header>
-        <button mat-icon-button (click)="goBack()">
+        <button mat-icon-button (click)="goBack()" aria-label="Voltar para dashboard de estoque">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div class="product-info">
@@ -89,17 +89,17 @@
                     <mat-form-field appearance="outline" class="minimum-input">
                       <input matInput type="number" [(ngModel)]="newMinimumValue" (ngModelChange)="newMinimumValue.set($event)">
                     </mat-form-field>
-                    <button mat-icon-button color="primary" (click)="saveMinimum(loc.stockLocationId)" matTooltip="Salvar">
+                    <button mat-icon-button color="primary" (click)="saveMinimum(loc.stockLocationId)" matTooltip="Salvar" aria-label="Salvar estoque mínimo">
                       <mat-icon>check</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="cancelEditMinimum()" matTooltip="Cancelar">
+                    <button mat-icon-button (click)="cancelEditMinimum()" matTooltip="Cancelar" aria-label="Cancelar edição">
                       <mat-icon>close</mat-icon>
                     </button>
                   </div>
                 } @else {
                   <div class="minimum-display">
                     <span>{{ loc.minimumQuantity !== null && loc.minimumQuantity !== undefined ? (loc.minimumQuantity | number:'1.0-3') : '-' }}</span>
-                    <button mat-icon-button (click)="startEditMinimum(loc.stockLocationId, loc.minimumQuantity)" matTooltip="Editar Mínimo">
+                    <button mat-icon-button (click)="startEditMinimum(loc.stockLocationId, loc.minimumQuantity)" matTooltip="Editar Mínimo" aria-label="Editar estoque mínimo">
                       <mat-icon>edit</mat-icon>
                     </button>
                   </div>

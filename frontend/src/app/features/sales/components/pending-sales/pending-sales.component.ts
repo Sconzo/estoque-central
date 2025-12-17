@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SaleManagementService, SaleResponse, NfceStatus } from '../../services/sale-management.service';
 import { Page } from '../../../produtos/models/product.model';
 import { CancelSaleDialogComponent } from '../cancel-sale-dialog/cancel-sale-dialog.component';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * PendingSalesComponent - NFCe Retry Queue Management
@@ -359,7 +360,8 @@ export class PendingSalesComponent implements OnInit {
 
   constructor(
     private saleManagementService: SaleManagementService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private feedback: FeedbackService
   ) {}
 
   ngOnInit(): void {
@@ -404,12 +406,13 @@ export class PendingSalesComponent implements OnInit {
     this.saleManagementService.retrySale(this.tenantId, saleId).subscribe({
       next: (response) => {
         this.loading = false;
-        alert(`NFCe retentada com sucesso!\nStatus: ${response.nfceStatus}`);
+        this.feedback.showSuccess(`NFCe retentada com sucesso! Status: ${response.nfceStatus}`);
         this.loadPendingSales();
       },
       error: (err) => {
         this.loading = false;
-        alert('Erro ao retentar emissão: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao retentar emissão: ${errorMessage}`, () => this.retrySale(saleId));
         console.error('Error retrying sale:', err);
       }
     });
@@ -441,12 +444,13 @@ export class PendingSalesComponent implements OnInit {
     this.saleManagementService.cancelSaleWithRefund(this.tenantId, saleId, justification).subscribe({
       next: (response) => {
         this.loading = false;
-        alert(`Venda cancelada com sucesso!\nEstoque reembolsado.\nStatus: ${response.nfceStatus}`);
+        this.feedback.showSuccess(`Venda cancelada com sucesso! Estoque reembolsado. Status: ${response.nfceStatus}`);
         this.loadPendingSales();
       },
       error: (err) => {
         this.loading = false;
-        alert('Erro ao cancelar venda: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao cancelar venda: ${errorMessage}`, () => this.performCancellation(saleId, justification));
         console.error('Error cancelling sale:', err);
       }
     });

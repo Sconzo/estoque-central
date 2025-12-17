@@ -67,7 +67,8 @@ public class JwtService {
         }
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         this.userService = userService;
-        logger.info("JwtService initialized with HS256 signing key");
+        logger.info("JwtService initialized with HS256 signing key (secret length: {} chars, key hash: {})",
+                jwtSecret.length(), Integer.toHexString(this.signingKey.hashCode()));
     }
 
     /**
@@ -117,6 +118,8 @@ public class JwtService {
 
         logger.debug("JWT token generated successfully for user: {} with roles: {} (expires at: {})",
                 usuario.getEmail(), roleNames, expiration);
+        logger.debug("Generated token (first 50 chars): {}", token.substring(0, Math.min(50, token.length())));
+        logger.debug("Generated token (last 20 chars): {}", token.substring(Math.max(0, token.length() - 20)));
 
         return token;
     }
@@ -136,6 +139,10 @@ public class JwtService {
      * @throws io.jsonwebtoken.JwtException if token is invalid, expired, or malformed
      */
     public Claims validateToken(String token) {
+        logger.debug("Validating token (first 50 chars): {}", token.substring(0, Math.min(50, token.length())));
+        logger.debug("Validating token (last 20 chars): {}", token.substring(Math.max(0, token.length() - 20)));
+        logger.debug("Token length: {}, Key hash: {}", token.length(), Integer.toHexString(this.signingKey.hashCode()));
+
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(signingKey)

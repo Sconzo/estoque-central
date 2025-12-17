@@ -1,0 +1,182 @@
+<!-- Skip Link for Accessibility -->
+<a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
+<mat-sidenav-container class="sidenav-container" *ngIf="isHandset$ | async as isHandset; else desktop">
+  <!-- MOBILE LAYOUT -->
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    fixedInViewport
+    [attr.role]="'navigation'"
+    [mode]="'over'"
+    [opened]="false">
+    <!-- Mobile Sidebar Header -->
+    <mat-toolbar color="primary" class="mobile-toolbar">
+      <span>{{ title }}</span>
+    </mat-toolbar>
+
+    <!-- Mobile Nav Menu -->
+    <mat-nav-list>
+      @for (item of menuItems; track item.route) {
+        <div class="nav-item-wrapper">
+          <a
+            mat-list-item
+            (click)="navigate(item.route, isHandset)"
+            [class.active]="isRouteActive(item.route)"
+            [attr.aria-label]="'Navegar para ' + item.label">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+
+          @if (item.children && isRouteActive(item.route)) {
+            <div class="nav-children">
+              @for (child of item.children; track child.route) {
+                <a
+                  mat-list-item
+                  (click)="navigate(child.route, isHandset)"
+                  class="nav-child">
+                  <span matListItemTitle>{{ child.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+      <mat-divider></mat-divider>
+      <a mat-list-item (click)="logout()" aria-label="Sair do sistema">
+        <mat-icon matListItemIcon>logout</mat-icon>
+        <span matListItemTitle>Sair</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <!-- Mobile Toolbar -->
+    <mat-toolbar color="primary" class="mobile-toolbar">
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Abrir menu de navegação"
+        (click)="toggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">{{ title }}</span>
+      @if (currentUser()) {
+        <span class="toolbar-spacer"></span>
+        <span class="user-name-mobile">{{ currentUser().nome }}</span>
+      }
+    </mat-toolbar>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content mobile-main">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- DESKTOP LAYOUT -->
+<ng-template #desktop>
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      #drawer
+      class="sidenav"
+      fixedInViewport
+      [attr.role]="'navigation'"
+      [mode]="'side'"
+      [opened]="true">
+      <!-- Desktop Sidebar Header -->
+      <div class="sidebar-header">
+        <h2>{{ title }}</h2>
+      </div>
+
+      <!-- Desktop Nav Menu -->
+      <mat-nav-list>
+        @for (item of menuItems; track item.route) {
+          <div class="nav-item-wrapper">
+            <a
+              mat-list-item
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [attr.aria-label]="'Navegar para ' + item.label">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </a>
+
+            @if (item.children && isRouteActive(item.route)) {
+              <div class="nav-children">
+                @for (child of item.children; track child.route) {
+                  <a
+                    mat-list-item
+                    [routerLink]="child.route"
+                    routerLinkActive="active"
+                    class="nav-child">
+                    <span matListItemTitle>{{ child.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
+      </mat-nav-list>
+
+      <!-- Desktop Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button
+          mat-button
+          class="logout-button"
+          (click)="logout()"
+          aria-label="Sair do sistema">
+          <mat-icon>logout</mat-icon>
+          <span>Sair</span>
+        </button>
+      </div>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <!-- Desktop Toolbar -->
+      <mat-toolbar color="primary" class="desktop-toolbar">
+        <span class="toolbar-spacer"></span>
+        @if (currentUser()) {
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="userMenu"
+            aria-label="Menu do usuário">
+            @if (currentUser().pictureUrl) {
+              <img
+                [src]="currentUser().pictureUrl"
+                [alt]="currentUser().nome"
+                class="user-avatar">
+            } @else {
+              <mat-icon>account_circle</mat-icon>
+            }
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <div class="user-menu-header">
+              <strong>{{ currentUser().nome }}</strong>
+              <small>{{ currentUser().email }}</small>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item aria-label="Ver perfil">
+              <mat-icon>person</mat-icon>
+              <span>Perfil</span>
+            </button>
+            <button mat-menu-item aria-label="Configurações">
+              <mat-icon>settings</mat-icon>
+              <span>Configurações</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()" aria-label="Sair do sistema">
+              <mat-icon>logout</mat-icon>
+              <span>Sair</span>
+            </button>
+          </mat-menu>
+        }
+      </mat-toolbar>
+
+      <!-- Main Content -->
+      <main id="main-content" class="main-content desktop-main">
+        <router-outlet></router-outlet>
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</ng-template>

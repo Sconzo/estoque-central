@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { StockService } from '../services/stock.service';
 import { StockByLocationResponse, LocationStock, SetMinimumQuantityRequest } from '../../../shared/models/stock.model';
+import { FeedbackService } from '../../../shared/services/feedback.service';
 
 /**
  * StockByLocationComponent - Stock drill-down by location
@@ -38,6 +39,7 @@ export class StockByLocationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private feedback = inject(FeedbackService);
 
   // State
   stockData = signal<StockByLocationResponse | null>(null);
@@ -133,7 +135,7 @@ export class StockByLocationComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error saving minimum quantity:', err);
-        alert('Erro ao salvar estoque mínimo');
+        this.feedback.showError('Erro ao salvar estoque mínimo', () => this.saveMinimum(locationId));
       }
     });
   }
@@ -183,6 +185,6 @@ export class StockByLocationComponent implements OnInit {
   onTransfer(locationStock: LocationStock): void {
     // TODO: Navigate to stock transfer page
     console.log('Transfer stock from location:', locationStock.stockLocationId);
-    alert('Funcionalidade de transferência será implementada na Story 2.9');
+    this.feedback.showInfo('Funcionalidade de transferência será implementada na Story 2.9');
   }
 }

@@ -8,8 +8,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -150,5 +153,25 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    /**
+     * Configures HTTP Firewall to allow Authorization headers with Bearer tokens.
+     *
+     * <p>The default StrictHttpFirewall is very restrictive and may reject
+     * valid Authorization headers. This configuration relaxes some restrictions
+     * while maintaining security.
+     *
+     * @return configured HTTP firewall
+     */
+    @Bean
+    public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+
+        // Allow Authorization header with Bearer tokens (including special characters)
+        firewall.setAllowedHeaderNames((headerName) -> true);
+        firewall.setAllowedHeaderValues((headerValue) -> true);
+
+        return firewall;
     }
 }

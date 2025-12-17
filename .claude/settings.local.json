@@ -19,7 +19,16 @@
       "Bash(mvn flyway:migrate:*)",
       "Bash(./mvnw compile:*)",
       "Bash(./mvnw test:*)",
-      "Bash(./mvnw clean compile:*)"
+      "Bash(./mvnw clean compile:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker exec:*)",
+      "Bash(timeout 15 docker-compose logs:*)",
+      "Bash(docker logs:*)",
+      "Bash(ng add:*)",
+      "Bash(ng g c:*)",
+      "Bash(ng build:*)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -52,7 +52,7 @@ import java.util.UUID;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger logg = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -99,32 +99,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             // No JWT token - continue without authentication
-            logger.trace("No Authorization header found for URI: {}", request.getRequestURI());
+            logg.trace("No Authorization header found for URI: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             // Step 2: Extract JWT token
-            String jwt = authHeader.substring(BEARER_PREFIX.length());
+            String jwt = authHeader.substring(BEARER_PREFIX.length()).trim();
 
             // Step 3: Validate token and extract claims
             UUID userId = jwtService.getUserIdFromToken(jwt);
             UUID tenantId = jwtService.getTenantIdFromToken(jwt);
             List<String> roles = jwtService.getRolesFromToken(jwt);
 
-            logger.debug("JWT validated for user: {} (tenant: {})", userId, tenantId);
+            logg.debug("JWT validated for user: {} (tenant: {})", userId, tenantId);
 
             // Step 4: Set TenantContext (CRITICAL for multi-tenancy)
             TenantContext.setTenantId(tenantId.toString());
-            logger.trace("TenantContext set to: {}", tenantId);
+            logg.trace("TenantContext set to: {}", tenantId);
 
             // Step 5: Load user from database (in tenant schema)
             Usuario usuario = userService.getUserById(userId);
 
             // Check if user is active
             if (!usuario.getAtivo()) {
-                logger.warn("Inactive user attempted to login: {}", userId);
+                logg.warn("Inactive user attempted to login: {}", userId);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -146,18 +146,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Step 7: Set SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            logger.debug("SecurityContext populated for user: {} (roles: {})", userId, roles);
+            logg.debug("SecurityContext populated for user: {} (roles: {})", userId, roles);
 
         } catch (JwtException e) {
-            logger.warn("JWT validation failed: {}", e.getMessage());
+            logg.warn("JWT validation failed: {}", e.getMessage());
             // Continue without authentication - protected endpoints will return 401
 
         } catch (IllegalArgumentException e) {
-            logger.warn("User not found or invalid: {}", e.getMessage());
+            logg.warn("User not found or invalid: {}", e.getMessage());
             // Continue without authentication
 
         } catch (Exception e) {
-            logger.error("Unexpected error in JWT filter", e);
+            logg.error("Unexpected error in JWT filter", e);
             // Continue without authentication
         }
 

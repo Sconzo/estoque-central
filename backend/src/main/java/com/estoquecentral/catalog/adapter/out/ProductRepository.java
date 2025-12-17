@@ -48,6 +48,26 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
     long countByAtivoTrue();
 
     /**
+     * Finds products by status with pagination
+     *
+     * @param status product status
+     * @param limit page size
+     * @param offset page offset
+     * @return list of products with the specified status
+     */
+    @Query("SELECT * FROM products WHERE status = CAST(:status AS product_status) ORDER BY name LIMIT :limit OFFSET :offset")
+    java.util.List<Product> findByStatus(@Param("status") ProductStatus status, @Param("limit") int limit, @Param("offset") long offset);
+
+    /**
+     * Counts products by status
+     *
+     * @param status product status
+     * @return count of products with the specified status
+     */
+    @Query("SELECT COUNT(*) FROM products WHERE status = CAST(:status AS product_status)")
+    long countByStatus(@Param("status") ProductStatus status);
+
+    /**
      * Finds product by ID and active status
      *
      * @param id product ID

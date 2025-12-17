@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomerService } from '../../services/customer.service';
 import { CustomerType, Customer } from '../../models/customer.model';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * CustomerQuickCreateComponent - Quick customer creation modal
@@ -14,35 +15,78 @@ import { CustomerType, Customer } from '../../models/customer.model';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="modal-overlay" (click)="close()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <h3>Cadastro Rápido de Cliente</h3>
+      <div class="modal-content" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <h3 id="modal-title">Cadastro Rápido de Cliente</h3>
         <form [formGroup]="quickForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label>Tipo *</label>
-            <select formControlName="customerType" class="form-control">
+            <label for="customerType">Tipo <span class="required">*</span></label>
+            <select
+              id="customerType"
+              formControlName="customerType"
+              class="form-control"
+              required
+              aria-label="Tipo de pessoa do cliente"
+              aria-required="true">
               <option [value]="CustomerType.INDIVIDUAL">Pessoa Física</option>
               <option [value]="CustomerType.BUSINESS">Pessoa Jurídica</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>{{ isPF ? 'Nome Completo' : 'Razão Social' }} *</label>
-            <input type="text" formControlName="name" class="form-control" />
+            <label for="name">{{ isPF ? 'Nome Completo' : 'Razão Social' }} <span class="required">*</span></label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              class="form-control"
+              required
+              [attr.aria-label]="isPF ? 'Nome completo do cliente' : 'Razão social do cliente'"
+              aria-required="true"
+              [attr.aria-describedby]="hasError('name') ? 'name-error' : null" />
+            <span id="name-error" class="error-message" role="alert" *ngIf="hasError('name')">
+              {{ isPF ? 'Nome completo é obrigatório' : 'Razão social é obrigatória' }}
+            </span>
           </div>
 
           <div class="form-group">
-            <label>{{ isPF ? 'CPF' : 'CNPJ' }} *</label>
-            <input type="text" formControlName="taxId" class="form-control" />
+            <label for="taxId">{{ isPF ? 'CPF' : 'CNPJ' }} <span class="required">*</span></label>
+            <input
+              id="taxId"
+              type="text"
+              formControlName="taxId"
+              class="form-control"
+              required
+              [attr.aria-label]="isPF ? 'CPF do cliente' : 'CNPJ do cliente'"
+              aria-required="true"
+              [attr.aria-describedby]="hasError('taxId') ? 'taxId-error' : null" />
+            <span id="taxId-error" class="error-message" role="alert" *ngIf="hasError('taxId')">
+              {{ isPF ? 'CPF é obrigatório' : 'CNPJ é obrigatório' }}
+            </span>
           </div>
 
           <div class="form-group">
-            <label>Telefone</label>
-            <input type="text" formControlName="phone" class="form-control" />
+            <label for="phone">Telefone</label>
+            <input
+              id="phone"
+              type="text"
+              formControlName="phone"
+              class="form-control"
+              aria-label="Telefone do cliente" />
           </div>
 
           <div class="form-actions">
-            <button type="button" (click)="close()" class="btn btn-outline">Cancelar</button>
-            <button type="submit" class="btn btn-primary" [disabled]="loading || quickForm.invalid">
+            <button
+              type="button"
+              (click)="close()"
+              class="btn btn-outline"
+              aria-label="Cancelar e fechar cadastro rápido">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="loading || quickForm.invalid"
+              [attr.aria-label]="loading ? 'Salvando cliente...' : 'Salvar cliente'">
               {{ loading ? 'Salvando...' : 'Salvar' }}
             </button>
           </div>
@@ -79,6 +123,18 @@ import { CustomerType, Customer } from '../../models/customer.model';
       border: 1px solid #ddd;
       border-radius: 4px;
     }
+    .form-control.ng-invalid.ng-touched {
+      border-color: #dc2626;
+    }
+    .required {
+      color: #dc2626;
+    }
+    .error-message {
+      display: block;
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
     .form-actions {
       display: flex;
       gap: 1rem;
@@ -89,11 +145,16 @@ import { CustomerType, Customer } from '../../models/customer.model';
       padding: 0.5rem 1rem;
       border-radius: 4px;
       cursor: pointer;
+      min-height: 44px;
     }
     .btn-primary {
       background: #0d6efd;
       color: white;
       border: none;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .btn-outline {
       background: white;
@@ -111,7 +172,8 @@ export class CustomerQuickCreateComponent {
 
   constructor(
     private fb: FormBuilder,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private feedback: FeedbackService
   ) {
     this.initForm();
   }
@@ -151,11 +213,13 @@ export class CustomerQuickCreateComponent {
 
     this.customerService.create(request).subscribe({
       next: (customer) => {
+        this.feedback.showSuccess('Cliente criado com sucesso!');
         this.customerCreated.emit(customer);
         this.loading = false;
       },
       error: (err) => {
-        alert('Erro ao criar cliente: ' + (err.error?.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao criar cliente: ${errorMessage}`, () => this.onSubmit());
         this.loading = false;
       }
     });
@@ -163,5 +227,10 @@ export class CustomerQuickCreateComponent {
 
   close(): void {
     this.closed.emit();
+  }
+
+  hasError(fieldName: string): boolean {
+    const field = this.quickForm.get(fieldName);
+    return !!(field && field.invalid && field.touched);
   }
 }

@@ -1,0 +1,272 @@
+// Story UX-6: Navigation Responsiva
+// MainLayoutComponent - Responsive navigation with Material Design
+
+// ===========================
+// Skip Link (Accessibility)
+// ===========================
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #6A1B9A; // Primary purple
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-weight: 500;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// ===========================
+// Sidenav Container
+// ===========================
+.sidenav-container {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+}
+
+mat-sidenav-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+// ===========================
+// Sidebar (Desktop & Mobile)
+// ===========================
+.sidenav {
+  width: 260px;
+  background-color: #fafafa;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.sidebar-header {
+  padding: 24px 16px;
+  background-color: #6A1B9A; // Primary purple
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+  }
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  background-color: #fafafa;
+
+  .logout-button {
+    width: 100%;
+    justify-content: flex-start;
+
+    mat-icon {
+      margin-right: 12px;
+    }
+  }
+}
+
+// ===========================
+// Navigation Items
+// ===========================
+mat-nav-list {
+  padding-top: 8px;
+  padding-bottom: 80px; // Space for logout button
+
+  .nav-item-wrapper {
+    margin-bottom: 2px;
+  }
+
+  a.mat-mdc-list-item {
+    &.active {
+      background-color: rgba(106, 27, 154, 0.1);
+      color: #6A1B9A;
+
+      mat-icon {
+        color: #6A1B9A;
+      }
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  .nav-child {
+    padding-left: 56px !important;
+    font-size: 14px;
+    height: 40px;
+
+    &.active {
+      background-color: rgba(106, 27, 154, 0.08);
+      color: #6A1B9A;
+    }
+  }
+}
+
+.nav-children {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+// ===========================
+// Desktop Toolbar
+// ===========================
+.desktop-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+}
+
+.user-menu-header {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  strong {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  small {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+// ===========================
+// Mobile Toolbar
+// ===========================
+.mobile-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .toolbar-title {
+    margin-left: 8px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+
+  .user-name-mobile {
+    font-size: 14px;
+    margin-right: 8px;
+  }
+}
+
+// ===========================
+// Main Content
+// ===========================
+.main-content {
+  min-height: calc(100vh - 64px);
+  height: calc(100vh - 64px);
+  width: 100%; // Use full available width
+  background-color: #f5f5f5;
+  overflow-y: auto;
+  overflow-x: auto;
+
+  &.desktop-main {
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  &.mobile-main {
+    padding: 16px;
+    box-sizing: border-box;
+  }
+}
+
+// ===========================
+// Responsive Adjustments
+// ===========================
+
+// Tablet (768px - 1279px)
+@media (min-width: 768px) and (max-width: 1279px) {
+  .sidenav {
+    width: 220px;
+  }
+
+  .main-content.desktop-main {
+    padding: 20px;
+  }
+}
+
+// Small mobile (< 480px)
+@media (max-width: 479px) {
+  .main-content.mobile-main {
+    padding: 12px;
+  }
+
+  .user-name-mobile {
+    display: none; // Hide user name on very small screens
+  }
+}
+
+// ===========================
+// Accessibility Enhancements
+// ===========================
+
+// Focus visible styles
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #6A1B9A;
+  outline-offset: 2px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .sidebar-header {
+    border-bottom: 2px solid white;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ===========================
+// Print Styles
+// ===========================
+@media print {
+  .sidenav,
+  mat-toolbar {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    background: white !important;
+  }
+}

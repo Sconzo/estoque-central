@@ -6,7 +6,11 @@
     <!-- Tipo de Pessoa -->
     <div class="form-section">
       <h3>Tipo de Pessoa</h3>
-      <mat-radio-group formControlName="supplierType" class="radio-group">
+      <mat-radio-group
+        formControlName="supplierType"
+        class="radio-group"
+        aria-label="Tipo de pessoa do fornecedor"
+        aria-required="true">
         <mat-radio-button [value]="SupplierType.BUSINESS">Pessoa Jurídica (PJ)</mat-radio-button>
         <mat-radio-button [value]="SupplierType.INDIVIDUAL">Pessoa Física (PF)</mat-radio-button>
       </mat-radio-group>
@@ -18,51 +22,90 @@
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
-          <mat-label>Código do Fornecedor *</mat-label>
-          <input matInput formControlName="supplierCode" placeholder="SUP-001">
-          <mat-error *ngIf="hasError('supplierCode', 'required')">
+          <mat-label>Código do Fornecedor <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="supplierCode"
+            placeholder="SUP-001"
+            required
+            aria-label="Código do fornecedor"
+            aria-required="true"
+            [attr.aria-describedby]="hasError('supplierCode', 'required') ? 'supplierCode-error' : null">
+          <mat-error id="supplierCode-error" role="alert" *ngIf="hasError('supplierCode', 'required')">
             {{ getErrorMessage('supplierCode') }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width" *ngIf="selectedType() === SupplierType.BUSINESS">
-          <mat-label>CNPJ *</mat-label>
-          <input matInput formControlName="cnpj" placeholder="00.000.000/0000-00">
-          <mat-error>{{ getErrorMessage('cnpj') }}</mat-error>
+          <mat-label>CNPJ <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="cnpj"
+            placeholder="00.000.000/0000-00"
+            required
+            aria-label="CNPJ do fornecedor"
+            aria-required="true"
+            [attr.aria-describedby]="supplierForm.get('cnpj')?.hasError('cnpj') || supplierForm.get('cnpj')?.hasError('required') ? 'cnpj-error' : null">
+          <mat-error id="cnpj-error" role="alert">{{ getErrorMessage('cnpj') }}</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width" *ngIf="selectedType() === SupplierType.INDIVIDUAL">
-          <mat-label>CPF *</mat-label>
-          <input matInput formControlName="cpf" placeholder="000.000.000-00">
-          <mat-error>{{ getErrorMessage('cpf') }}</mat-error>
+          <mat-label>CPF <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="cpf"
+            placeholder="000.000.000-00"
+            required
+            aria-label="CPF do fornecedor"
+            aria-required="true"
+            [attr.aria-describedby]="supplierForm.get('cpf')?.hasError('cpf') || supplierForm.get('cpf')?.hasError('required') ? 'cpf-error' : null">
+          <mat-error id="cpf-error" role="alert">{{ getErrorMessage('cpf') }}</mat-error>
         </mat-form-field>
       </div>
 
       <div class="form-row" *ngIf="selectedType() === SupplierType.BUSINESS">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Razão Social *</mat-label>
-          <input matInput formControlName="companyName">
-          <mat-error>{{ getErrorMessage('companyName') }}</mat-error>
+          <mat-label>Razão Social <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="companyName"
+            required
+            aria-label="Razão social do fornecedor"
+            aria-required="true"
+            [attr.aria-describedby]="supplierForm.get('companyName')?.hasError('required') || supplierForm.get('companyName')?.hasError('maxlength') ? 'companyName-error' : null">
+          <mat-error id="companyName-error" role="alert">{{ getErrorMessage('companyName') }}</mat-error>
         </mat-form-field>
       </div>
 
       <div class="form-row" *ngIf="selectedType() === SupplierType.BUSINESS">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nome Fantasia</mat-label>
-          <input matInput formControlName="tradeName">
+          <input
+            matInput
+            formControlName="tradeName"
+            aria-label="Nome fantasia do fornecedor">
         </mat-form-field>
       </div>
 
       <div class="form-row" *ngIf="selectedType() === SupplierType.INDIVIDUAL">
         <mat-form-field appearance="outline" class="half-width">
-          <mat-label>Nome *</mat-label>
-          <input matInput formControlName="firstName">
-          <mat-error>{{ getErrorMessage('firstName') }}</mat-error>
+          <mat-label>Nome <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="firstName"
+            required
+            aria-label="Nome do fornecedor"
+            aria-required="true"
+            [attr.aria-describedby]="supplierForm.get('firstName')?.hasError('required') || supplierForm.get('firstName')?.hasError('maxlength') ? 'firstName-error' : null">
+          <mat-error id="firstName-error" role="alert">{{ getErrorMessage('firstName') }}</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Sobrenome</mat-label>
-          <input matInput formControlName="lastName">
+          <input
+            matInput
+            formControlName="lastName"
+            aria-label="Sobrenome do fornecedor">
         </mat-form-field>
       </div>
     </div>
@@ -74,19 +117,27 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Inscrição Estadual</mat-label>
-          <input matInput formControlName="stateRegistration">
+          <input
+            matInput
+            formControlName="stateRegistration"
+            aria-label="Inscrição estadual do fornecedor">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Inscrição Municipal</mat-label>
-          <input matInput formControlName="municipalRegistration">
+          <input
+            matInput
+            formControlName="municipalRegistration"
+            aria-label="Inscrição municipal do fornecedor">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Regime Tributário</mat-label>
-          <mat-select formControlName="taxRegime">
+          <mat-select
+            formControlName="taxRegime"
+            aria-label="Regime tributário do fornecedor">
             <mat-option *ngFor="let regime of taxRegimes" [value]="regime.value">
               {{ regime.label }}
             </mat-option>
@@ -102,27 +153,44 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email">
-          <mat-error>{{ getErrorMessage('email') }}</mat-error>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            aria-label="Email do fornecedor"
+            [attr.aria-describedby]="supplierForm.get('email')?.hasError('email') ? 'email-error' : null">
+          <mat-error id="email-error" role="alert">{{ getErrorMessage('email') }}</mat-error>
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Telefone</mat-label>
-          <input matInput formControlName="phone" placeholder="(00) 0000-0000">
+          <input
+            matInput
+            formControlName="phone"
+            placeholder="(00) 0000-0000"
+            aria-label="Telefone do fornecedor">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Celular</mat-label>
-          <input matInput formControlName="mobile" placeholder="(00) 00000-0000">
+          <input
+            matInput
+            formControlName="mobile"
+            placeholder="(00) 00000-0000"
+            aria-label="Celular do fornecedor">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Website</mat-label>
-          <input matInput formControlName="website" placeholder="https://www.exemplo.com.br">
+          <input
+            matInput
+            formControlName="website"
+            placeholder="https://www.exemplo.com.br"
+            aria-label="Website do fornecedor">
         </mat-form-field>
       </div>
     </div>
@@ -134,46 +202,68 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="quarter-width">
           <mat-label>CEP</mat-label>
-          <input matInput formControlName="postalCode" placeholder="00000-000">
-          <mat-hint *ngIf="searchingCep()">Buscando...</mat-hint>
+          <input
+            matInput
+            formControlName="postalCode"
+            placeholder="00000-000"
+            aria-label="CEP do fornecedor"
+            aria-describedby="postalCode-hint">
+          <mat-hint id="postalCode-hint" *ngIf="searchingCep()">Buscando...</mat-hint>
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="three-quarter-width">
           <mat-label>Logradouro</mat-label>
-          <input matInput formControlName="street">
+          <input
+            matInput
+            formControlName="street"
+            aria-label="Logradouro">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="quarter-width">
           <mat-label>Número</mat-label>
-          <input matInput formControlName="number">
+          <input
+            matInput
+            formControlName="number"
+            aria-label="Número">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Complemento</mat-label>
-          <input matInput formControlName="complement">
+          <input
+            matInput
+            formControlName="complement"
+            aria-label="Complemento do endereço">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Bairro</mat-label>
-          <input matInput formControlName="neighborhood">
+          <input
+            matInput
+            formControlName="neighborhood"
+            aria-label="Bairro">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Cidade</mat-label>
-          <input matInput formControlName="city">
+          <input
+            matInput
+            formControlName="city"
+            aria-label="Cidade">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Estado</mat-label>
-          <mat-select formControlName="state">
+          <mat-select
+            formControlName="state"
+            aria-label="Estado">
             <mat-option *ngFor="let state of brazilianStates" [value]="state.value">
               {{ state.label }}
             </mat-option>
@@ -189,29 +279,44 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Banco</mat-label>
-          <input matInput formControlName="bankName">
+          <input
+            matInput
+            formControlName="bankName"
+            aria-label="Nome do banco">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="quarter-width">
           <mat-label>Código</mat-label>
-          <input matInput formControlName="bankCode">
+          <input
+            matInput
+            formControlName="bankCode"
+            aria-label="Código do banco">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="quarter-width">
           <mat-label>Agência</mat-label>
-          <input matInput formControlName="bankBranch">
+          <input
+            matInput
+            formControlName="bankBranch"
+            aria-label="Agência bancária">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Conta</mat-label>
-          <input matInput formControlName="bankAccount">
+          <input
+            matInput
+            formControlName="bankAccount"
+            aria-label="Conta bancária">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Chave PIX</mat-label>
-          <input matInput formControlName="pixKey">
+          <input
+            matInput
+            formControlName="pixKey"
+            aria-label="Chave PIX">
         </mat-form-field>
       </div>
     </div>
@@ -223,30 +328,49 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Prazo de Pagamento</mat-label>
-          <input matInput formControlName="paymentTerms" placeholder="30/60/90 dias">
+          <input
+            matInput
+            formControlName="paymentTerms"
+            placeholder="30/60/90 dias"
+            aria-label="Prazo de pagamento">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Forma de Pagamento Padrão</mat-label>
-          <input matInput formControlName="defaultPaymentMethod">
+          <input
+            matInput
+            formControlName="defaultPaymentMethod"
+            aria-label="Forma de pagamento padrão">
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="third-width">
           <mat-label>Limite de Crédito</mat-label>
-          <input matInput formControlName="creditLimit" type="number">
+          <input
+            matInput
+            formControlName="creditLimit"
+            type="number"
+            aria-label="Limite de crédito do fornecedor">
           <span matPrefix>R$ </span>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="third-width">
           <mat-label>Prazo Médio de Entrega (dias)</mat-label>
-          <input matInput formControlName="averageDeliveryDays" type="number">
+          <input
+            matInput
+            formControlName="averageDeliveryDays"
+            type="number"
+            aria-label="Prazo médio de entrega em dias">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="third-width">
           <mat-label>Valor Mínimo de Pedido</mat-label>
-          <input matInput formControlName="minimumOrderValue" type="number">
+          <input
+            matInput
+            formControlName="minimumOrderValue"
+            type="number"
+            aria-label="Valor mínimo de pedido">
           <span matPrefix>R$ </span>
         </mat-form-field>
       </div>
@@ -259,7 +383,9 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="half-width">
           <mat-label>Categoria</mat-label>
-          <mat-select formControlName="supplierCategory">
+          <mat-select
+            formControlName="supplierCategory"
+            aria-label="Categoria do fornecedor">
             <mat-option *ngFor="let cat of supplierCategories" [value]="cat.value">
               {{ cat.label }}
             </mat-option>
@@ -268,8 +394,15 @@
 
         <mat-form-field appearance="outline" class="quarter-width">
           <mat-label>Avaliação (1-5)</mat-label>
-          <input matInput formControlName="rating" type="number" min="1" max="5">
-          <mat-error>{{ getErrorMessage('rating') }}</mat-error>
+          <input
+            matInput
+            formControlName="rating"
+            type="number"
+            min="1"
+            max="5"
+            aria-label="Avaliação do fornecedor de 1 a 5"
+            [attr.aria-describedby]="supplierForm.get('rating')?.hasError('min') || supplierForm.get('rating')?.hasError('max') ? 'rating-error' : null">
+          <mat-error id="rating-error" role="alert">{{ getErrorMessage('rating') }}</mat-error>
         </mat-form-field>
       </div>
     </div>
@@ -281,14 +414,22 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Observações</mat-label>
-          <textarea matInput formControlName="notes" rows="3"></textarea>
+          <textarea
+            matInput
+            formControlName="notes"
+            rows="3"
+            aria-label="Observações sobre o fornecedor"></textarea>
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Notas Internas</mat-label>
-          <textarea matInput formControlName="internalNotes" rows="3"></textarea>
+          <textarea
+            matInput
+            formControlName="internalNotes"
+            rows="3"
+            aria-label="Notas internas sobre o fornecedor"></textarea>
         </mat-form-field>
       </div>
     </div>
@@ -297,10 +438,19 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()" [disabled]="loading()">
+  <button
+    mat-button
+    (click)="onCancel()"
+    [disabled]="loading()"
+    aria-label="Cancelar e fechar formulário de fornecedor">
     Cancelar
   </button>
-  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!supplierForm.valid || loading()">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="!supplierForm.valid || loading()"
+    [attr.aria-label]="loading() ? 'Salvando fornecedor...' : (isEditMode() ? 'Salvar alterações do fornecedor' : 'Criar novo fornecedor')">
     <mat-spinner diameter="20" *ngIf="loading()" style="display: inline-block; margin-right: 8px;"></mat-spinner>
     {{ loading() ? 'Salvando...' : 'Salvar' }}
   </button>

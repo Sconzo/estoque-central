@@ -29,7 +29,7 @@
 # - SM typically drafts next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
 
-generated: "2025-01-30"
+generated: "2025-12-16"
 project: "Estoque Central"
 project_key: "Estoque Central"
 tracking_system: "file-system"
@@ -37,66 +37,66 @@ story_location: "{project-root}/docs/stories"
 
 development_status:
   # Epic 1: Foundation & Core Infrastructure
-  epic-1: backlog
-  1-1-project-scaffolding-build-setup: in-progress
+  epic-1: contexted
+  1-1-project-scaffolding-build-setup: review
   1-2-docker-containerization: review
-  1-3-postgresql-multi-tenancy-setup: drafted
-  1-4-google-oauth-2-0-authentication: backlog
-  1-5-role-based-access-control-rbac: backlog
+  1-3-postgresql-multi-tenancy-setup: done
+  1-4-google-oauth-2-0-authentication: review
+  1-5-role-based-access-control-rbac: review
   1-6-ci-cd-pipeline-com-github-actions: backlog
   1-7-azure-infrastructure-setup: backlog
   epic-1-retrospective: optional
 
   # Epic 2: Product Catalog & Inventory Foundation
-  epic-2: backlog
-  2-1-hierarchical-product-categories: backlog
-  2-2-simple-products-crud: backlog
-  2-3-products-with-variants-matrix: backlog
-  2-4-composite-products-kits-bom: backlog
-  2-5-product-csv-import: backlog
-  2-6-stock-locations-management: backlog
-  2-7-multi-warehouse-stock-control: backlog
-  2-8-stock-movement-history: backlog
-  2-9-stock-transfer-between-locations: backlog
+  epic-2: contexted
+  2-1-hierarchical-product-categories: done
+  2-2-simple-products-crud: review
+  2-3-products-with-variants-matrix: review
+  2-4-composite-products-kits-bom: review
+  2-5-product-csv-import: review
+  2-6-stock-locations-management: review
+  2-7-multi-warehouse-stock-control: review
+  2-8-stock-movement-history: review
+  2-9-stock-transfer-between-locations: review
   epic-2-retrospective: optional
 
   # Epic 3: Purchasing & Inventory Replenishment
-  epic-3: backlog
-  3-1-gestao-de-fornecedores: backlog
-  3-2-criacao-de-ordem-de-compra: backlog
-  3-3-recebimento-mobile-com-scanner: backlog
-  3-4-processamento-de-recebimento-e-atualizacao-de-custo: backlog
-  3-5-transferencias-entre-estoques: backlog
+  epic-3: contexted
+  3-1-gestao-de-fornecedores: review
+  3-2-criacao-de-ordem-de-compra: ready-for-dev
+  3-3-recebimento-mobile-com-scanner: done
+  3-4-processamento-de-recebimento-e-atualizacao-de-custo: done
+  3-5-transferencias-entre-estoques: done
   epic-3-retrospective: optional
 
   # Epic 4: Sales Channels - PDV & B2B
-  epic-4: backlog
-  4-1-gestao-de-clientes: backlog
-  4-2-interface-pdv-touchscreen: backlog
-  4-3-emissao-nfce-e-baixa-de-estoque: backlog
-  4-4-fila-de-retry-nfce-e-gestao-de-falhas: backlog
-  4-5-interface-ordem-de-venda-b2b: backlog
-  4-6-reserva-e-liberacao-de-estoque-em-ordens-de-venda: backlog
+  epic-4: contexted
+  4-1-gestao-de-clientes: ready-for-dev
+  4-2-interface-pdv-touchscreen: in-progress
+  4-3-emissao-nfce-e-baixa-de-estoque: done
+  4-4-fila-de-retry-nfce-e-gestao-de-falhas: done
+  4-5-interface-ordem-de-venda-b2b: done
+  4-6-reserva-e-liberacao-de-estoque-em-ordens-de-venda: done
   epic-4-retrospective: optional
 
   # Epic 5: Marketplace Integration - Mercado Livre
-  epic-5: backlog
-  5-1-autenticacao-oauth2-mercado-livre: backlog
-  5-2-importacao-de-produtos-do-mercado-livre: backlog
-  5-3-publicacao-de-produtos-no-mercado-livre: backlog
-  5-4-sincronizacao-de-estoque: backlog
-  5-5-importacao-de-pedidos-do-mercado-livre: backlog
-  5-6-processamento-de-cancelamentos-ml: backlog
-  5-7-margem-de-seguranca-configuravel: backlog
+  epic-5: contexted
+  5-1-autenticacao-oauth2-mercado-livre: done
+  5-2-importacao-de-produtos-do-mercado-livre: done
+  5-3-publicacao-de-produtos-no-mercado-livre: done
+  5-4-sincronizacao-de-estoque: done
+  5-5-importacao-de-pedidos-do-mercado-livre: done
+  5-6-processamento-de-cancelamentos-ml: done
+  5-7-margem-de-seguranca-configuravel: done
   epic-5-retrospective: optional
 
   # Epic 6: Reporting & Analytics
-  epic-6: backlog
-  6-1-dashboard-gerencial: backlog
-  6-2-relatorio-de-movimentacoes-de-estoque: backlog
-  6-3-relatorio-de-vendas-por-periodo-e-canal: backlog
-  6-4-relatorio-de-produtos-mais-vendidos: backlog
-  6-5-relatorio-de-estoque-atual-multi-deposito: backlog
-  6-6-curva-abc-de-produtos: backlog
-  6-7-alertas-automaticos-de-estoque-minimo: backlog
+  epic-6: contexted
+  6-1-dashboard-gerencial: drafted
+  6-2-relatorio-de-movimentacoes-de-estoque: drafted
+  6-3-relatorio-de-vendas-por-periodo-e-canal: drafted
+  6-4-relatorio-de-produtos-mais-vendidos: drafted
+  6-5-relatorio-de-estoque-atual-multi-deposito: drafted
+  6-6-curva-abc-de-produtos: drafted
+  6-7-alertas-automaticos-de-estoque-minimo: drafted
   epic-6-retrospective: optional

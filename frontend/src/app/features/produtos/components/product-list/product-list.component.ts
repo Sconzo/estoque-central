@@ -1,7 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { MercadoLivreService } from '../../../integrations/services/mercadolivre.service';
@@ -15,26 +26,45 @@ import {
 } from '../../models/product.model';
 import { Category } from '../../models/category.model';
 import { debounceTime, Subject } from 'rxjs';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * ProductListComponent - Product listing with filters and pagination
  *
  * Features:
- * - Paginated product table (20 items per page)
- * - Quick search (debounced 300ms)
- * - Filter by category (dropdown)
+ * - Paginated product table (20 items per page) using Material Table
+ * - Quick search (debounced 300ms) with Material form field
+ * - Filter by category (Material dropdown)
  * - Filter by status (active/inactive/discontinued)
- * - Actions: View, Edit, Delete
+ * - Actions: View, Edit, Delete, Sync Stock
  * - Navigate to create product
+ * - Material Design 3 components
+ * - WCAG AA accessibility
  */
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
+  ],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   // Data
   products: Page<ProductDTO> | null = null;
   categories: Category[] = [];
@@ -60,11 +90,15 @@ export class ProductListComponent implements OnInit {
   readonly STATUS_LABELS = STATUS_LABELS;
   readonly TYPE_LABELS = TYPE_LABELS;
 
+  // Mat-table columns
+  displayedColumns: string[] = ['sku', 'name', 'category', 'price', 'cost', 'inventory', 'status', 'actions'];
+
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
     private router: Router,
-    private mlService: MercadoLivreService
+    private mlService: MercadoLivreService,
+    private feedback: FeedbackService
   ) {
     // Setup search debounce
     this.searchSubject
@@ -199,7 +233,8 @@ export class ProductListComponent implements OnInit {
         this.loadProducts();
       },
       error: (err) => {
-        alert('Erro ao deletar produto: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao deletar produto: ${errorMessage}`, () => this.deleteProduct(product, event));
         this.loading = false;
         console.error('Error deleting product:', err);
       }
@@ -219,70 +254,23 @@ export class ProductListComponent implements OnInit {
 
     this.mlService.syncStock(product.id).subscribe({
       next: (response) => {
-        alert(`Sincronização enfileirada com sucesso!\n\n${response.message}`);
+        this.feedback.showSuccess(`Sincronização enfileirada com sucesso! ${response.message}`);
       },
       error: (err) => {
-        alert('Erro ao sincronizar estoque: ' + (err.error?.error || err.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.error || err.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao sincronizar estoque: ${errorMessage}`, () => this.syncStockToMarketplace(product));
         console.error('Error syncing stock:', err);
       }
     });
   }
 
   /**
-   * Goes to previous page
+   * Handles mat-paginator page change event
    */
-  previousPage(): void {
-    if (this.products && !this.products.first) {
-      this.filters.page = (this.filters.page || 0) - 1;
-      this.loadProducts();
-    }
-  }
-
-  /**
-   * Goes to next page
-   */
-  nextPage(): void {
-    if (this.products && !this.products.last) {
-      this.filters.page = (this.filters.page || 0) + 1;
-      this.loadProducts();
-    }
-  }
-
-  /**
-   * Goes to specific page
-   */
-  goToPage(page: number): void {
-    this.filters.page = page;
+  onPageChange(event: PageEvent): void {
+    this.filters.page = event.pageIndex;
+    this.filters.size = event.pageSize;
     this.loadProducts();
-  }
-
-  /**
-   * Gets page numbers for pagination
-   */
-  getPageNumbers(): number[] {
-    if (!this.products) return [];
-
-    const totalPages = this.products.totalPages;
-    const currentPage = this.products.number;
-    const pages: number[] = [];
-
-    // Show max 5 page numbers
-    let startPage = Math.max(0, currentPage - 2);
-    let endPage = Math.min(totalPages - 1, currentPage + 2);
-
-    // Adjust if at beginning or end
-    if (currentPage < 2) {
-      endPage = Math.min(totalPages - 1, 4);
-    }
-    if (currentPage > totalPages - 3) {
-      startPage = Math.max(0, totalPages - 5);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return pages;
   }
 
   /**
@@ -293,6 +281,13 @@ export class ProductListComponent implements OnInit {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  }
+
+  /**
+   * Gets status label
+   */
+  getStatusLabel(status: ProductStatus): string {
+    return STATUS_LABELS[status] || 'Desconhecido';
   }
 
   /**

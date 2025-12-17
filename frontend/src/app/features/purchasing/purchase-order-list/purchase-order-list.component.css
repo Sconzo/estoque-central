@@ -56,3 +56,13 @@ mat-form-field {
 mat-chip {
   font-size: 12px;
 }
+
+/* Accessibility */
+button {
+  min-height: 48px;
+}
+
+mat-icon-button {
+  min-height: 48px;
+  min-width: 48px;
+}

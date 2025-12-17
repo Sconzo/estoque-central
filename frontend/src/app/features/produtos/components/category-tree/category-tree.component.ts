@@ -1,8 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoryService } from '../../services/category.service';
 import { Category, CategoryTreeNode, CategoryCreateRequest } from '../../models/category.model';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * CategoryTreeComponent - Hierarchical category tree management
@@ -14,11 +21,21 @@ import { Category, CategoryTreeNode, CategoryCreateRequest } from '../../models/
  * - Edit category inline
  * - Delete category (soft delete)
  * - Breadcrumb path display
+ * - Material Design components for consistent UX
  */
 @Component({
   selector: 'app-category-tree',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './category-tree.component.html',
   styleUrls: ['./category-tree.component.scss']
 })
@@ -45,7 +62,10 @@ export class CategoryTreeComponent implements OnInit {
   breadcrumb: Category[] = [];
   selectedCategoryId: string | null = null;
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(
+    private categoryService: CategoryService,
+    private feedback: FeedbackService
+  ) {}
 
   ngOnInit(): void {
     this.loadTree();
@@ -145,7 +165,7 @@ export class CategoryTreeComponent implements OnInit {
    */
   saveCategory(): void {
     if (!this.formData.name || this.formData.name.trim() === '') {
-      alert('Nome da categoria é obrigatório');
+      this.feedback.showWarning('Nome da categoria é obrigatório');
       return;
     }
 
@@ -159,7 +179,8 @@ export class CategoryTreeComponent implements OnInit {
           this.loadTree();
         },
         error: (err) => {
-          alert('Erro ao atualizar categoria: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+          const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao atualizar categoria: ${errorMessage}`, () => this.saveCategory());
           this.loading = false;
           console.error('Error updating category:', err);
         }
@@ -172,7 +193,8 @@ export class CategoryTreeComponent implements OnInit {
           this.loadTree();
         },
         error: (err) => {
-          alert('Erro ao criar categoria: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+          const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao criar categoria: ${errorMessage}`, () => this.saveCategory());
           this.loading = false;
           console.error('Error creating category:', err);
         }
@@ -199,7 +221,8 @@ export class CategoryTreeComponent implements OnInit {
         this.loadTree();
       },
       error: (err) => {
-        alert('Erro ao deletar categoria: ' + (err.error?.message || err.message || 'Erro desconhecido'));
+        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+        this.feedback.showError(`Erro ao deletar categoria: ${errorMessage}`, () => this.deleteCategory(category, event));
         this.loading = false;
         console.error('Error deleting category:', err);
       }

@@ -56,28 +56,44 @@ import {
           <form [formGroup]="adjustmentForm" (ngSubmit)="onSubmit()">
             <!-- Product Selection -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Produto *</mat-label>
-              <input matInput formControlName="productId" placeholder="Digite nome ou SKU">
-              <mat-error *ngIf="adjustmentForm.get('productId')?.hasError('required')">
+              <mat-label>Produto <span class="required">*</span></mat-label>
+              <input
+                matInput
+                formControlName="productId"
+                placeholder="Digite nome ou SKU"
+                required
+                aria-label="Produto para ajuste de estoque"
+                aria-required="true"
+                [attr.aria-describedby]="adjustmentForm.get('productId')?.hasError('required') ? 'productId-error' : null">
+              <mat-error id="productId-error" role="alert" *ngIf="adjustmentForm.get('productId')?.hasError('required')">
                 Produto é obrigatório
               </mat-error>
             </mat-form-field>
 
             <!-- Location Selection -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Local de Estoque *</mat-label>
-              <mat-select formControlName="stockLocationId">
+              <mat-label>Local de Estoque <span class="required">*</span></mat-label>
+              <mat-select
+                formControlName="stockLocationId"
+                required
+                aria-label="Local de estoque"
+                aria-required="true"
+                [attr.aria-describedby]="adjustmentForm.get('stockLocationId')?.hasError('required') ? 'locationId-error' : null">
                 <mat-option value="loc1">Depósito Central</mat-option>
                 <mat-option value="loc2">Loja Principal</mat-option>
               </mat-select>
-              <mat-error *ngIf="adjustmentForm.get('stockLocationId')?.hasError('required')">
+              <mat-error id="locationId-error" role="alert" *ngIf="adjustmentForm.get('stockLocationId')?.hasError('required')">
                 Local é obrigatório
               </mat-error>
             </mat-form-field>
 
             <!-- Adjustment Type -->
-            <div class="form-field-label">Tipo de Ajuste *</div>
-            <mat-radio-group formControlName="adjustmentType" class="radio-group">
+            <div class="form-field-label">Tipo de Ajuste <span class="required">*</span></div>
+            <mat-radio-group
+              formControlName="adjustmentType"
+              class="radio-group"
+              aria-label="Tipo de ajuste"
+              aria-required="true">
               <mat-radio-button [value]="AdjustmentType.INCREASE">
                 Entrada Manual
               </mat-radio-button>
@@ -88,20 +104,34 @@ import {
 
             <!-- Quantity -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Quantidade *</mat-label>
-              <input matInput type="number" formControlName="quantity" min="0.01" step="0.01">
-              <mat-error *ngIf="adjustmentForm.get('quantity')?.hasError('required')">
+              <mat-label>Quantidade <span class="required">*</span></mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="quantity"
+                min="0.01"
+                step="0.01"
+                required
+                aria-label="Quantidade do ajuste"
+                aria-required="true"
+                [attr.aria-describedby]="adjustmentForm.get('quantity')?.hasError('required') || adjustmentForm.get('quantity')?.hasError('min') ? 'quantity-error' : null">
+              <mat-error id="quantity-error" role="alert" *ngIf="adjustmentForm.get('quantity')?.hasError('required')">
                 Quantidade é obrigatória
               </mat-error>
-              <mat-error *ngIf="adjustmentForm.get('quantity')?.hasError('min')">
+              <mat-error id="quantity-error" role="alert" *ngIf="adjustmentForm.get('quantity')?.hasError('min')">
                 Quantidade deve ser maior que zero
               </mat-error>
             </mat-form-field>
 
             <!-- Reason Code -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Motivo *</mat-label>
-              <mat-select formControlName="reasonCode">
+              <mat-label>Motivo <span class="required">*</span></mat-label>
+              <mat-select
+                formControlName="reasonCode"
+                required
+                aria-label="Motivo do ajuste"
+                aria-required="true"
+                [attr.aria-describedby]="adjustmentForm.get('reasonCode')?.hasError('required') ? 'reasonCode-error' : null">
                 <mat-option [value]="AdjustmentReasonCode.INVENTORY">Inventário</mat-option>
                 <mat-option [value]="AdjustmentReasonCode.LOSS">Perda</mat-option>
                 <mat-option [value]="AdjustmentReasonCode.DAMAGE">Dano</mat-option>
@@ -109,40 +139,61 @@ import {
                 <mat-option [value]="AdjustmentReasonCode.ERROR">Erro de Lançamento</mat-option>
                 <mat-option [value]="AdjustmentReasonCode.OTHER">Outros</mat-option>
               </mat-select>
-              <mat-error *ngIf="adjustmentForm.get('reasonCode')?.hasError('required')">
+              <mat-error id="reasonCode-error" role="alert" *ngIf="adjustmentForm.get('reasonCode')?.hasError('required')">
                 Motivo é obrigatório
               </mat-error>
             </mat-form-field>
 
             <!-- Reason Description -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descrição/Justificativa *</mat-label>
-              <textarea matInput formControlName="reasonDescription" rows="3"
-                placeholder="Descreva detalhadamente o motivo do ajuste (mínimo 10 caracteres)"></textarea>
-              <mat-hint>{{ adjustmentForm.get('reasonDescription')?.value?.length || 0 }} / 10 mínimo</mat-hint>
-              <mat-error *ngIf="adjustmentForm.get('reasonDescription')?.hasError('required')">
+              <mat-label>Descrição/Justificativa <span class="required">*</span></mat-label>
+              <textarea
+                matInput
+                formControlName="reasonDescription"
+                rows="3"
+                placeholder="Descreva detalhadamente o motivo do ajuste (mínimo 10 caracteres)"
+                required
+                aria-label="Descrição detalhada do motivo do ajuste"
+                aria-required="true"
+                [attr.aria-describedby]="'reasonDescription-hint ' + (adjustmentForm.get('reasonDescription')?.hasError('required') || adjustmentForm.get('reasonDescription')?.hasError('minlength') ? 'reasonDescription-error' : '')"></textarea>
+              <mat-hint id="reasonDescription-hint">{{ adjustmentForm.get('reasonDescription')?.value?.length || 0 }} / 10 mínimo</mat-hint>
+              <mat-error id="reasonDescription-error" role="alert" *ngIf="adjustmentForm.get('reasonDescription')?.hasError('required')">
                 Descrição é obrigatória
               </mat-error>
-              <mat-error *ngIf="adjustmentForm.get('reasonDescription')?.hasError('minlength')">
+              <mat-error id="reasonDescription-error" role="alert" *ngIf="adjustmentForm.get('reasonDescription')?.hasError('minlength')">
                 Descrição deve ter no mínimo 10 caracteres
               </mat-error>
             </mat-form-field>
 
             <!-- Adjustment Date -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Data do Ajuste *</mat-label>
-              <input matInput [matDatepicker]="picker" formControlName="adjustmentDate">
+              <mat-label>Data do Ajuste <span class="required">*</span></mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="adjustmentDate"
+                required
+                aria-label="Data do ajuste"
+                aria-required="true">
               <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
 
             <!-- Action Buttons -->
             <div class="actions">
-              <button mat-raised-button type="button" (click)="onCancel()">
+              <button
+                mat-raised-button
+                type="button"
+                (click)="onCancel()"
+                aria-label="Cancelar e voltar para lista de ajustes">
                 Cancelar
               </button>
-              <button mat-raised-button color="primary" type="submit"
-                [disabled]="adjustmentForm.invalid || isSubmitting">
+              <button
+                mat-raised-button
+                color="primary"
+                type="submit"
+                [disabled]="adjustmentForm.invalid || isSubmitting"
+                [attr.aria-label]="isSubmitting ? 'Processando ajuste...' : 'Criar ajuste de estoque'">
                 @if (isSubmitting) {
                   <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
                 }
@@ -158,6 +209,7 @@ import {
     .form-container { padding: 24px; max-width: 800px; margin: 0 auto; }
     .full-width { width: 100%; margin-bottom: 16px; }
     .form-field-label { margin-bottom: 8px; font-weight: 500; }
+    .required { color: #dc2626; }
     .radio-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
     .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
   `]

@@ -1,210 +1,204 @@
-<div class="container-fluid py-4">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <h2>{{ isEditMode ? 'Editar' : 'Novo' }} Local de Estoque</h2>
+<div class="location-form-container">
+  <div class="header">
+    <h2>{{ isEditMode ? 'Editar' : 'Novo' }} Local de Estoque</h2>
+  </div>
 
-      <!-- Error Alert -->
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erro:</strong> {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage = null"></button>
+  <!-- Error Message -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <mat-icon class="error-icon">warning</mat-icon>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
+    <!-- Basic Information -->
+    <div class="form-section">
+      <h3>Informações Básicas</h3>
+
+      <div class="form-row">
+        <!-- Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="name"
+            required
+            aria-label="Nome do local de estoque"
+            aria-required="true"
+            [attr.aria-describedby]="isFieldInvalid('name') ? 'name-error' : null">
+          <mat-error id="name-error" role="alert" *ngIf="locationForm.get('name')?.hasError('required')">
+            Campo obrigatório
+          </mat-error>
+          <mat-error id="name-error" role="alert" *ngIf="locationForm.get('name')?.hasError('maxlength')">
+            Máximo de 100 caracteres
+          </mat-error>
+        </mat-form-field>
       </div>
 
-      <!-- Form -->
-      <form [formGroup]="locationForm" (ngSubmit)="onSubmit()" class="mt-4">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Informações Básicas</h5>
-          </div>
-          <div class="card-body">
-            <!-- Name -->
-            <div class="mb-3">
-              <label for="name" class="form-label">Nome *</label>
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                formControlName="name"
-                [class.is-invalid]="isFieldInvalid('name')"
-              >
-              <div *ngIf="isFieldInvalid('name')" class="invalid-feedback">
-                {{ getFieldError('name') }}
-              </div>
-            </div>
+      <div class="form-row">
+        <!-- Code -->
+        <mat-form-field appearance="outline">
+          <mat-label>Código <span class="required">*</span></mat-label>
+          <input
+            matInput
+            formControlName="code"
+            placeholder="Ex: LOJA-SP-01"
+            [readonly]="isEditMode"
+            required
+            aria-label="Código do local"
+            aria-required="true"
+            [attr.aria-describedby]="isEditMode ? 'code-hint' : (isFieldInvalid('code') ? 'code-error' : null)">
+          <mat-hint id="code-hint">Use apenas letras maiúsculas, números e hífens. Não pode ser alterado após criação.</mat-hint>
+          <mat-error id="code-error" role="alert" *ngIf="locationForm.get('code')?.hasError('required')">
+            Código é obrigatório
+          </mat-error>
+          <mat-error id="code-error" role="alert" *ngIf="locationForm.get('code')?.hasError('maxlength')">
+            Máximo de 20 caracteres
+          </mat-error>
+          <mat-error id="code-error" role="alert" *ngIf="locationForm.get('code')?.hasError('pattern')">
+            Use apenas letras maiúsculas, números e hífens
+          </mat-error>
+        </mat-form-field>
 
-            <!-- Code -->
-            <div class="mb-3">
-              <label for="code" class="form-label">Código *</label>
-              <input
-                type="text"
-                class="form-control"
-                id="code"
-                formControlName="code"
-                placeholder="Ex: LOJA-SP-01"
-                [class.is-invalid]="isFieldInvalid('code')"
-                [readonly]="isEditMode"
-              >
-              <small class="form-text text-muted">
-                Use apenas letras maiúsculas, números e hífens. Não pode ser alterado após criação.
-              </small>
-              <div *ngIf="isFieldInvalid('code')" class="invalid-feedback">
-                {{ getFieldError('code') }}
-              </div>
-            </div>
+        <!-- Type -->
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo <span class="required">*</span></mat-label>
+          <mat-select
+            formControlName="type"
+            required
+            aria-label="Tipo de local de estoque"
+            aria-required="true"
+            [attr.aria-describedby]="isFieldInvalid('type') ? 'type-error' : null">
+            <mat-option *ngFor="let type of locationTypes" [value]="type">
+              {{ locationTypeLabels[type] }}
+            </mat-option>
+          </mat-select>
+          <mat-error id="type-error" role="alert" *ngIf="locationForm.get('type')?.hasError('required')">
+            Tipo é obrigatório
+          </mat-error>
+        </mat-form-field>
+      </div>
 
-            <!-- Type -->
-            <div class="mb-3">
-              <label for="type" class="form-label">Tipo *</label>
-              <select
-                class="form-control"
-                id="type"
-                formControlName="type"
-                [class.is-invalid]="isFieldInvalid('type')"
-              >
-                <option *ngFor="let type of locationTypes" [value]="type">
-                  {{ locationTypeLabels[type] }}
-                </option>
-              </select>
-              <div *ngIf="isFieldInvalid('type')" class="invalid-feedback">
-                {{ getFieldError('type') }}
-              </div>
-            </div>
-
-            <!-- Description -->
-            <div class="mb-3">
-              <label for="description" class="form-label">Descrição</label>
-              <textarea
-                class="form-control"
-                id="description"
-                formControlName="description"
-                rows="3"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Address Card -->
-        <div class="card mt-3">
-          <div class="card-header">
-            <h5 class="mb-0">Endereço</h5>
-          </div>
-          <div class="card-body">
-            <!-- Address -->
-            <div class="mb-3">
-              <label for="address" class="form-label">Endereço</label>
-              <input
-                type="text"
-                class="form-control"
-                id="address"
-                formControlName="address"
-              >
-            </div>
-
-            <div class="row">
-              <!-- City -->
-              <div class="col-md-4 mb-3">
-                <label for="city" class="form-label">Cidade</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="city"
-                  formControlName="city"
-                >
-              </div>
-
-              <!-- State -->
-              <div class="col-md-4 mb-3">
-                <label for="state" class="form-label">Estado</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="state"
-                  formControlName="state"
-                  maxlength="2"
-                  placeholder="Ex: SP"
-                >
-              </div>
-
-              <!-- Postal Code -->
-              <div class="col-md-4 mb-3">
-                <label for="postalCode" class="form-label">CEP</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="postalCode"
-                  formControlName="postalCode"
-                >
-              </div>
-            </div>
-
-            <!-- Country -->
-            <div class="mb-3">
-              <label for="country" class="form-label">País</label>
-              <input
-                type="text"
-                class="form-control"
-                id="country"
-                formControlName="country"
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Contact Card -->
-        <div class="card mt-3">
-          <div class="card-header">
-            <h5 class="mb-0">Contato</h5>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <!-- Phone -->
-              <div class="col-md-6 mb-3">
-                <label for="phone" class="form-label">Telefone</label>
-                <input
-                  type="tel"
-                  class="form-control"
-                  id="phone"
-                  formControlName="phone"
-                >
-              </div>
-
-              <!-- Email -->
-              <div class="col-md-6 mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="email"
-                  formControlName="email"
-                  [class.is-invalid]="isFieldInvalid('email')"
-                >
-                <div *ngIf="isFieldInvalid('email')" class="invalid-feedback">
-                  {{ getFieldError('email') }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="mt-4 d-flex gap-2">
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="isSubmitting"
-          >
-            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isSubmitting ? 'Salvando...' : 'Salvar' }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="cancel()"
-            [disabled]="isSubmitting"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+      <div class="form-row">
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Descrição</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            rows="3"
+            aria-label="Descrição do local"></textarea>
+        </mat-form-field>
+      </div>
     </div>
-  </div>
+
+    <!-- Address -->
+    <div class="form-section">
+      <h3>Endereço</h3>
+
+      <div class="form-row">
+        <!-- Address -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Endereço</mat-label>
+          <input
+            matInput
+            formControlName="address"
+            aria-label="Endereço do local">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <!-- City -->
+        <mat-form-field appearance="outline">
+          <mat-label>Cidade</mat-label>
+          <input
+            matInput
+            formControlName="city"
+            aria-label="Cidade">
+        </mat-form-field>
+
+        <!-- State -->
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <input
+            matInput
+            formControlName="state"
+            maxlength="2"
+            placeholder="Ex: SP"
+            aria-label="Estado">
+        </mat-form-field>
+
+        <!-- Postal Code -->
+        <mat-form-field appearance="outline">
+          <mat-label>CEP</mat-label>
+          <input
+            matInput
+            formControlName="postalCode"
+            aria-label="CEP">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <!-- Country -->
+        <mat-form-field appearance="outline">
+          <mat-label>País</mat-label>
+          <input
+            matInput
+            formControlName="country"
+            aria-label="País">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="form-section">
+      <h3>Contato</h3>
+
+      <div class="form-row">
+        <!-- Phone -->
+        <mat-form-field appearance="outline">
+          <mat-label>Telefone</mat-label>
+          <input
+            matInput
+            type="tel"
+            formControlName="phone"
+            aria-label="Telefone do local">
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            aria-label="Email do local"
+            [attr.aria-describedby]="isFieldInvalid('email') ? 'email-error' : null">
+          <mat-error id="email-error" role="alert" *ngIf="locationForm.get('email')?.hasError('email')">
+            Email inválido
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="cancel()"
+        [disabled]="isSubmitting"
+        aria-label="Cancelar e voltar para lista de locais">
+        Cancelar
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="isSubmitting || locationForm.invalid"
+        [attr.aria-label]="isSubmitting ? 'Salvando local...' : (isEditMode ? 'Salvar alterações do local' : 'Criar novo local')">
+        <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+        {{ isSubmitting ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
 </div>

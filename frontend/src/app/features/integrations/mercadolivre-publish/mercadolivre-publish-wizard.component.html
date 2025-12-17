@@ -1,0 +1,256 @@
+<div class="wizard-container">
+  <h2>Publicar Produtos no Mercado Livre</h2>
+
+  <!-- Material Stepper -->
+  <mat-stepper [linear]="true" #stepper>
+
+    <!-- Step 1: Select Products -->
+    <mat-step [completed]="hasSelectedProducts()">
+      <ng-template matStepLabel>Selecionar Produtos</ng-template>
+
+      <div class="step-content">
+        <h3>Selecionar Produtos</h3>
+        <p class="step-description">Escolha os produtos que deseja publicar no Mercado Livre</p>
+
+        <!-- Search Filter -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Buscar produtos</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchTerm"
+            (input)="filterProducts()"
+            placeholder="Digite para buscar..."
+            aria-label="Buscar produtos para publicar"
+          />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-state">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Carregando produtos...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="error-message">
+          <mat-icon color="warn">error</mat-icon>
+          <p>{{ error }}</p>
+        </div>
+
+        <!-- Products List -->
+        <div class="products-list" *ngIf="!loading">
+          <mat-selection-list #productsList [(ngModel)]="selectedProductIds">
+            <mat-list-option
+              *ngFor="let product of filteredProducts"
+              [value]="product.id"
+              [disabled]="product.alreadyPublished"
+              [selected]="product.selected">
+              <div class="product-item">
+                <div class="product-info">
+                  <h4 mat-line>{{ product.name }}</h4>
+                  <p mat-line><strong>SKU:</strong> {{ product.sku }}</p>
+                  <p mat-line><strong>Preço:</strong> R$ {{ product.price | number:'1.2-2' }}</p>
+                </div>
+                <mat-chip *ngIf="product.alreadyPublished" color="accent">
+                  Já publicado
+                </mat-chip>
+              </div>
+            </mat-list-option>
+          </mat-selection-list>
+        </div>
+
+        <div class="stepper-actions">
+          <button mat-raised-button matStepperNext color="primary" [disabled]="!hasSelectedProducts()">
+            <mat-icon>arrow_forward</mat-icon>
+            Próximo
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Step 2: Configure Categories -->
+    <mat-step [completed]="allCategoriesConfigured()">
+      <ng-template matStepLabel>Configurar Categorias</ng-template>
+
+      <div class="step-content">
+        <h3>Configurar Categorias</h3>
+        <p class="step-description">Configure a categoria do Mercado Livre para cada produto</p>
+
+        <mat-list class="category-config-list">
+          <mat-list-item *ngFor="let product of selectedProducts" class="category-item">
+            <mat-icon matListItemIcon>inventory_2</mat-icon>
+            <div matListItemTitle>{{ product.name }}</div>
+            <div matListItemLine class="category-selector">
+              <div *ngIf="product.categoryLoading" class="loading-indicator">
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>Carregando categoria...</span>
+              </div>
+              <div *ngIf="!product.categoryLoading && product.mlCategory" class="category-display">
+                <mat-chip color="primary">
+                  <mat-icon matChipAvatar>category</mat-icon>
+                  {{ product.mlCategory.categoryName }}
+                </mat-chip>
+                <small class="category-path">{{ product.mlCategory.categoryPath }}</small>
+              </div>
+              <button
+                mat-icon-button
+                (click)="refreshCategory(product)"
+                [disabled]="product.categoryLoading"
+                [attr.aria-label]="'Atualizar categoria para ' + product.name"
+                matTooltip="Atualizar categoria sugerida">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+        </mat-list>
+
+        <div class="stepper-actions">
+          <button mat-button matStepperPrevious>
+            <mat-icon>arrow_back</mat-icon>
+            Voltar
+          </button>
+          <button mat-raised-button matStepperNext color="primary" [disabled]="!allCategoriesConfigured()">
+            <mat-icon>arrow_forward</mat-icon>
+            Próximo
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Step 3: Preview -->
+    <mat-step>
+      <ng-template matStepLabel>Visualizar</ng-template>
+
+      <div class="step-content">
+        <h3>Visualizar Anúncios</h3>
+        <p class="step-description">Revise os anúncios antes de publicar</p>
+
+        <div class="preview-grid">
+          <mat-card *ngFor="let product of selectedProducts" class="preview-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>inventory_2</mat-icon>
+              <mat-card-title>{{ product.name }}</mat-card-title>
+              <mat-card-subtitle>SKU: {{ product.sku }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="preview-price">
+                <strong>Preço:</strong> R$ {{ product.price | number:'1.2-2' }}
+              </div>
+              <div class="preview-category">
+                <strong>Categoria:</strong> {{ product.mlCategory?.categoryName }}
+              </div>
+              <div class="preview-description">
+                <strong>Descrição:</strong>
+                <p>{{ product.description || 'Sem descrição' }}</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="stepper-actions">
+          <button mat-button matStepperPrevious>
+            <mat-icon>arrow_back</mat-icon>
+            Voltar
+          </button>
+          <button mat-raised-button matStepperNext color="primary">
+            <mat-icon>publish</mat-icon>
+            Publicar
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- Step 4: Publish -->
+    <mat-step>
+      <ng-template matStepLabel>Publicar</ng-template>
+
+      <div class="step-content">
+        <h3>Publicar Produtos</h3>
+
+        <!-- Confirmation -->
+        <div *ngIf="!publishing && !publishResult" class="publish-confirmation">
+          <mat-card>
+            <mat-card-content>
+              <div class="confirmation-text">
+                <mat-icon color="primary" class="large-icon">info</mat-icon>
+                <p>Você está prestes a publicar <strong>{{ selectedProducts.length }}</strong> produto(s) no Mercado Livre.</p>
+              </div>
+              <mat-divider></mat-divider>
+              <div class="warning-section">
+                <mat-icon color="warn">warning</mat-icon>
+                <p>Esta ação criará anúncios ativos no marketplace.</p>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-button matStepperPrevious>
+                <mat-icon>arrow_back</mat-icon>
+                Voltar
+              </button>
+              <button mat-raised-button color="primary" (click)="publishProducts()">
+                <mat-icon>check_circle</mat-icon>
+                Confirmar e Publicar
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+        <!-- Publishing Progress -->
+        <div *ngIf="publishing" class="publishing-state">
+          <mat-card>
+            <mat-card-content>
+              <div class="progress-content">
+                <mat-spinner diameter="60"></mat-spinner>
+                <p>Publicando produtos...</p>
+                <mat-progress-bar
+                  mode="determinate"
+                  [value]="publishProgress"
+                  [attr.aria-label]="'Progresso: ' + publishProgress + '%'">
+                </mat-progress-bar>
+                <span class="progress-text">{{ publishProgress }}%</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Results -->
+        <div *ngIf="publishResult && !publishing" class="publish-results">
+          <mat-card>
+            <mat-card-content>
+              <!-- Success Summary -->
+              <div *ngIf="publishResult.published > 0" class="success-summary">
+                <mat-icon color="primary" class="large-icon">check_circle</mat-icon>
+                <h4>{{ publishResult.published }} produto(s) publicado(s) com sucesso!</h4>
+              </div>
+
+              <!-- Error Summary -->
+              <div *ngIf="publishResult.errors.length > 0" class="error-summary">
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      <mat-icon color="warn">error</mat-icon>
+                      Erros na publicação ({{ publishResult.errors.length }})
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <mat-list>
+                    <mat-list-item *ngFor="let error of publishResult.errors">
+                      <mat-icon matListItemIcon color="warn">error_outline</mat-icon>
+                      <div matListItemTitle>{{ error.productName }}</div>
+                      <div matListItemLine>{{ error.errorMessage }}</div>
+                    </mat-list-item>
+                  </mat-list>
+                </mat-expansion-panel>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="primary" (click)="resetWizard()">
+                <mat-icon>add</mat-icon>
+                Publicar Mais Produtos
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-step>
+
+  </mat-stepper>
+</div>

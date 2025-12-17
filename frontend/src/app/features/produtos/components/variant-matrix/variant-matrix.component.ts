@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VariantService } from '../../services/variant.service';
 import { VariantAttribute, ProductVariant, VariantMatrixRow } from '../../models/variant.model';
+import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
  * VariantMatrixComponent - Manage product variants matrix
@@ -42,7 +43,10 @@ export class VariantMatrixComponent implements OnInit {
   // Calculated values
   estimatedVariants = 0;
 
-  constructor(private variantService: VariantService) {}
+  constructor(
+    private variantService: VariantService,
+    private feedback: FeedbackService
+  ) {}
 
   ngOnInit(): void {
     // Initialize with one empty attribute
@@ -56,7 +60,7 @@ export class VariantMatrixComponent implements OnInit {
    */
   addAttribute(): void {
     if (this.attributes.length >= 3) {
-      alert('Máximo de 3 atributos permitidos');
+      this.feedback.showWarning('Máximo de 3 atributos permitidos');
       return;
     }
 
@@ -81,7 +85,7 @@ export class VariantMatrixComponent implements OnInit {
     const attribute = this.attributes[index];
 
     if (!attribute.name || attribute.name.trim() === '') {
-      alert('Por favor, defina o nome do atributo primeiro');
+      this.feedback.showWarning('Por favor, defina o nome do atributo primeiro');
       return;
     }
 
@@ -89,7 +93,7 @@ export class VariantMatrixComponent implements OnInit {
 
     if (value && value.trim() !== '') {
       if (attribute.values.includes(value.trim())) {
-        alert('Este valor já existe');
+        this.feedback.showWarning('Este valor já existe');
         return;
       }
 
@@ -193,7 +197,7 @@ export class VariantMatrixComponent implements OnInit {
       next: (variants) => {
         this.loading = false;
         this.variantsGenerated.emit(variants);
-        alert(`${variants.length} variantes criadas com sucesso!`);
+        this.feedback.showSuccess(`${variants.length} variantes criadas com sucesso!`);
       },
       error: (err) => {
         this.loading = false;
