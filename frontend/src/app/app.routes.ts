@@ -70,6 +70,23 @@ export const routes: Routes = [
         path: 'clientes/:id/editar',
         loadComponent: () => import('./features/vendas/components/customer-form/customer-form.component').then(m => m.CustomerFormComponent)
       },
+      // Usuários/Perfis
+      {
+        path: 'usuarios/profiles',
+        loadComponent: () => import('./features/auth/usuarios/components/profile-list/profile-list.component').then(m => m.ProfileListComponent)
+      },
+      {
+        path: 'usuarios/profiles/new',
+        loadComponent: () => import('./features/auth/usuarios/components/profile-form/profile-form.component').then(m => m.ProfileFormComponent)
+      },
+      {
+        path: 'usuarios/profiles/edit/:id',
+        loadComponent: () => import('./features/auth/usuarios/components/profile-form/profile-form.component').then(m => m.ProfileFormComponent)
+      },
+      {
+        path: 'usuarios/profiles/:id/roles',
+        loadComponent: () => import('./features/auth/usuarios/components/role-assignment/role-assignment.component').then(m => m.RoleAssignmentComponent)
+      },
       {
         path: 'pdv',
         loadComponent: () => import('./features/pdv/components/pdv-layout/pdv-layout.component').then(m => m.PdvLayoutComponent)

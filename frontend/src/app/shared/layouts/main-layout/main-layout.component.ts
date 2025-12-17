@@ -98,6 +98,15 @@ export class MainLayoutComponent implements OnInit {
         { label: 'Pedidos ML', route: '/integracoes/mercadolivre/pedidos' },
         { label: 'Margem de Segurança', route: '/integracoes/mercadolivre/margem-seguranca' }
       ]
+    },
+    {
+      icon: 'admin_panel_settings',
+      label: 'Gestão de Usuários',
+      route: '/usuarios/profiles',
+      children: [
+        { label: 'Perfis de Acesso', route: '/usuarios/profiles' },
+        { label: 'Novo Perfil', route: '/usuarios/profiles/new' }
+      ]
     }
   ];
 

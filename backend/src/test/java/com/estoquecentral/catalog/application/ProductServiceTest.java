@@ -88,7 +88,7 @@ class ProductServiceTest {
         when(productRepository.countByAtivoTrue()).thenReturn(1L);
 
         // When
-        Page<Product> result = productService.listAll(pageable);
+        Page<Product> result = productService.listAll(pageable, null);
 
         // Then
         assertThat(result).isNotNull();

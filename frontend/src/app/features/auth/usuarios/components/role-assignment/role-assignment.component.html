@@ -1,0 +1,96 @@
+<div class="role-assignment-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <div class="form-header">
+          <div>
+            <h2>Atribuir Permissões</h2>
+            <p class="profile-name" *ngIf="profile">Perfil: <strong>{{ profile.nome }}</strong></p>
+          </div>
+          <button
+            mat-icon-button
+            (click)="cancel()"
+            aria-label="Fechar formulário">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Carregando permissões...</p>
+      </div>
+
+      <!-- Roles Selection -->
+      <div *ngIf="!loading" class="roles-selection">
+        <div class="selection-info">
+          <mat-chip class="badge-info">
+            <mat-icon>check_circle</mat-icon>
+            {{ selectedRoleIds.size }} {{ selectedRoleIds.size === 1 ? 'permissão selecionada' : 'permissões selecionadas' }}
+          </mat-chip>
+        </div>
+
+        <!-- Grouped by Category -->
+        <div *ngFor="let category of getCategories()" class="category-group">
+          <h3 class="category-header">
+            <mat-icon>{{ category === 'Admin' ? 'admin_panel_settings' : category === 'Vendas' ? 'point_of_sale' : category === 'Estoque' ? 'inventory' : 'folder' }}</mat-icon>
+            {{ category }}
+          </h3>
+
+          <mat-selection-list>
+            <mat-list-option
+              *ngFor="let role of getRolesForCategory(category)"
+              [selected]="isRoleSelected(role.id)"
+              (click)="toggleRole(role.id)"
+              [attr.aria-label]="'Selecionar permissão ' + role.nome">
+              <div class="role-item">
+                <div class="role-info">
+                  <span class="role-name">{{ role.nome }}</span>
+                  <span class="role-description">{{ role.descricao }}</span>
+                </div>
+                <mat-checkbox
+                  [checked]="isRoleSelected(role.id)"
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleRole(role.id)"
+                  [attr.aria-label]="'Checkbox para ' + role.nome">
+                </mat-checkbox>
+              </div>
+            </mat-list-option>
+          </mat-selection-list>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="availableRoles.length === 0" class="empty-state">
+          <mat-icon class="empty-icon">security</mat-icon>
+          <p>Nenhuma permissão disponível</p>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions" *ngIf="!loading">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="cancel()"
+          [disabled]="saving"
+          aria-label="Cancelar">
+          <mat-icon>cancel</mat-icon>
+          Cancelar
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="save()"
+          [disabled]="saving"
+          aria-label="Salvar permissões">
+          <mat-spinner *ngIf="saving" diameter="20" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!saving">save</mat-icon>
+          Salvar Permissões
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

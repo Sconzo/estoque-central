@@ -1,0 +1,85 @@
+<div class="profile-form-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <div class="form-header">
+          <h2>{{ getTitle() }}</h2>
+          <button
+            mat-icon-button
+            (click)="cancel()"
+            aria-label="Fechar formulário">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <!-- Nome Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome do Perfil</mat-label>
+            <input
+              matInput
+              formControlName="nome"
+              placeholder="Ex: Gerente de Loja"
+              required
+              [attr.aria-label]="'Nome do perfil'"
+            />
+            <mat-icon matPrefix>badge</mat-icon>
+            <mat-error *ngIf="form.get('nome')?.hasError('required')">
+              Nome é obrigatório
+            </mat-error>
+            <mat-error *ngIf="form.get('nome')?.hasError('minlength')">
+              Nome deve ter pelo menos 3 caracteres
+            </mat-error>
+            <mat-error *ngIf="form.get('nome')?.hasError('maxlength')">
+              Nome deve ter no máximo 100 caracteres
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Descrição Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descrição</mat-label>
+            <textarea
+              matInput
+              formControlName="descricao"
+              placeholder="Descreva as responsabilidades deste perfil..."
+              rows="4"
+              [attr.aria-label]="'Descrição do perfil'">
+            </textarea>
+            <mat-icon matPrefix>description</mat-icon>
+            <mat-hint>Opcional - Máximo 500 caracteres</mat-hint>
+            <mat-error *ngIf="form.get('descricao')?.hasError('maxlength')">
+              Descrição deve ter no máximo 500 caracteres
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="cancel()"
+            [disabled]="loading"
+            aria-label="Cancelar">
+            <mat-icon>cancel</mat-icon>
+            Cancelar
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="loading || form.invalid"
+            [attr.aria-label]="getSubmitButtonText()">
+            <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+            <mat-icon *ngIf="!loading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            {{ getSubmitButtonText() }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

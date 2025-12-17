@@ -1,0 +1,184 @@
+.profile-list-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ==================== Header ====================
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+// ==================== Filters ====================
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 300px;
+}
+
+// ==================== Loading ====================
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+// ==================== Error ====================
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  background: var(--mat-sys-error-container);
+  border-radius: 8px;
+  color: var(--mat-sys-on-error-container);
+}
+
+// ==================== Table ====================
+.table-container {
+  background: var(--mat-sys-surface);
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  overflow: hidden;
+}
+
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    color: var(--mat-sys-outline);
+  }
+
+  p {
+    margin: 16px 0;
+    font-size: 16px;
+  }
+}
+
+.profile-table {
+  width: 100%;
+
+  .mat-mdc-header-cell {
+    font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .mat-mdc-row {
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--mat-sys-surface-container);
+    }
+  }
+
+  .mat-mdc-cell {
+    color: var(--mat-sys-on-surface);
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+
+    .mat-mdc-icon-button {
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
+// ==================== Badges ====================
+.badge-active {
+  background-color: var(--mat-sys-tertiary-container) !important;
+  color: var(--mat-sys-on-tertiary-container) !important;
+}
+
+.badge-inactive {
+  background-color: var(--mat-sys-error-container) !important;
+  color: var(--mat-sys-on-error-container) !important;
+}
+
+.badge-info {
+  background-color: var(--mat-sys-primary-container) !important;
+  color: var(--mat-sys-on-primary-container) !important;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+  }
+}
+
+// ==================== Responsive ====================
+@media (max-width: 768px) {
+  .profile-list-container {
+    padding: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-actions {
+      width: 100%;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .filters {
+    .filter-search {
+      width: 100%;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+}

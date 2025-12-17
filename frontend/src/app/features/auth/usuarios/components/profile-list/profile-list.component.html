@@ -1,0 +1,134 @@
+<div class="profile-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Perfis de Usuário</h2>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createProfile()"
+        [disabled]="loading"
+        aria-label="Criar novo perfil">
+        <mat-icon>add</mat-icon>
+        Novo Perfil
+      </button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="filters">
+    <mat-form-field appearance="outline" class="filter-search">
+      <mat-label>Busca Rápida</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Nome ou descrição..."
+        aria-label="Buscar perfis"
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading" role="status" aria-live="polite">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Carregando perfis...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message" role="alert">
+    <mat-icon color="warn">warning</mat-icon>
+    {{ error }}
+    <button mat-stroked-button (click)="loadProfiles()" aria-label="Tentar carregar perfis novamente">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Profile Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <div *ngIf="filteredProfiles.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">people</mat-icon>
+      <p>Nenhum perfil encontrado</p>
+      <button mat-raised-button color="primary" (click)="createProfile()" aria-label="Criar primeiro perfil">
+        <mat-icon>add</mat-icon>
+        Criar Primeiro Perfil
+      </button>
+    </div>
+
+    <table mat-table [dataSource]="filteredProfiles" class="profile-table" *ngIf="filteredProfiles.length > 0">
+      <!-- Nome Column -->
+      <ng-container matColumnDef="nome">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let profile">
+          <strong>{{ profile.nome }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Descrição Column -->
+      <ng-container matColumnDef="descricao">
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td mat-cell *matCellDef="let profile">
+          {{ profile.descricao || '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Roles Column -->
+      <ng-container matColumnDef="roles">
+        <th mat-header-cell *matHeaderCellDef>Permissões</th>
+        <td mat-cell *matCellDef="let profile">
+          <mat-chip class="badge-info">
+            <mat-icon>security</mat-icon>
+            {{ getRoleCount(profile) }} {{ getRoleCount(profile) === 1 ? 'permissão' : 'permissões' }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let profile">
+          <mat-chip [class]="getStatusBadgeClass(profile.ativo)">
+            {{ getStatusLabel(profile.ativo) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let profile" class="actions">
+          <button
+            mat-icon-button
+            color="accent"
+            (click)="assignRoles(profile)"
+            [attr.aria-label]="'Atribuir permissões ao perfil ' + profile.nome"
+            matTooltip="Atribuir Permissões">
+            <mat-icon>vpn_key</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="editProfile(profile.id)"
+            [attr.aria-label]="'Editar perfil ' + profile.nome"
+            matTooltip="Editar Perfil">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="deleteProfile(profile)"
+            [disabled]="!profile.ativo"
+            [attr.aria-label]="'Desativar perfil ' + profile.nome"
+            matTooltip="Desativar Perfil">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</div>
