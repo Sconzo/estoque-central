@@ -1,0 +1,154 @@
+# generated: 2025-12-22
+# project: Estoque Central
+# project_key: estoque-central
+# tracking_system: file-system
+# story_location: {project-root}/docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2025-12-22
+project: Estoque Central
+project_key: estoque-central
+tracking_system: file-system
+story_location: docs/sprint-artifacts
+
+development_status:
+  # Epic 1: Foundation & Core Infrastructure
+  epic-1: done
+  1-1-project-scaffolding-build-setup: review
+  1-2-docker-containerization: backlog
+  1-3-postgresql-multi-tenancy-setup: backlog
+  1-4-google-oauth-authentication: backlog
+  1-5-role-based-access-control: backlog
+  1-6-cicd-pipeline-github-actions: backlog
+  1-7-azure-infrastructure-setup: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Product Catalog & Inventory Foundation
+  epic-2: backlog
+  2-1-hierarchical-product-categories: backlog
+  2-2-simple-products-crud: backlog
+  2-3-products-variants-matrix: backlog
+  2-4-composite-products-kits-bom: backlog
+  2-5-product-csv-import: backlog
+  2-6-stock-locations-management: backlog
+  2-7-multi-warehouse-stock-control: backlog
+  2-8-stock-movement-history: backlog
+  2-9-stock-transfer-between-locations: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Purchasing & Inventory Replenishment
+  epic-3: backlog
+  3-1-gestao-fornecedores-crud: backlog
+  3-2-criacao-ordem-compra-multi-itens: backlog
+  3-3-recebimento-mobile-scanner: backlog
+  3-4-processamento-recebimento-custo-medio: backlog
+  3-5-transferencias-estoques: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Sales Channels - PDV & B2B
+  epic-4: backlog
+  4-1-gestao-clientes-pf-pj: backlog
+  4-2-interface-pdv-touchscreen: backlog
+  4-3-emissao-nfce-baixa-estoque: backlog
+  4-4-fila-retry-nfce-gestao-falhas: backlog
+  4-5-interface-ordem-venda-b2b: backlog
+  4-6-reserva-liberacao-estoque-ordens: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Marketplace Integration - Mercado Livre
+  epic-5: backlog
+  5-1-autenticacao-oauth2-mercado-livre: backlog
+  5-2-importacao-produtos-mercado-livre: backlog
+  5-3-publicacao-produtos-mercado-livre: backlog
+  5-4-sincronizacao-estoque-mercado-livre: backlog
+  5-5-importacao-pedidos-mercado-livre: backlog
+  5-6-processamento-cancelamentos-mercado-livre: backlog
+  5-7-margem-seguranca-configuravel: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Reporting & Analytics
+  epic-6: backlog
+  6-1-dashboard-gerencial: backlog
+  6-2-relatorio-movimentacoes-estoque: backlog
+  6-3-relatorio-vendas-periodo-canal: backlog
+  6-4-relatorio-produtos-mais-vendidos: backlog
+  6-5-relatorio-estoque-multi-deposito: backlog
+  6-6-curva-abc-produtos: backlog
+  6-7-alertas-automaticos-estoque-minimo: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Infraestrutura Multi-Tenant e Deploy
+  epic-7: backlog
+  7-1-monorepo-project-structure: backlog
+  7-2-postgresql-schema-per-tenant: backlog
+  7-3-google-oauth-jwt-backend: backlog
+  7-4-tenant-context-routing: backlog
+  7-5-redis-cache-tenant-isolation: backlog
+  7-6-angular-material-frontend-base: backlog
+  7-7-azure-deploy-container-apps: backlog
+  7-8-cicd-github-actions-monitoring: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: Criação Self-Service de Empresa
+  epic-8: backlog
+  8-1-backend-public-company-endpoint: backlog
+  8-2-frontend-company-registration: backlog
+  8-3-frontend-detection-redirect: backlog
+  8-4-backend-list-user-companies: backlog
+  8-5-backend-validation-error-handling: backlog
+  8-6-frontend-loading-states-feedback: backlog
+  epic-8-retrospective: optional
+
+  # Epic 9: Seleção e Troca de Contexto Multi-Empresa
+  epic-9: backlog
+  9-1-backend-context-switch-endpoint: backlog
+  9-2-frontend-company-selection: backlog
+  9-3-frontend-avatar-menu-context: backlog
+  9-4-frontend-context-persistence: backlog
+  9-5-frontend-realtime-context-sync: backlog
+  epic-9-retrospective: optional
+
+  # Epic 10: Gestão de Colaboradores e Permissões RBAC
+  epic-10: backlog
+  10-1-backend-invite-collaborators: backlog
+  10-2-backend-list-collaborators: backlog
+  10-3-backend-remove-collaborator: backlog
+  10-4-backend-promote-collaborator: backlog
+  10-5-backend-edit-company-data: backlog
+  10-6-backend-delete-company: backlog
+  10-7-backend-rbac-system: backlog
+  10-8-frontend-collaborators-management: backlog
+  10-9-frontend-role-based-access: backlog
+  10-10-frontend-edit-company: backlog
+  10-11-backend-permissions-validation: backlog
+  10-12-frontend-dashboard-metrics: backlog
+  epic-10-retrospective: optional

@@ -26,10 +26,10 @@ workflow_status:
   # Phase 0: Discovery (Optional)
   brainstorm-project: optional
   research: optional
-  product-brief: docs/brief/brief.md
+  product-brief: docs/analysis/product-brief-Estoque Central-2025-12-21.md
 
   # Phase 1: Planning
-  prd: docs/prd/prd.md
+  prd: docs/prd.md
   create-ux-design: docs/ux-design-specification.md
 
   # Phase 2: Solutioning

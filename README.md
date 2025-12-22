@@ -8,13 +8,14 @@ O Estoque Central é um sistema multi-tenant com isolamento de dados por schema 
 
 ### Principais Funcionalidades
 
+- **Multi-tenancy Self-Service**: Criação e gestão de empresas com isolamento completo
+- **Gestão de Colaboradores**: RBAC com múltiplos usuários por empresa
 - **Gestão de Produtos**: Produtos simples, variantes, compostos (kits)
 - **Controle de Estoque**: Movimentações, reservas, custo médio ponderado
 - **Vendas Multi-canal**: PDV, B2B, B2C com regras de pricing diferentes
 - **Compras**: Ordens de compra, recebimento de mercadoria
 - **Integração Mercado Livre**: Sync de produtos, importação de pedidos
 - **Emissão Fiscal**: NFCe com retry queue (até 10 tentativas)
-- **Multi-tenancy**: Isolamento completo por tenant
 
 ## Pré-requisitos
 
@@ -309,6 +310,8 @@ ERP v6/
 ├── backend/                    # Backend Java/Spring Boot
 │   ├── src/main/java/com/estoquecentral/
 │   │   ├── auth/              # Módulo: Autenticação e Autorização
+│   │   ├── tenant/            # Módulo: Configurações de Tenant (NEW)
+│   │   ├── company/           # Módulo: Gestão de Empresas e Colaboradores (NEW)
 │   │   ├── produtos/          # Módulo: Catálogo de Produtos
 │   │   │   ├── domain/        # Camada de Domínio (Entities, Value Objects, Ports)
 │   │   │   ├── application/   # Camada de Aplicação (Use Cases)
@@ -318,7 +321,7 @@ ERP v6/
 │   │   ├── compras/           # Módulo: Compras e Recebimento
 │   │   ├── fiscal/            # Módulo: Emissão Fiscal (NFCe)
 │   │   ├── integracoes/       # Módulo: Integrações Externas (Mercado Livre)
-│   │   └── shared/            # Componentes Compartilhados (Value Objects)
+│   │   └── shared/            # Componentes Compartilhados (Value Objects, Tenant Context)
 │   ├── src/main/resources/
 │   │   ├── application.properties
 │   │   └── db/migration/      # Flyway migrations
@@ -326,8 +329,12 @@ ERP v6/
 ├── frontend/                   # Frontend Angular 19+
 │   ├── src/app/
 │   │   ├── core/              # Auth, Tenant, Interceptors, Guards
+│   │   │   ├── services/      # TenantService, CompanyService, CollaboratorService (NEW)
 │   │   ├── shared/            # Components, Models, Pipes reutilizáveis
 │   │   ├── features/          # Features organizadas por domínio
+│   │   │   ├── tenant/        # Gestão de Contexto Multi-empresa (NEW)
+│   │   │   ├── company/       # Criação e Gestão de Empresas (NEW)
+│   │   │   ├── collaborators/ # Gestão de Colaboradores (NEW)
 │   │   │   ├── produtos/
 │   │   │   ├── pdv/
 │   │   │   ├── vendas/
