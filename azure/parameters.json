@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "uniqueSuffix": {
+      "value": "estoque"
+    },
+    "databasePassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/{subscription-id}/resourceGroups/rg-secrets/providers/Microsoft.KeyVault/vaults/kv-secrets"
+        },
+        "secretName": "database-password"
+      }
+    },
+    "jwtSecret": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/{subscription-id}/resourceGroups/rg-secrets/providers/Microsoft.KeyVault/vaults/kv-secrets"
+        },
+        "secretName": "jwt-secret"
+      }
+    },
+    "googleOAuthClientId": {
+      "value": "your-client-id.apps.googleusercontent.com"
+    },
+    "googleOAuthClientSecret": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/{subscription-id}/resourceGroups/rg-secrets/providers/Microsoft.KeyVault/vaults/kv-secrets"
+        },
+        "secretName": "google-oauth-client-secret"
+      }
+    }
+  }
+}

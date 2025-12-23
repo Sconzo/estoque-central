@@ -8,6 +8,7 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 import { routes } from './app.routes';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { TenantInterceptor } from './core/interceptors/tenant.interceptor';
 import { LoginComponent } from './features/auth/login/login.component';
 
 // Registrar locale pt-BR
@@ -23,6 +24,11 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: JwtInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TenantInterceptor,
       multi: true
     }
   ]

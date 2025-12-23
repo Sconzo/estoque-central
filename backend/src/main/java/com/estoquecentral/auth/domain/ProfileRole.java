@@ -24,12 +24,13 @@ import java.util.UUID;
  *   - (profile_id=123, role_id=3)
  * </pre>
  *
- * <p><strong>Storage:</strong> Lives in PUBLIC schema
+ * <p><strong>Storage:</strong> Lives in TENANT schema (schema-per-tenant isolation)
+ * <p><strong>Note:</strong> role_id references public.roles (global roles shared across tenants)
  *
  * @see Profile
  * @see Role
  */
-@Table("public.profile_roles")
+@Table("profile_roles")
 public class ProfileRole {
 
     /**

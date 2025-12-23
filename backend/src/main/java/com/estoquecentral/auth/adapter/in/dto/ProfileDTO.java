@@ -10,11 +10,11 @@ import java.util.UUID;
  * ProfileDTO - Data Transfer Object for Profile
  *
  * <p>Used for API responses containing profile information.
+ * <p>Note: tenantId removed - tenant isolation handled by schema routing
  */
 public class ProfileDTO {
 
     private UUID id;
-    private UUID tenantId;
     private String nome;
     private String descricao;
     private Boolean ativo;
@@ -25,10 +25,9 @@ public class ProfileDTO {
     public ProfileDTO() {
     }
 
-    public ProfileDTO(UUID id, UUID tenantId, String nome, String descricao, Boolean ativo,
+    public ProfileDTO(UUID id, String nome, String descricao, Boolean ativo,
                       Instant dataCriacao, Instant dataAtualizacao, List<RoleDTO> roles) {
         this.id = id;
-        this.tenantId = tenantId;
         this.nome = nome;
         this.descricao = descricao;
         this.ativo = ativo;
@@ -43,7 +42,6 @@ public class ProfileDTO {
     public static ProfileDTO fromEntity(Profile profile) {
         return new ProfileDTO(
                 profile.getId(),
-                profile.getTenantId(),
                 profile.getNome(),
                 profile.getDescricao(),
                 profile.getAtivo(),
@@ -59,7 +57,6 @@ public class ProfileDTO {
     public static ProfileDTO fromEntityWithRoles(Profile profile, List<RoleDTO> roles) {
         return new ProfileDTO(
                 profile.getId(),
-                profile.getTenantId(),
                 profile.getNome(),
                 profile.getDescricao(),
                 profile.getAtivo(),
@@ -77,14 +74,6 @@ public class ProfileDTO {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public UUID getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(UUID tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getNome() {

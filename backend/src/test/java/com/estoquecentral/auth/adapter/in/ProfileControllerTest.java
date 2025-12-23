@@ -78,7 +78,6 @@ class ProfileControllerTest {
 
         adminProfile = new Profile(
                 profileId,
-                tenantId,
                 "Administrador",
                 "Perfil administrativo"
         );
@@ -97,8 +96,8 @@ class ProfileControllerTest {
     @WithMockUser(roles = "ADMIN")
     void shouldListProfilesForCurrentTenant() throws Exception {
         // Given
-        Profile profile2 = new Profile(UUID.randomUUID(), tenantId, "Gerente", "Perfil gerente");
-        when(profileService.listByTenant(tenantId)).thenReturn(List.of(adminProfile, profile2));
+        Profile profile2 = new Profile(UUID.randomUUID(), "Gerente", "Perfil gerente");
+        when(profileService.listActive()).thenReturn(List.of(adminProfile, profile2));
 
         // When/Then
         mockMvc.perform(get("/api/profiles")
@@ -108,7 +107,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("Administrador")))
                 .andExpect(jsonPath("$[1].nome", is("Gerente")));
 
-        verify(profileService, times(1)).listByTenant(tenantId);
+        verify(profileService, times(1)).listActive();
     }
 
     @Test
@@ -154,7 +153,7 @@ class ProfileControllerTest {
     @WithMockUser(roles = "ADMIN")
     void shouldCreateProfileWithRoles() throws Exception {
         // Given
-        when(profileService.create(eq(tenantId), anyString(), anyString(), anyList()))
+        when(profileService.create(anyString(), anyString(), anyList()))
                 .thenReturn(adminProfile);
         when(profileService.getRolesByProfile(profileId)).thenReturn(List.of(adminRole));
 
@@ -175,7 +174,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.nome", is("Administrador")))
                 .andExpect(jsonPath("$.roles", hasSize(1)));
 
-        verify(profileService, times(1)).create(eq(tenantId), eq("Administrador"),
+        verify(profileService, times(1)).create(eq("Administrador"),
                 eq("Perfil administrativo"), anyList());
     }
 
@@ -199,7 +198,7 @@ class ProfileControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
 
-        verify(profileService, never()).create(any(), anyString(), anyString(), anyList());
+        verify(profileService, never()).create(anyString(), anyString(), anyList());
     }
 
     @Test
@@ -207,7 +206,7 @@ class ProfileControllerTest {
     @WithMockUser(roles = "ADMIN")
     void shouldUpdateProfileMetadata() throws Exception {
         // Given
-        Profile updatedProfile = new Profile(profileId, tenantId, "Novo Nome", "Nova Descrição");
+        Profile updatedProfile = new Profile(profileId, "Novo Nome", "Nova Descrição");
         when(profileService.update(eq(profileId), anyString(), anyString())).thenReturn(updatedProfile);
 
         String requestBody = """
@@ -323,7 +322,7 @@ class ProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
 
-        verify(profileService, never()).listByTenant(any());
+        verify(profileService, never()).listActive();
     }
 
     @Test
@@ -334,7 +333,7 @@ class ProfileControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
 
-        verify(profileService, never()).listByTenant(any());
+        verify(profileService, never()).listActive();
     }
 
     @Test

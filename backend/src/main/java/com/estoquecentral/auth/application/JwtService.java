@@ -240,4 +240,50 @@ public class JwtService {
             return true;
         }
     }
+
+    /**
+     * Generates a JWT token for a user in a specific company context (Story 8.1 - AC5).
+     *
+     * <p>This method is used during self-service company creation to generate a token
+     * for the company owner WITHOUT requiring a tenant-specific Usuario object.
+     *
+     * <p>Token contains:
+     * <ul>
+     *   <li>sub: User ID (from public.users)</li>
+     *   <li>tenantId: Company's tenant ID (UUID)</li>
+     *   <li>email: User email</li>
+     *   <li>roles: [ADMIN] (company owner always gets ADMIN role)</li>
+     *   <li>iat: Issued at timestamp</li>
+     *   <li>exp: Expiration timestamp (iat + 24h)</li>
+     * </ul>
+     *
+     * @param userId User ID from public.users table
+     * @param tenantId Company's tenant ID
+     * @param email User email
+     * @return JWT token string
+     */
+    public String generateCompanyToken(Long userId, UUID tenantId, String email) {
+        logger.debug("Generating company JWT token for userId: {} in tenantId: {}", userId, tenantId);
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + JWT_EXPIRATION_MS);
+
+        // Company owner always gets ADMIN role (Story 8.1 - AC4, AC5)
+        List<String> roles = List.of("ADMIN");
+
+        String token = Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("tenantId", tenantId.toString())
+                .claim("email", email)
+                .claim("roles", roles)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(signingKey, Jwts.SIG.HS256)
+                .compact();
+
+        logger.debug("Company JWT token generated successfully for user: {} with roles: {} (expires at: {})",
+                email, roles, expiration);
+
+        return token;
+    }
 }

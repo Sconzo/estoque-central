@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -74,7 +74,7 @@ export class TenantService {
           this.switchCompany(companies[0].id);
         }
       }),
-      tap(companies => companies.length === 1)
+      map(companies => companies.length === 1)
     );
   }
 }

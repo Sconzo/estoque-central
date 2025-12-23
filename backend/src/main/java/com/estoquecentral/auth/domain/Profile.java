@@ -32,22 +32,19 @@ import java.util.UUID;
  * Many-to-Many      One-to-Many
  * </pre>
  *
- * <p><strong>Storage:</strong> Lives in PUBLIC schema (with tenant_id column for filtering)
+ * <p><strong>Storage:</strong> Lives in TENANT schema (schema-per-tenant isolation)
+ * <p><strong>Isolation:</strong> Each company has its own profiles table in its dedicated schema
+ * <p><strong>Routing:</strong> TenantContext + TenantRoutingDataSource routes to correct schema
  *
  * @see Role
  * @see Usuario
+ * @see com.estoquecentral.shared.tenant.TenantContext
  */
-@Table("public.profiles")
+@Table("profiles")
 public class Profile {
 
     @Id
     private UUID id;
-
-    /**
-     * Tenant this profile belongs to.
-     * Profiles are tenant-specific - each tenant defines its own profiles.
-     */
-    private UUID tenantId;
 
     /**
      * Profile name (unique per tenant).
@@ -78,14 +75,14 @@ public class Profile {
     /**
      * Constructor for creating a new profile.
      *
+     * <p>Note: tenant isolation is handled by schema routing, not tenant_id column
+     *
      * @param id        profile UUID
-     * @param tenantId  tenant this profile belongs to
      * @param nome      profile name (e.g., "Gerente Loja")
      * @param descricao human-readable description
      */
-    public Profile(UUID id, UUID tenantId, String nome, String descricao) {
+    public Profile(UUID id, String nome, String descricao) {
         this.id = id;
-        this.tenantId = tenantId;
         this.nome = nome;
         this.descricao = descricao;
         this.ativo = true;
@@ -135,14 +132,6 @@ public class Profile {
         this.id = id;
     }
 
-    public UUID getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(UUID tenantId) {
-        this.tenantId = tenantId;
-    }
-
     public String getNome() {
         return nome;
     }
@@ -190,7 +179,6 @@ public class Profile {
     public String toString() {
         return "Profile{" +
                 "id=" + id +
-                ", tenantId=" + tenantId +
                 ", nome='" + nome + '\'' +
                 ", ativo=" + ativo +
                 '}';

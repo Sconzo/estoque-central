@@ -88,7 +88,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/google/callback",
                                 "/api/auth/health",
-                                "/api/tenants", // Tenant creation (public)
+                                "/api/tenants", // Tenant creation (public) - deprecated
+                                "/api/public/**", // Public API endpoints (Story 8.1 - self-service company creation)
                                 "/actuator/health",
                                 "/actuator/health/**",
                                 "/swagger-ui.html",

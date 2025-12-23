@@ -13,49 +13,58 @@ import java.util.UUID;
 /**
  * ProfileRepository - Data access for Profile entities
  *
- * <p>This repository operates on the PUBLIC schema.
- * Profiles are tenant-specific (filtered by tenant_id column).
+ * <p>This repository operates on the TENANT schema (schema-per-tenant).
+ * Tenant isolation is handled by TenantRoutingDataSource + search_path.
+ *
+ * <p><strong>CRITICAL:</strong> TenantContext must be set before calling these methods.
+ * Otherwise, queries will fail as public schema no longer has profiles table.
  *
  * @see Profile
+ * @see com.estoquecentral.shared.tenant.TenantContext
+ * @see com.estoquecentral.shared.tenant.TenantRoutingDataSource
  */
 @Repository
 public interface ProfileRepository extends CrudRepository<Profile, UUID> {
 
     /**
-     * Finds all active profiles for a given tenant.
+     * Finds all active profiles in the current tenant schema.
      *
-     * @param tenantId the tenant ID
-     * @return list of active profiles for the tenant
+     * <p>Tenant context must be set via TenantContext.setTenantId() before calling.
+     *
+     * @return list of active profiles for current tenant
      */
-    @Query("SELECT * FROM public.profiles WHERE tenant_id = :tenantId AND ativo = true ORDER BY nome")
-    List<Profile> findByTenantIdAndAtivoTrue(@Param("tenantId") UUID tenantId);
+    @Query("SELECT * FROM profiles WHERE ativo = true ORDER BY nome")
+    List<Profile> findByAtivoTrue();
 
     /**
-     * Finds all profiles for a given tenant (active and inactive).
+     * Finds all profiles in the current tenant schema (active and inactive).
      *
-     * @param tenantId the tenant ID
-     * @return list of all profiles for the tenant
+     * <p>Tenant context must be set via TenantContext.setTenantId() before calling.
+     *
+     * @return list of all profiles for current tenant
      */
-    @Query("SELECT * FROM public.profiles WHERE tenant_id = :tenantId ORDER BY nome")
-    List<Profile> findByTenantId(@Param("tenantId") UUID tenantId);
+    @Query("SELECT * FROM profiles ORDER BY nome")
+    List<Profile> findAll();
 
     /**
-     * Finds a profile by tenant ID and name.
+     * Finds a profile by name in the current tenant schema.
      *
-     * @param tenantId the tenant ID
-     * @param nome     the profile name
+     * <p>Tenant context must be set via TenantContext.setTenantId() before calling.
+     *
+     * @param nome the profile name
      * @return Optional containing the profile if found
      */
-    @Query("SELECT * FROM public.profiles WHERE tenant_id = :tenantId AND nome = :nome")
-    Optional<Profile> findByTenantIdAndNome(@Param("tenantId") UUID tenantId, @Param("nome") String nome);
+    @Query("SELECT * FROM profiles WHERE nome = :nome")
+    Optional<Profile> findByNome(@Param("nome") String nome);
 
     /**
-     * Checks if a profile exists by tenant ID and name.
+     * Checks if a profile exists by name in the current tenant schema.
      *
-     * @param tenantId the tenant ID
-     * @param nome     the profile name
+     * <p>Tenant context must be set via TenantContext.setTenantId() before calling.
+     *
+     * @param nome the profile name
      * @return true if exists, false otherwise
      */
-    @Query("SELECT COUNT(*) > 0 FROM public.profiles WHERE tenant_id = :tenantId AND nome = :nome")
-    boolean existsByTenantIdAndNome(@Param("tenantId") UUID tenantId, @Param("nome") String nome);
+    @Query("SELECT COUNT(*) > 0 FROM profiles WHERE nome = :nome")
+    boolean existsByNome(@Param("nome") String nome);
 }

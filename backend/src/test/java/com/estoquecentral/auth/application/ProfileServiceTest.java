@@ -25,16 +25,8 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for ProfileService
  *
- * <p>Tests profile management operations:
- * <ul>
- *   <li>List profiles by tenant</li>
- *   <li>Get profile by ID</li>
- *   <li>Create profile with roles</li>
- *   <li>Update profile</li>
- *   <li>Update profile roles</li>
- *   <li>Activate/deactivate profile</li>
- *   <li>Get roles by profile</li>
- * </ul>
+ * <p>Tests profile management operations in tenant schema context
+ * <p>NOTE: Refactored after Story 7-2 - profiles moved to tenant schema
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ProfileService Unit Tests")
@@ -52,7 +44,6 @@ class ProfileServiceTest {
     @InjectMocks
     private ProfileService profileService;
 
-    private UUID tenantId;
     private UUID profileId;
     private UUID roleAdminId;
     private UUID roleGerenteId;
@@ -62,14 +53,13 @@ class ProfileServiceTest {
 
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
         profileId = UUID.randomUUID();
         roleAdminId = UUID.randomUUID();
         roleGerenteId = UUID.randomUUID();
 
+        // Note: Profile no longer has tenantId - isolation via schema routing
         adminProfile = new Profile(
                 profileId,
-                tenantId,
                 "Administrador",
                 "Perfil com acesso administrativo"
         );
@@ -79,26 +69,25 @@ class ProfileServiceTest {
     }
 
     @Test
-    @DisplayName("Should list profiles by tenant")
-    void shouldListProfilesByTenant() {
+    @DisplayName("Should list active profiles")
+    void shouldListActiveProfiles() {
         // Given
         Profile profile2 = new Profile(
                 UUID.randomUUID(),
-                tenantId,
                 "Gerente",
                 "Perfil gerente"
         );
-        when(profileRepository.findByTenantIdAndAtivoTrue(tenantId))
+        when(profileRepository.findByAtivoTrue())
                 .thenReturn(List.of(adminProfile, profile2));
 
         // When
-        List<Profile> profiles = profileService.listByTenant(tenantId);
+        List<Profile> profiles = profileService.listActive();
 
         // Then
         assertThat(profiles).hasSize(2);
         assertThat(profiles).extracting(Profile::getNome)
                 .containsExactlyInAnyOrder("Administrador", "Gerente");
-        verify(profileRepository, times(1)).findByTenantIdAndAtivoTrue(tenantId);
+        verify(profileRepository, times(1)).findByAtivoTrue();
     }
 
     @Test
@@ -136,22 +125,21 @@ class ProfileServiceTest {
     void shouldCreateProfileWithRoles() {
         // Given
         List<UUID> roleIds = List.of(roleAdminId, roleGerenteId);
-        when(profileRepository.existsByTenantIdAndNome(tenantId, "Novo Perfil")).thenReturn(false);
-        when(roleRepository.existsById(roleAdminId)).thenReturn(true);
-        when(roleRepository.existsById(roleGerenteId)).thenReturn(true);
+        when(profileRepository.existsByNome("Novo Perfil")).thenReturn(false);
+        when(roleRepository.findById(roleAdminId)).thenReturn(Optional.of(adminRole));
+        when(roleRepository.findById(roleGerenteId)).thenReturn(Optional.of(gerenteRole));
         when(profileRepository.save(any(Profile.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(profileRoleRepository.save(any(ProfileRole.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // When
-        Profile newProfile = profileService.create(tenantId, "Novo Perfil", "Descrição", roleIds);
+        // When (no tenantId parameter - handled by TenantContext)
+        Profile newProfile = profileService.create("Novo Perfil", "Descrição", roleIds);
 
         // Then
         assertThat(newProfile).isNotNull();
         assertThat(newProfile.getNome()).isEqualTo("Novo Perfil");
-        assertThat(newProfile.getTenantId()).isEqualTo(tenantId);
         assertThat(newProfile.getAtivo()).isTrue();
 
-        verify(profileRepository, times(1)).existsByTenantIdAndNome(tenantId, "Novo Perfil");
+        verify(profileRepository, times(1)).existsByNome("Novo Perfil");
         verify(profileRepository, times(1)).save(any(Profile.class));
         verify(profileRoleRepository, times(2)).save(any(ProfileRole.class));
     }
@@ -160,14 +148,14 @@ class ProfileServiceTest {
     @DisplayName("Should throw exception when creating duplicate profile")
     void shouldThrowExceptionWhenCreatingDuplicateProfile() {
         // Given
-        when(profileRepository.existsByTenantIdAndNome(tenantId, "Administrador")).thenReturn(true);
+        when(profileRepository.existsByNome("Administrador")).thenReturn(true);
 
         // When/Then
-        assertThatThrownBy(() -> profileService.create(tenantId, "Administrador", "Desc", List.of(roleAdminId)))
+        assertThatThrownBy(() -> profileService.create("Administrador", "Desc", List.of(roleAdminId)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Profile already exists");
 
-        verify(profileRepository, times(1)).existsByTenantIdAndNome(tenantId, "Administrador");
+        verify(profileRepository, times(1)).existsByNome("Administrador");
         verify(profileRepository, never()).save(any());
     }
 
@@ -176,15 +164,15 @@ class ProfileServiceTest {
     void shouldThrowExceptionWhenCreatingProfileWithNonExistentRole() {
         // Given
         UUID nonExistentRoleId = UUID.randomUUID();
-        when(profileRepository.existsByTenantIdAndNome(tenantId, "Novo Perfil")).thenReturn(false);
-        when(roleRepository.existsById(nonExistentRoleId)).thenReturn(false);
+        when(profileRepository.existsByNome("Novo Perfil")).thenReturn(false);
+        when(roleRepository.findById(nonExistentRoleId)).thenReturn(Optional.empty());
 
         // When/Then
-        assertThatThrownBy(() -> profileService.create(tenantId, "Novo Perfil", "Desc", List.of(nonExistentRoleId)))
+        assertThatThrownBy(() -> profileService.create("Novo Perfil", "Desc", List.of(nonExistentRoleId)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Role not found");
 
-        verify(roleRepository, times(1)).existsById(nonExistentRoleId);
+        verify(roleRepository, times(1)).findById(nonExistentRoleId);
         verify(profileRepository, never()).save(any());
     }
 
@@ -193,6 +181,7 @@ class ProfileServiceTest {
     void shouldUpdateProfileMetadata() {
         // Given
         when(profileRepository.findById(profileId)).thenReturn(Optional.of(adminProfile));
+        when(profileRepository.existsByNome("Novo Nome")).thenReturn(false);
         when(profileRepository.save(any(Profile.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -212,9 +201,9 @@ class ProfileServiceTest {
     void shouldUpdateProfileRoles() {
         // Given
         List<UUID> newRoleIds = List.of(roleAdminId, roleGerenteId);
-        when(profileRepository.existsById(profileId)).thenReturn(true);
-        when(roleRepository.existsById(roleAdminId)).thenReturn(true);
-        when(roleRepository.existsById(roleGerenteId)).thenReturn(true);
+        when(profileRepository.findById(profileId)).thenReturn(Optional.of(adminProfile));
+        when(roleRepository.findById(roleAdminId)).thenReturn(Optional.of(adminRole));
+        when(roleRepository.findById(roleGerenteId)).thenReturn(Optional.of(gerenteRole));
         doNothing().when(profileRoleRepository).deleteByProfileId(profileId);
         when(profileRoleRepository.save(any(ProfileRole.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -222,7 +211,7 @@ class ProfileServiceTest {
         profileService.updateRoles(profileId, newRoleIds);
 
         // Then
-        verify(profileRepository, times(1)).existsById(profileId);
+        verify(profileRepository, times(1)).findById(profileId);
         verify(profileRoleRepository, times(1)).deleteByProfileId(profileId);
         verify(profileRoleRepository, times(2)).save(any(ProfileRole.class));
     }

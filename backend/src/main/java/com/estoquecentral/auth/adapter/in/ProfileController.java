@@ -63,8 +63,8 @@ public class ProfileController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "List profiles", description = "Lists all active profiles for the current tenant")
     public ResponseEntity<List<ProfileDTO>> listar() {
-        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
-        List<Profile> profiles = profileService.listByTenant(tenantId);
+        // TenantContext is automatically set by TenantInterceptor from X-Tenant-ID header
+        List<Profile> profiles = profileService.listActive();
 
         List<ProfileDTO> profileDTOs = profiles.stream()
                 .map(ProfileDTO::fromEntity)
@@ -121,10 +121,8 @@ public class ProfileController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create profile", description = "Creates a new profile with roles")
     public ResponseEntity<ProfileDTO> criar(@Valid @RequestBody ProfileCreateRequest request) {
-        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
-
+        // TenantContext is automatically set by TenantInterceptor from X-Tenant-ID header
         Profile profile = profileService.create(
-                tenantId,
                 request.getNome(),
                 request.getDescricao(),
                 request.getRoleIds()

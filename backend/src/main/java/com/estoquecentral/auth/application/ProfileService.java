@@ -21,17 +21,19 @@ import java.util.stream.Collectors;
  *
  * <p>Handles profile lifecycle operations:
  * <ul>
- *   <li>List profiles for a tenant</li>
+ *   <li>List profiles for current tenant (via TenantContext)</li>
  *   <li>Create new profiles with roles</li>
  *   <li>Update profile metadata and roles</li>
  *   <li>Deactivate profiles (soft delete)</li>
  *   <li>Get roles for a profile</li>
  * </ul>
  *
+ * <p><strong>Tenant Isolation:</strong> All operations use TenantContext for schema routing.
  * <p><strong>Security:</strong> All profile management operations require ADMIN role.
  *
  * @see Profile
  * @see ProfileRepository
+ * @see com.estoquecentral.shared.tenant.TenantContext
  */
 @Service
 public class ProfileService {
@@ -53,18 +55,31 @@ public class ProfileService {
     }
 
     /**
-     * Lists all active profiles for a tenant.
+     * Lists all active profiles for the current tenant.
      *
-     * @param tenantId the tenant ID
-     * @return list of active profiles
+     * <p><strong>CRITICAL:</strong> TenantContext must be set before calling this method.
+     *
+     * @return list of active profiles for current tenant
      */
-    public List<Profile> listByTenant(UUID tenantId) {
-        logger.debug("Listing profiles for tenant: {}", tenantId);
-        return profileRepository.findByTenantIdAndAtivoTrue(tenantId);
+    public List<Profile> listActive() {
+        logger.debug("Listing active profiles for current tenant");
+        return profileRepository.findByAtivoTrue();
     }
 
     /**
-     * Finds a profile by ID.
+     * Lists all profiles (active and inactive) for the current tenant.
+     *
+     * <p><strong>CRITICAL:</strong> TenantContext must be set before calling this method.
+     *
+     * @return list of all profiles for current tenant
+     */
+    public List<Profile> listAll() {
+        logger.debug("Listing all profiles for current tenant");
+        return profileRepository.findAll();
+    }
+
+    /**
+     * Finds a profile by ID in the current tenant schema.
      *
      * @param id the profile ID
      * @return the Profile
@@ -77,11 +92,24 @@ public class ProfileService {
     }
 
     /**
-     * Creates a new profile with roles.
+     * Finds a profile by name in the current tenant schema.
+     *
+     * @param nome the profile name
+     * @return the Profile
+     * @throws IllegalArgumentException if profile not found
+     */
+    public Profile getByNome(String nome) {
+        logger.debug("Finding profile by name: {}", nome);
+        return profileRepository.findByNome(nome)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found: " + nome));
+    }
+
+    /**
+     * Creates a new profile with roles in the current tenant schema.
      *
      * <p><strong>Security:</strong> Requires ADMIN role
+     * <p><strong>CRITICAL:</strong> TenantContext must be set before calling this method.
      *
-     * @param tenantId  tenant ID
      * @param nome      profile name (e.g., "Gerente Loja")
      * @param descricao human-readable description
      * @param roleIds   list of role IDs to assign to this profile
@@ -89,19 +117,19 @@ public class ProfileService {
      * @throws IllegalArgumentException if profile name already exists for tenant
      */
     @Transactional
-    public Profile create(UUID tenantId, String nome, String descricao, List<UUID> roleIds) {
-        logger.info("Creating new profile: {} for tenant: {}", nome, tenantId);
+    public Profile create(String nome, String descricao, List<UUID> roleIds) {
+        logger.info("Creating new profile: {}", nome);
 
-        // Check if profile name already exists for this tenant
-        if (profileRepository.existsByTenantIdAndNome(tenantId, nome)) {
-            throw new IllegalArgumentException("Profile already exists for this tenant: " + nome);
+        // Check if profile name already exists in current tenant schema
+        if (profileRepository.existsByNome(nome)) {
+            throw new IllegalArgumentException("Profile already exists: " + nome);
         }
 
         // Validate roles exist
         validateRolesExist(roleIds);
 
-        // Create profile
-        Profile profile = new Profile(UUID.randomUUID(), tenantId, nome, descricao);
+        // Create profile (tenant isolation via schema routing)
+        Profile profile = new Profile(UUID.randomUUID(), nome, descricao);
         profile = profileRepository.save(profile);
 
         // Assign roles to profile
@@ -120,7 +148,7 @@ public class ProfileService {
      * @param nome      new name (optional)
      * @param descricao new description (optional)
      * @return the updated Profile
-     * @throws IllegalArgumentException if profile not found
+     * @throws IllegalArgumentException if profile not found or name conflicts
      */
     @Transactional
     public Profile update(UUID id, String nome, String descricao) {
@@ -130,8 +158,8 @@ public class ProfileService {
 
         // Check if new name conflicts with existing profile in same tenant
         if (nome != null && !nome.equals(profile.getNome())) {
-            if (profileRepository.existsByTenantIdAndNome(profile.getTenantId(), nome)) {
-                throw new IllegalArgumentException("Profile name already exists for this tenant: " + nome);
+            if (profileRepository.existsByNome(nome)) {
+                throw new IllegalArgumentException("Profile name already exists: " + nome);
             }
         }
 

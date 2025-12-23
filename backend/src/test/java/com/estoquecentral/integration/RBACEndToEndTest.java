@@ -104,7 +104,6 @@ class RBACEndToEndTest extends BaseIntegrationTest {
         );
 
         Profile adminProfile = profileService.create(
-                tenant.getId(),
                 "Administrador Completo",
                 "Perfil com acesso administrativo e gerencial",
                 roleIds
@@ -275,14 +274,12 @@ class RBACEndToEndTest extends BaseIntegrationTest {
 
         // Create two different profiles
         Profile adminProfile = profileService.create(
-                tenant.getId(),
                 "Admin Profile",
                 "Admin access",
                 List.of(adminRole.getId())
         );
 
         Profile vendedorProfile = profileService.create(
-                tenant.getId(),
                 "Vendedor Profile",
                 "Vendedor access",
                 List.of(vendedorRole.getId())
