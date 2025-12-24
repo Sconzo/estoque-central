@@ -1,0 +1,285 @@
+/**
+ * Story 9.3: User Avatar Menu with Company Context Switching
+ * AC1: Avatar display
+ * AC2: Menu content with MatMenu (UX19)
+ * UX4: Deep Purple theme (#6A1B9A)
+ */
+
+/* AC1: Avatar button */
+.avatar-button {
+  position: relative;
+  padding: 0;
+  width: 48px;
+  height: 48px;
+}
+
+/* AC1: User avatar image */
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6A1B9A; /* UX4: Deep Purple */
+}
+
+/* AC1: User initials avatar */
+.user-initials-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border: 2px solid #fff;
+}
+
+/* Menu header */
+::ng-deep .user-avatar-menu {
+  min-width: 320px !important;
+  max-width: 400px !important;
+}
+
+.menu-header {
+  padding: 16px !important;
+  cursor: default !important;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #6A1B9A;
+}
+
+.header-initials-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  border: 2px solid #6A1B9A;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* AC3: Current company section */
+.current-company-section {
+  padding: 12px 16px !important;
+  cursor: default !important;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.section-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #6A1B9A; /* UX4: Deep Purple */
+}
+
+.loading-companies {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.loading-companies span {
+  font-size: 14px;
+  color: #666;
+}
+
+.current-company-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.check-icon {
+  color: #4CAF50; /* Green checkmark */
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.company-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.company-details strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-details small {
+  font-size: 12px;
+  color: #666;
+  display: block;
+}
+
+.company-role {
+  color: #6A1B9A !important; /* UX4: Deep Purple */
+  font-weight: 500 !important;
+}
+
+/* AC3: Other companies section */
+.other-companies-section {
+  padding: 12px 16px !important;
+  cursor: default !important;
+}
+
+/* AC4: Company switch items */
+.company-switch-item {
+  padding: 12px 16px !important;
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  position: relative !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.company-switch-item:hover:not([disabled]) {
+  background-color: #f3e5f5 !important; /* Light purple on hover */
+}
+
+.company-switch-item.switching {
+  background-color: #ede7f6 !important; /* Lighter purple when switching */
+}
+
+.company-switch-item[disabled] {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+.company-icon {
+  color: #6A1B9A; /* UX4: Deep Purple */
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.company-switch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.company-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-cnpj {
+  font-size: 12px;
+  color: #666;
+  display: block;
+}
+
+.company-role-small {
+  font-size: 12px;
+  color: #6A1B9A; /* UX4: Deep Purple */
+  font-weight: 500;
+  display: block;
+}
+
+/* AC4: Loading spinner during switch */
+.switch-spinner {
+  position: absolute !important;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Settings and logout */
+::ng-deep .user-avatar-menu .mat-mdc-menu-item {
+  min-height: 48px;
+}
+
+::ng-deep .user-avatar-menu .mat-mdc-menu-item mat-icon {
+  margin-right: 12px;
+  color: #666;
+}
+
+::ng-deep .user-avatar-menu .mat-mdc-menu-item:hover mat-icon {
+  color: #6A1B9A; /* UX4: Deep Purple */
+}
+
+.logout-item {
+  color: #d32f2f !important; /* Red for logout */
+}
+
+.logout-item mat-icon {
+  color: #d32f2f !important;
+}
+
+/* Dividers */
+::ng-deep .user-avatar-menu .mat-divider {
+  margin: 8px 0;
+}

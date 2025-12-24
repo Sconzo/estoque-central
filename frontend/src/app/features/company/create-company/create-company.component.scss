@@ -1,0 +1,147 @@
+/**
+ * Story 8.6: Loading States e Feedback Visual
+ * AC2: Full-screen loading overlay
+ * AC5: Design principles (Deep Purple #6A1B9A, 44x44px touch targets, emotions: Confiança e Eficiência)
+ */
+
+.create-company-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f5f5;
+  position: relative; /* For loading overlay positioning */
+}
+
+/* Story 8.6 - AC2: Full-screen loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading-content {
+  background-color: white;
+  padding: 48px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+}
+
+.loading-message {
+  margin-top: 24px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #6A1B9A; /* Story 8.6 - AC5: Deep Purple theme */
+}
+
+.loading-hint {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.create-company-card {
+  max-width: 600px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(106, 27, 154, 0.1); /* Story 8.6 - AC5: Deep Purple accent in shadow */
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+}
+
+mat-card-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #6A1B9A; /* Story 8.6 - AC5: Deep Purple theme */
+}
+
+mat-card-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Story 8.6 - AC1 + AC5: Button with loading state and large touch target */
+.submit-button {
+  min-width: 180px;
+  min-height: 48px; /* Story 8.6 - AC5: 48px height for comfortable touch target (>44px) */
+  position: relative;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  /* Story 8.6 - AC5: UX8 - Transmits Confiança and Eficiência */
+}
+
+/* Story 8.6 - AC1: Button spinner inside button */
+.button-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Story 8.6 - AC3: Success snackbar with Deep Purple theme */
+::ng-deep .success-snackbar {
+  background-color: #6A1B9A !important; /* Deep Purple for consistency */
+  color: white !important;
+  font-weight: 500;
+}
+
+::ng-deep .success-snackbar .mat-simple-snack-bar-content {
+  font-size: 16px;
+}
+
+/* Story 8.6 - AC4: Error snackbar with clear, urgent red */
+::ng-deep .error-snackbar {
+  background-color: #D32F2F !important; /* Material Red 700 */
+  color: white !important;
+  font-weight: 500;
+}
+
+::ng-deep .error-snackbar .mat-simple-snack-bar-content {
+  font-size: 16px;
+}
+
+/* Story 8.6 - AC4: Retry action button in snackbar */
+::ng-deep .error-snackbar .mat-button {
+  color: #FFEB3B !important; /* Yellow for visibility */
+  font-weight: 600;
+}
+
+/* Story 8.6 - AC5: UX24 - States are always visible */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

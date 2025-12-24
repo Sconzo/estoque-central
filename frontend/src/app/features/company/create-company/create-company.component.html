@@ -1,0 +1,112 @@
+<!-- Story 8.2 + 8.6: Create Company Form with Enhanced Loading States -->
+<!-- Story 8.2 - AC2: Company registration form with MatFormField inputs -->
+<!-- Story 8.6 - AC1: Button loading state with spinner -->
+<!-- Story 8.6 - AC2: Full-screen loading overlay -->
+<!-- Story 8.6 - AC3: Success feedback with MatSnackBar -->
+<!-- Story 8.6 - AC4: Error feedback with retry -->
+<!-- Story 8.6 - AC5: Design principles (Deep Purple theme, 44x44px touch targets) -->
+
+<div class="create-company-container">
+  <!-- Story 8.6 - AC2: Full-screen loading overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <mat-spinner diameter="80" color="primary"></mat-spinner>
+      <p class="loading-message">Criando seu espaço isolado...</p>
+      <p class="loading-hint">Isso pode levar até 30 segundos</p>
+    </div>
+  </div>
+
+  <mat-card class="create-company-card">
+    <mat-card-header>
+      <mat-card-title>Criar Nova Empresa</mat-card-title>
+      <mat-card-subtitle>Preencha os dados da sua empresa para começar</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Story 8.2 - AC2: Reactive form with validation -->
+      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()">
+        <!-- AC2: Nome da Empresa (required, max 255 chars) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome da Empresa</mat-label>
+          <input
+            matInput
+            formControlName="nome"
+            placeholder="Ex: Minha Empresa LTDA"
+            required
+          />
+          <!-- AC3: Inline error messages -->
+          <mat-error *ngIf="companyForm.get('nome')?.hasError('required')">
+            {{ getErrorMessage('nome') }}
+          </mat-error>
+          <mat-error *ngIf="companyForm.get('nome')?.hasError('maxlength')">
+            {{ getErrorMessage('nome') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- AC2: CNPJ (optional, 14 digits with validation) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>CNPJ</mat-label>
+          <input
+            matInput
+            formControlName="cnpj"
+            placeholder="12345678000190"
+            maxlength="14"
+          />
+          <mat-hint>Apenas números (14 dígitos)</mat-hint>
+          <!-- AC3: Inline error messages -->
+          <mat-error *ngIf="companyForm.get('cnpj')?.hasError('pattern')">
+            {{ getErrorMessage('cnpj') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- AC2: Email (required, email format validation) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            placeholder="contato@empresa.com.br"
+            required
+          />
+          <!-- AC3: Inline error messages -->
+          <mat-error *ngIf="companyForm.get('email')?.hasError('required')">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+          <mat-error *ngIf="companyForm.get('email')?.hasError('email')">
+            {{ getErrorMessage('email') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- AC2: Telefone (optional, phone format) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Telefone</mat-label>
+          <input
+            matInput
+            formControlName="telefone"
+            placeholder="(11) 98765-4321"
+          />
+          <mat-hint>Opcional</mat-hint>
+        </mat-form-field>
+
+        <!-- Story 8.6 - AC1: Button with loading state and spinner -->
+        <!-- Story 8.6 - AC5: Large touch target 44x44px minimum -->
+        <div class="form-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="companyForm.invalid || isLoading"
+            class="submit-button"
+          >
+            <!-- Story 8.6 - AC1: Loading spinner inside button -->
+            <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+            <!-- Story 8.6 - AC1: Text changes to "Criando..." -->
+            <span *ngIf="!isLoading">Criar Empresa</span>
+            <span *ngIf="isLoading">Criando...</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

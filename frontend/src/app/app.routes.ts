@@ -12,6 +12,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
   },
   {
+    path: 'create-company',
+    loadComponent: () => import('./features/company/create-company/create-company.component').then(m => m.CreateCompanyComponent)
+  },
+  {
+    path: 'select-company',
+    loadComponent: () => import('./features/company/select-company/select-company.component').then(m => m.SelectCompanyComponent)
+  },
+  {
     path: '403',
     loadComponent: () => import('./features/error/forbidden/forbidden.component').then(m => m.ForbiddenComponent)
   },

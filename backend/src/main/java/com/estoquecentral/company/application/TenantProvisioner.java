@@ -1,5 +1,6 @@
 package com.estoquecentral.company.application;
 
+import com.estoquecentral.common.exception.SchemaProvisioningException;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class TenantProvisioner {
                 logger.error("Failed to cleanup schema: {}", schemaName, cleanupError);
             }
 
-            throw new TenantProvisioningException("Failed to provision tenant schema: " + schemaName, e);
+            throw new SchemaProvisioningException("Failed to provision tenant schema: " + schemaName, e);
         }
     }
 
@@ -128,7 +129,7 @@ public class TenantProvisioner {
     }
 
     /**
-     * Drops a PostgreSQL schema (cleanup on failure).
+     * Drops a PostgreSQL schema (cleanup on failure - Story 8.5 AC4).
      *
      * @param schemaName the schema name
      */
@@ -183,13 +184,4 @@ public class TenantProvisioner {
             boolean success,
             String errorMessage
     ) {}
-
-    /**
-     * Exception thrown when tenant provisioning fails.
-     */
-    public static class TenantProvisioningException extends RuntimeException {
-        public TenantProvisioningException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 }

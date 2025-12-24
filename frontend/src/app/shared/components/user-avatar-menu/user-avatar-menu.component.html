@@ -1,0 +1,127 @@
+<!-- Story 9.3: User Avatar Menu with Company Context Switching -->
+<!-- AC1: Avatar Display -->
+<!-- AC2: Menu Content with MatMenu -->
+<!-- AC3: Company List with checkmark for current -->
+
+<button
+  mat-icon-button
+  [matMenuTriggerFor]="userMenu"
+  aria-label="Menu do usuário"
+  class="avatar-button">
+  <!-- AC1: Avatar with user initials or photo -->
+  @if (currentUser()?.pictureUrl) {
+    <img
+      [src]="currentUser()!.pictureUrl"
+      [alt]="currentUser()!.nome"
+      class="user-avatar">
+  } @else {
+    <div class="user-initials-avatar" [style.background-color]="getAvatarColor()">
+      {{ getUserInitials() }}
+    </div>
+  }
+</button>
+
+<!-- AC2: Dropdown menu (MatMenu) -->
+<mat-menu #userMenu="matMenu" class="user-avatar-menu" xPosition="before">
+  <!-- User info header -->
+  <div class="menu-header" mat-menu-item [disableRipple]="true" (click)="$event.stopPropagation()">
+    <div class="user-info">
+      @if (currentUser()?.pictureUrl) {
+        <img
+          [src]="currentUser()!.pictureUrl"
+          [alt]="currentUser()!.nome"
+          class="header-avatar">
+      } @else {
+        <div class="header-initials-avatar" [style.background-color]="getAvatarColor()">
+          {{ getUserInitials() }}
+        </div>
+      }
+      <div class="user-details">
+        <strong class="user-name">{{ currentUser()?.nome }}</strong>
+        <small class="user-email">{{ currentUser()?.email }}</small>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- AC3: Current company display -->
+  <div class="current-company-section" mat-menu-item [disableRipple]="true" (click)="$event.stopPropagation()">
+    <div class="section-label">
+      <mat-icon class="section-icon">business</mat-icon>
+      <span>Empresa Atual</span>
+    </div>
+    @if (isLoadingCompanies) {
+      <div class="loading-companies">
+        <mat-spinner diameter="20"></mat-spinner>
+        <span>Carregando...</span>
+      </div>
+    } @else if (currentCompany) {
+      <div class="current-company-info">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+        <div class="company-details">
+          <strong>{{ currentCompany.nome }}</strong>
+          @if (currentCompany.cnpj) {
+            <small>CNPJ: {{ formatCnpj(currentCompany.cnpj) }}</small>
+          }
+          <small class="company-role">{{ currentCompany.profileName }}</small>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- AC3: Other companies list -->
+  @if (otherCompanies.length > 0) {
+    <mat-divider></mat-divider>
+
+    <div class="other-companies-section" mat-menu-item [disableRipple]="true" (click)="$event.stopPropagation()">
+      <div class="section-label">
+        <mat-icon class="section-icon">swap_horiz</mat-icon>
+        <span>Trocar para</span>
+      </div>
+    </div>
+
+    <!-- AC4: Context switch buttons -->
+    @for (company of otherCompanies; track company.tenantId) {
+      <button
+        mat-menu-item
+        class="company-switch-item"
+        (click)="switchToCompany(company)"
+        [disabled]="switchingToTenantId !== null"
+        [class.switching]="switchingToTenantId === company.tenantId">
+        <mat-icon class="company-icon">business_center</mat-icon>
+        <div class="company-switch-info">
+          <span class="company-name">{{ company.nome }}</span>
+          @if (company.cnpj) {
+            <small class="company-cnpj">CNPJ: {{ formatCnpj(company.cnpj) }}</small>
+          }
+          <small class="company-role-small">{{ company.profileName }}</small>
+        </div>
+        <!-- AC4: Loading spinner during switch -->
+        @if (switchingToTenantId === company.tenantId) {
+          <mat-spinner diameter="20" class="switch-spinner"></mat-spinner>
+        }
+      </button>
+    }
+  }
+
+  <mat-divider></mat-divider>
+
+  <!-- Settings and logout -->
+  <button mat-menu-item routerLink="/profile" aria-label="Ver perfil">
+    <mat-icon>person</mat-icon>
+    <span>Meu Perfil</span>
+  </button>
+
+  <button mat-menu-item routerLink="/configuracoes" aria-label="Configurações">
+    <mat-icon>settings</mat-icon>
+    <span>Configurações</span>
+  </button>
+
+  <mat-divider></mat-divider>
+
+  <button mat-menu-item (click)="logout()" aria-label="Sair do sistema" class="logout-item">
+    <mat-icon>logout</mat-icon>
+    <span>Sair</span>
+  </button>
+</mat-menu>

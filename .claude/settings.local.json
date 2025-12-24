@@ -29,7 +29,12 @@
       "Bash(ng build:*)",
       "Bash(npm run build:*)",
       "Bash(find:*)",
-      "Bash(mvn clean compile:*)"
+      "Bash(mvn clean compile:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(npm test:*)",
+      "Bash(cat:*)",
+      "Bash(ng generate:*)"
     ],
     "deny": [],
     "ask": []

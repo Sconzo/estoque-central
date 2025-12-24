@@ -286,4 +286,52 @@ public class JwtService {
 
         return token;
     }
+
+    /**
+     * Generates a JWT token for a user switching company context (Story 9.1 - AC3).
+     *
+     * <p>This method generates a new token with updated tenant context and user's roles
+     * in the target company.
+     *
+     * <p>Token contains:
+     * <ul>
+     *   <li>sub: User ID (from public.users)</li>
+     *   <li>tenantId: New company's tenant ID (UUID)</li>
+     *   <li>email: User email</li>
+     *   <li>roles: User's role in the new company (e.g., ["ADMIN"], ["GERENTE"])</li>
+     *   <li>iat: Issued at timestamp</li>
+     *   <li>exp: Expiration timestamp (iat + 24h)</li>
+     * </ul>
+     *
+     * @param userId User ID from public.users table
+     * @param tenantId New company's tenant ID
+     * @param email User email
+     * @param role User's role in the new company
+     * @return JWT token string
+     */
+    public String generateContextSwitchToken(Long userId, UUID tenantId, String email, String role) {
+        logger.debug("Generating context switch JWT token for userId: {} to tenantId: {} with role: {}",
+                userId, tenantId, role);
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + JWT_EXPIRATION_MS);
+
+        // User gets their actual role in the target company
+        List<String> roles = List.of(role);
+
+        String token = Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("tenantId", tenantId.toString())
+                .claim("email", email)
+                .claim("roles", roles)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(signingKey, Jwts.SIG.HS256)
+                .compact();
+
+        logger.debug("Context switch JWT token generated successfully for user: {} with roles: {} (expires at: {})",
+                email, roles, expiration);
+
+        return token;
+    }
 }

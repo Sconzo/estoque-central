@@ -1,0 +1,85 @@
+<!-- Story 9.2: Company Selection Screen -->
+<!-- AC2: Company list display with MatCard components (UX19) -->
+<!-- AC5: Create new company button -->
+<!-- AC6: Responsive design (UX2) -->
+
+<div class="select-company-container">
+  <!-- AC2: Full-screen loading overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <mat-spinner diameter="80" color="primary"></mat-spinner>
+      <p class="loading-message">Carregando suas empresas...</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1 class="title">Selecione uma Empresa</h1>
+    <p class="subtitle">Você tem acesso a {{ companies.length }} empresa{{ companies.length !== 1 ? 's' : '' }}</p>
+  </div>
+
+  <!-- AC2: Company cards grid (responsive) -->
+  <div class="companies-grid" *ngIf="!isLoading && companies.length > 0">
+    <mat-card
+      *ngFor="let company of companies"
+      class="company-card"
+      (click)="selectCompany(company)"
+      [class.selecting]="selectingTenantId === company.tenantId">
+
+      <mat-card-header>
+        <div mat-card-avatar class="company-avatar">
+          <mat-icon>business</mat-icon>
+        </div>
+        <mat-card-title>{{ company.nome }}</mat-card-title>
+        <mat-card-subtitle *ngIf="company.cnpj">CNPJ: {{ formatCnpj(company.cnpj) }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="company-info">
+          <mat-icon class="info-icon">badge</mat-icon>
+          <span class="profile-name">{{ company.profileName }}</span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <!-- AC3: Loading spinner during selection -->
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="selectingTenantId !== null"
+          class="select-button">
+          <mat-spinner *ngIf="selectingTenantId === company.tenantId" diameter="20" class="button-spinner"></mat-spinner>
+          <span *ngIf="selectingTenantId !== company.tenantId">Acessar</span>
+          <span *ngIf="selectingTenantId === company.tenantId">Acessando...</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- AC5: Create new company button -->
+  <div class="footer-actions" *ngIf="!isLoading">
+    <button
+      mat-raised-button
+      color="accent"
+      routerLink="/create-company"
+      class="create-company-button">
+      <mat-icon>add_business</mat-icon>
+      Criar Nova Empresa
+    </button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && companies.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">business_center</mat-icon>
+    <h2>Nenhuma empresa encontrada</h2>
+    <p>Você ainda não tem acesso a nenhuma empresa.</p>
+    <button
+      mat-raised-button
+      color="primary"
+      routerLink="/create-company"
+      class="create-first-company-button">
+      <mat-icon>add</mat-icon>
+      Criar Minha Primeira Empresa
+    </button>
+  </div>
+</div>

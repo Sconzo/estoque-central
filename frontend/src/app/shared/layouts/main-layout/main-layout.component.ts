@@ -12,6 +12,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
+import { UserAvatarMenuComponent } from '../../components/user-avatar-menu/user-avatar-menu.component';
 
 /**
  * MainLayoutComponent - Main application shell with responsive navigation
@@ -37,7 +38,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     MatIconModule,
     MatListModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    UserAvatarMenuComponent
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss'

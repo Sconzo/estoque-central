@@ -6,6 +6,7 @@ import { tap } from 'rxjs/operators';
 import { User } from './models/user.model';
 import { LoginResponse } from './models/login-response.model';
 import { GoogleCallbackRequest } from './models/google-callback-request.model';
+import { TenantService } from '../services/tenant.service';
 
 /**
  * AuthService - Service for authentication and JWT token management
@@ -29,7 +30,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private tenantService: TenantService
   ) {
     // Check token validity on service initialization
     this.checkTokenValidity();
@@ -59,10 +61,22 @@ export class AuthService {
 
   /**
    * Logs out the user by removing JWT token.
+   * Story 9.4 - AC4: Preserves tenant context in localStorage for re-login (FR11)
    */
   logout(): void {
+    // AC4: Store current tenant before clearing auth
+    const currentTenantId = this.tenantService.getCurrentTenant();
+
     this.removeToken();
     this.isAuthenticatedSubject.next(false);
+
+    // AC4: Preserve tenant context across logout (FR11)
+    // The tenant context remains in localStorage so after re-login,
+    // the user can return to the same company context
+    if (currentTenantId) {
+      console.log('🔒 Logout: Preserving tenant context for re-login:', currentTenantId);
+    }
+
     this.router.navigate(['/login']);
   }
 
@@ -150,14 +164,24 @@ export class AuthService {
 
   /**
    * Checks token validity and updates authentication state.
+   * Story 9.4 - AC4: JWT expiration handling with tenant context preservation (FR11)
    */
   private checkTokenValidity(): void {
     const isValid = this.hasValidToken();
     this.isAuthenticatedSubject.next(isValid);
 
     if (!isValid && this.getToken()) {
-      // Token exists but is invalid/expired - remove it
+      // AC4: Token exists but is invalid/expired
+      const currentTenantId = this.tenantService.getCurrentTenant();
+
+      // Remove expired token
       this.removeToken();
+
+      // AC4: Tenant context is preserved in localStorage (FR11)
+      // After user re-authenticates, they can return to the same company
+      if (currentTenantId) {
+        console.log('⚠️ JWT expired - tenant context preserved for re-login:', currentTenantId);
+      }
     }
   }
 
