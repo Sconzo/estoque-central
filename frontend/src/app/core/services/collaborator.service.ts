@@ -64,20 +64,24 @@ export class CollaboratorService {
 }
 
 /**
- * Request interface for inviting a collaborator.
+ * Request interface for inviting a collaborator (Story 10.1 - AC2).
+ * Matches backend InviteCollaboratorRequest.
  */
 export interface InviteCollaboratorRequest {
-  userId: number;
+  email: string;
   role: string;
 }
 
 /**
- * Response interface matching backend CollaboratorDTO.
+ * Response interface for collaborator details (Story 10.2 - AC1).
+ * Matches backend CollaboratorDetailDTO with user information.
  */
 export interface CollaboratorResponse {
   id: number;
   companyId: number;
   userId: number;
+  userName: string;
+  userEmail: string;
   role: string;
   invitedAt: string;
   acceptedAt: string | null;

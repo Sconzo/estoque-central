@@ -2,8 +2,9 @@
 
 **Epic**: 10 - Gestão de Colaboradores e Permissões RBAC
 **Story ID**: 10.4
-**Status**: pending
+**Status**: completed
 **Created**: 2025-12-22
+**Completed**: 2025-12-27
 
 ---
 
@@ -37,10 +38,32 @@ So that **I can share administrative responsibilities**.
 ---
 
 ## Definition of Done
-- [ ] Endpoint implementado
-- [ ] Profile update funcionando
-- [ ] Already admin check
-- [ ] Multiple admins suportado
+- [x] Endpoint implementado
+- [x] Role update funcionando (updateRole("ADMIN"))
+- [x] Already admin check (AC2)
+- [x] Multiple admins suportado (AC3)
+- [x] Build compilando com sucesso
+
+## Implementation Summary
+
+### Arquivos Modificados
+1. **CollaboratorService.java** - Atualizado método `promoteToAdmin()`:
+   - AC2: Valida se usuário já é ADMIN antes de promover
+   - Lança IllegalStateException se já for admin
+   - AC1, AC3: Atualiza role para "ADMIN" via `updateRole()`
+   - Suporta múltiplos admins (sem limite)
+
+2. **CollaboratorController.java** - Atualizado endpoint PUT:
+   - Trata IllegalStateException e converte para 400 Bad Request
+   - Documentação completa dos ACs
+   - Confirma suporte a múltiplos admins
+
+### Validações Implementadas
+- **AC2 - Already admin check**: Verifica se usuário já é admin
+  - Retorna 400 Bad Request com mensagem "User is already an admin"
+- **AC3 - Multiple admins support**: Sem limite de admins por company
+  - Todos admins têm permissões iguais
+  - Sistema suporta promoção de múltiplos usuários para ADMIN
 
 ---
 

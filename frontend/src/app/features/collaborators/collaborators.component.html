@@ -1,0 +1,88 @@
+<div class="collaborators-container">
+  <div class="header">
+    <h2>Colaboradores</h2>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="openInviteDialog()"
+      *appHasRole="'ADMIN'"
+      aria-label="Convidar novo colaborador">
+      <mat-icon>person_add</mat-icon>
+      Convidar Colaborador
+    </button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading()">
+    <table mat-table [dataSource]="collaborators()" class="collaborators-table">
+      <!-- Name Column -->
+      <ng-container matColumnDef="userName">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let collaborator">{{collaborator.userName}}</td>
+      </ng-container>
+
+      <!-- Email Column -->
+      <ng-container matColumnDef="userEmail">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let collaborator">{{collaborator.userEmail}}</td>
+      </ng-container>
+
+      <!-- Role Column -->
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef>Perfil</th>
+        <td mat-cell *matCellDef="let collaborator">
+          <span class="role-badge" [class.admin]="collaborator.role === 'ADMIN'">
+            {{collaborator.role}}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Invited At Column -->
+      <ng-container matColumnDef="invitedAt">
+        <th mat-header-cell *matHeaderCellDef>Data de Convite</th>
+        <td mat-cell *matCellDef="let collaborator">{{formatDate(collaborator.invitedAt)}}</td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let collaborator">
+          <button
+            mat-icon-button
+            color="primary"
+            *appHasRole="'ADMIN'"
+            [disabled]="!canPromote(collaborator)"
+            (click)="promoteToAdmin(collaborator)"
+            matTooltip="Promover para Admin"
+            aria-label="Promover colaborador para administrador">
+            <mat-icon>upgrade</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            *appHasRole="'ADMIN'"
+            (click)="removeCollaborator(collaborator)"
+            matTooltip="Remover"
+            aria-label="Remover colaborador">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          Nenhum colaborador encontrado
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

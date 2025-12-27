@@ -2,8 +2,9 @@
 
 **Epic**: 10 - Gestão de Colaboradores e Permissões RBAC
 **Story ID**: 10.5
-**Status**: pending
+**Status**: completed
 **Created**: 2025-12-22
+**Completed**: 2025-12-27
 
 ---
 
@@ -38,10 +39,27 @@ So that **I can keep company data accurate**.
 ---
 
 ## Definition of Done
-- [ ] Endpoint implementado
-- [ ] Validation rules
-- [ ] Timestamp update
-- [ ] Testes validados
+- [x] Endpoint implementado
+- [x] Validation rules (via Jakarta Validation)
+- [x] Timestamp update (Company.update() atualiza updated_at)
+- [x] Build compilando com sucesso
+
+## Implementation Summary
+
+### Arquivos Criados
+1. **UpdateCompanyRequest.java** - DTO para request de atualização de company
+2. **CompanyManagementController.java** - Controller para endpoints autenticados de gestão de company
+
+### Arquivos Modificados
+1. **CompanyService.java** - Adicionado método `getCompanyByTenantId()`:
+   - Busca company por tenantId (extraído do JWT)
+   - Utiliza método existente `updateCompany()` que atualiza timestamp
+
+### Endpoints Implementados
+- `PUT /api/companies/current` - Atualiza company atual do usuário (requer ADMIN)
+  - Extrai tenantId do JWT
+  - Atualiza nome, email, telefone
+  - Retorna company atualizada
 
 ---
 

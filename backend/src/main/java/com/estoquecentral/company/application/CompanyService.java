@@ -178,6 +178,32 @@ public class CompanyService {
      * @param phone New company phone
      * @return Updated company
      */
+    public Company getCompanyById(Long companyId) {
+        return companyRepository.findById(companyId)
+            .orElseThrow(() -> new IllegalArgumentException("Company not found: " + companyId));
+    }
+
+    /**
+     * Gets a company by tenant ID (Story 10.5, 10.6).
+     *
+     * @param tenantId Tenant UUID
+     * @return Company entity
+     * @throws IllegalArgumentException if company not found
+     */
+    public Company getCompanyByTenantId(UUID tenantId) {
+        return companyRepository.findByTenantId(tenantId)
+            .orElseThrow(() -> new IllegalArgumentException("Company not found for tenantId: " + tenantId));
+    }
+
+    /**
+     * Updates a company's information (Epic 10 - Company management).
+     *
+     * @param companyId Company ID
+     * @param name New company name
+     * @param email New company email
+     * @param phone New company phone
+     * @return Updated company
+     */
     @Transactional
     public Company updateCompany(Long companyId, String name, String email, String phone) {
         Company company = companyRepository.findById(companyId)
@@ -191,7 +217,9 @@ public class CompanyService {
      * Deactivates a company (Epic 10 - Company management).
      *
      * @param companyId Company ID
+     * @deprecated Use {@link #deleteCompanyWithValidation(Long)} for Story 10.6
      */
+    @Deprecated
     @Transactional
     public void deleteCompany(Long companyId) {
         Company company = companyRepository.findById(companyId)
@@ -199,6 +227,65 @@ public class CompanyService {
 
         Company deactivatedCompany = company.deactivate();
         companyRepository.save(deactivatedCompany);
+    }
+
+    /**
+     * Deletes a company with orphan protection (Story 10.6 - AC2, AC3).
+     *
+     * <p><strong>Orphan Protection (AC2):</strong>
+     * <ul>
+     *   <li>Checks if any users are ONLY linked to this company</li>
+     *   <li>Blocks deletion if orphan users exist</li>
+     * </ul>
+     *
+     * <p><strong>Soft Delete (AC3):</strong>
+     * <ul>
+     *   <li>Sets company.active = false</li>
+     *   <li>Sets all company_users.active = false for this company</li>
+     *   <li>Retains tenant schema for recovery</li>
+     * </ul>
+     *
+     * @param companyId Company ID
+     * @throws IllegalArgumentException if company not found
+     * @throws IllegalStateException if orphan users exist
+     */
+    @Transactional
+    public void deleteCompanyWithValidation(Long companyId) {
+        logger.info("Deleting company with validation: companyId={}", companyId);
+
+        Company company = companyRepository.findById(companyId)
+            .orElseThrow(() -> new IllegalArgumentException("Company not found: " + companyId));
+
+        // AC2: Orphan protection - check if any users are ONLY linked to this company
+        List<CompanyUser> companyUsers = companyUserRepository.findAllActiveByCompanyId(companyId);
+
+        for (CompanyUser companyUser : companyUsers) {
+            // Check if this user has other active company associations
+            List<CompanyUser> userCompanies = companyUserRepository.findAllActiveByUserId(companyUser.userId());
+
+            if (userCompanies.size() == 1 && userCompanies.get(0).companyId().equals(companyId)) {
+                // User is ONLY linked to this company - orphan detected
+                logger.warn("Orphan user detected: userId={}, companyId={}", companyUser.userId(), companyId);
+                throw new IllegalStateException(
+                        "Cannot delete company: User " + companyUser.userId() +
+                        " would become orphaned. Please ensure all users have access to other companies first.");
+            }
+        }
+
+        // AC3: Soft delete company
+        Company deactivatedCompany = company.deactivate();
+        companyRepository.save(deactivatedCompany);
+        logger.info("Company deactivated: id={}", companyId);
+
+        // AC3: Deactivate all company_user associations
+        for (CompanyUser companyUser : companyUsers) {
+            CompanyUser deactivated = companyUser.deactivate();
+            companyUserRepository.save(deactivated);
+        }
+        logger.info("Deactivated {} company_user associations for company {}", companyUsers.size(), companyId);
+
+        // AC3: Tenant schema is retained (not dropped) for recovery
+        logger.info("Company deleted successfully: id={}, schema retained for recovery", companyId);
     }
 
     /**

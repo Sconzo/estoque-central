@@ -2,8 +2,9 @@
 
 **Epic**: 10 - Gestão de Colaboradores e Permissões RBAC
 **Story ID**: 10.3
-**Status**: pending
+**Status**: completed
 **Created**: 2025-12-22
+**Completed**: 2025-12-27
 
 ---
 
@@ -40,10 +41,33 @@ So that **I can revoke access when someone leaves the team**.
 ---
 
 ## Definition of Done
-- [ ] Endpoint implementado
-- [ ] Soft delete funcionando
-- [ ] Self-removal protection
-- [ ] Last admin protection
+- [x] Endpoint implementado
+- [x] Soft delete funcionando (deactivate)
+- [x] Self-removal protection (AC3)
+- [x] Last admin protection (AC4)
+- [x] Build compilando com sucesso
+
+## Implementation Summary
+
+### Arquivos Modificados
+1. **CollaboratorService.java** - Atualizado método `removeCollaborator()`:
+   - Adicionado parâmetro `currentUserId` para validação de auto-remoção
+   - AC3: Valida se userId == currentUserId e lança exceção
+   - AC4: Conta admins ativos e previne remoção do último admin
+   - Adicionado método privado `countActiveAdmins()` para contagem
+   - AC2: Soft delete via `deactivate()` (já existente)
+
+2. **CollaboratorController.java** - Atualizado endpoint DELETE:
+   - Passa currentUserId extraído do JWT para o service
+   - Trata IllegalStateException e converte para 400 Bad Request
+   - Documentação completa dos ACs
+
+### Validações Implementadas
+- **AC3 - Self-removal protection**: Usuário não pode se remover
+  - Retorna 400 Bad Request com mensagem "You cannot remove yourself from the company"
+- **AC4 - Last admin protection**: Company deve ter pelo menos 1 admin
+  - Conta admins ativos antes de remover
+  - Retorna 400 Bad Request com mensagem "Cannot remove the last admin from the company"
 
 ---
 

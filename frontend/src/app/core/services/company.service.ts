@@ -73,7 +73,42 @@ export class CompanyService {
   }
 
   /**
+   * Gets current company information (Story 10.10 - AC1).
+   * Uses JWT context to determine current company.
+   *
+   * @returns Observable<CompanyResponse> Current company data
+   */
+  getCurrentCompany(): Observable<CompanyResponse> {
+    return this.http.get<CompanyResponse>(`${this.apiUrl}/current`);
+  }
+
+  /**
+   * Updates current company information (Story 10.5 - AC1, AC2).
+   * Uses JWT context to determine which company to update.
+   * Requires ADMIN role.
+   *
+   * @param request Company update data
+   * @returns Observable<CompanyResponse> Updated company data
+   */
+  updateCurrentCompany(request: UpdateCompanyRequest): Observable<CompanyResponse> {
+    return this.http.put<CompanyResponse>(`${this.apiUrl}/current`, request);
+  }
+
+  /**
+   * Deletes (deactivates) current company (Story 10.6 - AC1, AC2, AC3).
+   * Uses JWT context to determine which company to delete.
+   * Requires ADMIN role.
+   * Performs soft delete with orphan user protection.
+   *
+   * @returns Observable<void>
+   */
+  deleteCurrentCompany(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/current`);
+  }
+
+  /**
    * Updates company information (Epic 10).
+   * @deprecated Use updateCurrentCompany() for Story 10.5+
    */
   updateCompany(companyId: number, request: UpdateCompanyRequest): Observable<CompanyResponse> {
     return this.http.put<CompanyResponse>(`${this.apiUrl}/${companyId}`, request);
@@ -81,6 +116,7 @@ export class CompanyService {
 
   /**
    * Deletes (deactivates) a company (Epic 10).
+   * @deprecated Use deleteCurrentCompany() for Story 10.6+
    */
   deleteCompany(companyId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${companyId}`);

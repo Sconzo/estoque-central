@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   // Rotas públicas (sem layout)
@@ -122,6 +123,19 @@ export const routes: Routes = [
       {
         path: 'integracoes/mercadolivre/margem-seguranca',
         loadComponent: () => import('./features/integrations/safety-margin-config/safety-margin-config.component').then(m => m.SafetyMarginConfigComponent)
+      },
+      // Settings routes (Epic 10 - RBAC)
+      {
+        path: 'settings/collaborators',
+        canActivate: [RoleGuard],
+        data: { requiredRole: 'ADMIN' },
+        loadComponent: () => import('./features/collaborators/collaborators.component').then(m => m.CollaboratorsComponent)
+      },
+      {
+        path: 'settings/company',
+        canActivate: [RoleGuard],
+        data: { requiredRole: 'ADMIN' },
+        loadComponent: () => import('./features/company/company-settings.component').then(m => m.CompanySettingsComponent)
       },
       {
         path: '',

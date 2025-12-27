@@ -233,4 +233,55 @@ export class AuthService {
       return [];
     }
   }
+
+  /**
+   * Gets current user's roles (Story 10.9 - AC1).
+   * Alias for getRolesFromToken() for consistency with RBAC naming.
+   *
+   * @returns Array of role strings
+   */
+  getUserRoles(): string[] {
+    return this.getRolesFromToken();
+  }
+
+  /**
+   * Checks if current user has a specific role (Story 10.9 - AC1).
+   *
+   * @param role Role to check (e.g., 'ADMIN', 'GERENTE', 'VENDEDOR')
+   * @returns true if user has the role, false otherwise
+   */
+  hasRole(role: string): boolean {
+    const userRoles = this.getUserRoles();
+    return userRoles.includes(role);
+  }
+
+  /**
+   * Checks if current user is an admin (Story 10.9 - AC2).
+   * Convenience method for common admin checks.
+   *
+   * @returns true if user has ADMIN role, false otherwise
+   */
+  isAdmin(): boolean {
+    return this.hasRole('ADMIN');
+  }
+
+  /**
+   * Checks if current user is a manager (Story 10.9 - AC3).
+   * Convenience method for manager-level checks.
+   *
+   * @returns true if user has GERENTE role, false otherwise
+   */
+  isGerente(): boolean {
+    return this.hasRole('GERENTE');
+  }
+
+  /**
+   * Checks if current user is a salesperson (Story 10.9 - AC4).
+   * Convenience method for salesperson-level checks.
+   *
+   * @returns true if user has VENDEDOR role, false otherwise
+   */
+  isVendedor(): boolean {
+    return this.hasRole('VENDEDOR');
+  }
 }

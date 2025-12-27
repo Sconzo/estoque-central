@@ -1,0 +1,94 @@
+<div class="company-settings-container">
+  <h2>Configurações da Empresa</h2>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading()">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- Company Data Form -->
+  <mat-card *ngIf="!loading()" class="company-card">
+    <mat-card-header>
+      <mat-card-title>Dados da Empresa</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="companyForm">
+        <!-- Name Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome da Empresa</mat-label>
+          <input matInput formControlName="name" required>
+          <mat-error *ngIf="companyForm.get('name')?.hasError('required')">
+            Nome é obrigatório
+          </mat-error>
+          <mat-error *ngIf="companyForm.get('name')?.hasError('maxlength')">
+            Nome deve ter no máximo 255 caracteres
+          </mat-error>
+        </mat-form-field>
+
+        <!-- CNPJ Field (Read-only) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>CNPJ</mat-label>
+          <input matInput formControlName="cnpj" readonly>
+          <mat-hint>CNPJ não pode ser alterado</mat-hint>
+        </mat-form-field>
+
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email">
+          <mat-error *ngIf="companyForm.get('email')?.hasError('email')">
+            Email inválido
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Phone Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Telefone</mat-label>
+          <input matInput formControlName="phone">
+          <mat-error *ngIf="companyForm.get('phone')?.hasError('maxlength')">
+            Telefone deve ter no máximo 20 caracteres
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="isSaveDisabled()"
+        (click)="saveCompany()"
+        *appHasRole="'ADMIN'">
+        <mat-spinner *ngIf="saving()" diameter="20" class="button-spinner"></mat-spinner>
+        <span *ngIf="!saving()">Salvar Alterações</span>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Danger Zone -->
+  <ng-container *ngIf="!loading()">
+    <mat-card class="danger-zone" *appHasRole="'ADMIN'">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon color="warn">warning</mat-icon>
+          Zona de Perigo
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="danger-description">
+          A exclusão da empresa é <strong>irreversível</strong>.
+          Todos os dados, incluindo produtos, vendas, e colaboradores serão permanentemente perdidos.
+        </p>
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="deleteCompany()">
+          <mat-icon>delete_forever</mat-icon>
+          Deletar Empresa
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

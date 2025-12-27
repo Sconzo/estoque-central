@@ -60,4 +60,14 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         ORDER BY cu.accepted_at DESC
         """)
     List<CompanyUser> findAllByUserId(@Param("userId") Long userId);
+
+    /**
+     * Finds all active companies for a specific user (Story 10.6 - orphan protection).
+     */
+    @Query("""
+        SELECT cu.* FROM company_users cu
+        WHERE cu.user_id = :userId AND cu.active = true
+        ORDER BY cu.accepted_at DESC
+        """)
+    List<CompanyUser> findAllActiveByUserId(@Param("userId") Long userId);
 }

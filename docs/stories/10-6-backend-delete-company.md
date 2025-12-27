@@ -2,8 +2,9 @@
 
 **Epic**: 10 - Gestão de Colaboradores e Permissões RBAC
 **Story ID**: 10.6
-**Status**: pending
+**Status**: completed
 **Created**: 2025-12-22
+**Completed**: 2025-12-27
 
 ---
 
@@ -39,10 +40,34 @@ So that **I can remove all data if I no longer need the system**.
 ---
 
 ## Definition of Done
-- [ ] Endpoint implementado
-- [ ] Orphan protection
-- [ ] Soft delete
-- [ ] Schema retention
+- [x] Endpoint implementado
+- [x] Orphan protection (AC2)
+- [x] Soft delete (AC3)
+- [x] Schema retention (AC3)
+- [x] Build compilando com sucesso
+
+## Implementation Summary
+
+### Arquivos Modificados
+1. **CompanyManagementController.java** - Adicionado endpoint DELETE
+2. **CompanyService.java** - Adicionado método `deleteCompanyWithValidation()`:
+   - **AC2 - Orphan Protection**: Verifica se algum usuário está APENAS vinculado a esta company
+     - Itera por todos os collaborators
+     - Para cada um, verifica quantas companies ativas possui
+     - Bloqueia deleção se encontrar orphan user
+     - Retorna 400 Bad Request com mensagem explicativa
+   - **AC3 - Soft Delete**:
+     - Define company.active = false
+     - Define company_users.active = false para todos os associados
+     - Retém tenant schema (não executa DROP SCHEMA)
+3. **CompanyUserRepository.java** - Adicionado método `findAllActiveByUserId()`
+
+### Endpoints Implementados
+- `DELETE /api/companies/current` - Deleta company atual do usuário (requer ADMIN)
+  - Extrai tenantId do JWT
+  - Valida orphan users (AC2)
+  - Executa soft delete (AC3)
+  - Schema é retido para possível recuperação
 
 ---
 
