@@ -18,13 +18,13 @@
 *~
 
 # Build Artifacts (already built in Docker container)
-backend/target/
+# backend/target/  # Commented: needed for backend-simple.Dockerfile
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
 frontend/node/
 *.class
-*.jar
+# *.jar  # Commented: needed for backend-simple.Dockerfile
 !.mvn/wrapper/maven-wrapper.jar
 
 # Logs

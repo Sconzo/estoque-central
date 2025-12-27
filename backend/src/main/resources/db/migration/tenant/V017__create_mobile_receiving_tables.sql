@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS barcode_mappings (
     created_by UUID,
 
     -- Constraints
-    CONSTRAINT unique_barcode_per_tenant UNIQUE (tenant_id, barcode),
+    CONSTRAINT unique_barcode_mapping_per_tenant UNIQUE (tenant_id, barcode),
     CONSTRAINT check_barcode_type CHECK (barcode_type IN (
         'EAN13', 'EAN8', 'UPC', 'CODE128', 'CODE39', 'QR', 'DATAMATRIX', 'CUSTOM'
     ))
@@ -198,11 +198,11 @@ CREATE TRIGGER trigger_barcode_mappings_updated_at
 CREATE OR REPLACE FUNCTION generate_session_number(tenant_uuid UUID)
 RETURNS VARCHAR AS $$
 DECLARE
-    current_date VARCHAR(8);
+    date_str VARCHAR(8);
     session_count INTEGER;
     session_num VARCHAR(50);
 BEGIN
-    current_date := TO_CHAR(CURRENT_DATE, 'YYYYMMDD');
+    date_str := TO_CHAR(CURRENT_DATE, 'YYYYMMDD');
 
     -- Count sessions today for this tenant
     SELECT COUNT(*) + 1
@@ -212,7 +212,7 @@ BEGIN
       AND DATE(started_at) = CURRENT_DATE;
 
     -- Format: MR-20251106-0001
-    session_num := 'MR-' || current_date || '-' || LPAD(session_count::TEXT, 4, '0');
+    session_num := 'MR-' || date_str || '-' || LPAD(session_count::TEXT, 4, '0');
 
     RETURN session_num;
 END;

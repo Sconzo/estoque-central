@@ -11,6 +11,7 @@ import com.estoquecentral.auth.application.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,19 +34,22 @@ public class CompanyService {
 
     private final CompanyRepository companyRepository;
     private final CompanyUserRepository companyUserRepository;
-    private final TenantProvisioner tenantProvisioner;
+    private final CompanyTenantProvisioner companyTenantProvisioner;
     private final JwtService jwtService;
+    private final JdbcTemplate jdbcTemplate;
 
     public CompanyService(
         CompanyRepository companyRepository,
         CompanyUserRepository companyUserRepository,
-        TenantProvisioner tenantProvisioner,
-        JwtService jwtService
+        CompanyTenantProvisioner companyTenantProvisioner,
+        JwtService jwtService,
+        JdbcTemplate jdbcTemplate
     ) {
         this.companyRepository = companyRepository;
         this.companyUserRepository = companyUserRepository;
-        this.tenantProvisioner = tenantProvisioner;
+        this.companyTenantProvisioner = companyTenantProvisioner;
         this.jwtService = jwtService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -75,15 +79,16 @@ public class CompanyService {
      * @throws SchemaProvisioningException if tenant provisioning fails (with automatic rollback)
      * @throws DataAccessException if database connection fails (Story 8.5 - AC3)
      */
-    @Transactional
-    public Company createCompany(String name, String cnpj, String email, String phone, Long ownerUserId) {
+    // NOTE: NO @Transactional here! CompanyTenantProvisioner.provisionTenant() uses REQUIRES_NEW
+    // to create its own transaction. Having @Transactional here causes nested transaction conflicts.
+    public Company createCompany(String name, String cnpj, String email, String phone, String ownerUserId) {
         logger.info("Creating company: name={}, cnpj={}, email={}, ownerUserId={}",
                 name, cnpj, email, ownerUserId);
 
         try {
             // AC3: Provision tenant schema (create schema + run migrations + seed profiles)
             logger.debug("Provisioning tenant schema...");
-            TenantProvisioner.TenantProvisionResult provisionResult = tenantProvisioner.provisionTenant();
+            CompanyTenantProvisioner.TenantProvisionResult provisionResult = companyTenantProvisioner.provisionTenant();
 
             if (!provisionResult.success()) {
                 // AC5: Critical error logging
@@ -95,9 +100,12 @@ public class CompanyService {
             logger.info("Tenant provisioned: tenantId={}, schemaName={}",
                     provisionResult.tenantId(), provisionResult.schemaName());
 
+            // Insert tenant record in public.tenants table
+            insertTenantRecord(provisionResult.tenantId(), provisionResult.schemaName(), name, email, cnpj);
+
             // AC2: Create company record with tenantId and schemaName
             // Note: Duplicate names are allowed - only schema_name is unique
-            Company company = Company.create(name, cnpj, email, phone, ownerUserId);
+            Company company = Company.create(name, cnpj, email, phone, Long.parseLong(ownerUserId));
             Company companyWithTenant = company.withTenantSchema(
                     provisionResult.tenantId(),
                     provisionResult.schemaName()
@@ -108,7 +116,7 @@ public class CompanyService {
                     savedCompany.id(), savedCompany.tenantId(), savedCompany.schemaName());
 
             // AC4: Create user-company association with ADMIN role
-            CompanyUser ownerAssociation = CompanyUser.invite(savedCompany.id(), ownerUserId, "ADMIN");
+            CompanyUser ownerAssociation = CompanyUser.invite(savedCompany.id(), Long.parseLong(ownerUserId), "ADMIN");
             CompanyUser acceptedAssociation = ownerAssociation.accept();
             companyUserRepository.save(acceptedAssociation);
 
@@ -267,5 +275,26 @@ public class CompanyService {
             company.name(),
             List.of(role)
         );
+    }
+
+    /**
+     * Inserts a tenant record into public.tenants table.
+     * This is required for tenant context management and multi-tenant schema isolation.
+     *
+     * @param tenantId Tenant UUID
+     * @param schemaName Schema name (e.g., tenant_xxxxx)
+     * @param name Company/tenant name
+     * @param email Company email
+     * @param cnpj Company CNPJ (optional)
+     */
+    private void insertTenantRecord(UUID tenantId, String schemaName, String name, String email, String cnpj) {
+        logger.debug("Inserting tenant record: tenantId={}, schemaName={}", tenantId, schemaName);
+
+        String sql = "INSERT INTO tenants (id, nome, schema_name, email, cnpj, ativo, data_criacao, data_atualizacao) " +
+                     "VALUES (?, ?, ?, ?, ?, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+
+        jdbcTemplate.update(sql, tenantId, name, schemaName, email, cnpj);
+
+        logger.info("Tenant record inserted: tenantId={}, schemaName={}", tenantId, schemaName);
     }
 }

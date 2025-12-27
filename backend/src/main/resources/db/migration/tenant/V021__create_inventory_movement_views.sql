@@ -15,12 +15,12 @@
 CREATE OR REPLACE VIEW v_inventory_movements_detailed AS
 SELECT
     im.id AS movement_id,
-    im.movement_date,
-    DATE(im.movement_date) AS movement_date_only,
-    im.movement_type,
+    im.created_at AS movement_date,
+    DATE(im.created_at) AS movement_date_only,
+    im.type AS movement_type,
     im.quantity,
-    im.unit_cost,
-    (im.quantity * COALESCE(im.unit_cost, 0)) AS total_value,
+    im.quantity * 0 AS unit_cost,  -- unit_cost not tracked in inventory_movements
+    0 AS total_value,
     im.reference_type,
     im.reference_id,
     im.notes,
@@ -30,18 +30,18 @@ SELECT
     p.sku,
     p.name AS product_name,
     c.name AS category_name,
-    p.unit_of_measure,
+    p.unit,
 
     -- Location details
     l.id AS location_id,
     l.code AS location_code,
     l.name AS location_name,
-    l.location_type,
+    l.type AS location_type,
 
     -- Inventory state before/after (if available)
-    i.quantity_available AS current_stock,
-    i.minimum_quantity,
-    i.maximum_quantity,
+    i.available_quantity AS current_stock,
+    i.min_quantity AS minimum_quantity,
+    i.max_quantity AS maximum_quantity,
 
     -- User who made the movement
     im.created_by,
@@ -49,21 +49,19 @@ SELECT
 
     -- Movement classification
     CASE
-        WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 'IN'
-        WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 'OUT'
+        WHEN im.type IN ('IN', 'ADJUSTMENT') THEN 'IN'
+        WHEN im.type IN ('OUT') THEN 'OUT'
         ELSE 'OTHER'
     END AS movement_direction
 
 FROM inventory_movements im
-INNER JOIN inventory i ON i.id = im.inventory_id
-INNER JOIN products p ON p.id = i.product_id
+INNER JOIN products p ON p.id = im.product_id
 INNER JOIN categories c ON c.id = p.category_id
-INNER JOIN locations l ON l.id = i.location_id
-WHERE im.ativo = true
-  AND i.ativo = true
-  AND p.ativo = true
-  AND l.ativo = true
-ORDER BY im.movement_date DESC, im.created_at DESC;
+LEFT JOIN inventory i ON i.product_id = p.id
+LEFT JOIN locations l ON l.id = im.location_id
+WHERE p.ativo = true
+  AND (l.ativo = true OR l.id IS NULL)
+ORDER BY im.created_at DESC;
 
 COMMENT ON VIEW v_inventory_movements_detailed IS 'Detailed inventory movements with product, location and user information';
 
@@ -73,21 +71,21 @@ COMMENT ON VIEW v_inventory_movements_detailed IS 'Detailed inventory movements 
 -- Summarizes movements by type for quick analysis
 CREATE OR REPLACE VIEW v_inventory_movements_summary_by_type AS
 SELECT
-    im.movement_type,
+    im.type,
     CASE
-        WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 'IN'
-        WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 'OUT'
+        WHEN im.type IN ('IN', 'TRANSFER') THEN 'IN'
+        WHEN im.type IN ('OUT') THEN 'OUT'
         ELSE 'OTHER'
     END AS movement_direction,
     COUNT(*) AS movement_count,
     SUM(ABS(im.quantity)) AS total_quantity,
-    SUM(ABS(im.quantity) * COALESCE(im.unit_cost, 0)) AS total_value,
-    ROUND(AVG(COALESCE(im.unit_cost, 0)), 2) AS average_unit_cost,
-    MIN(im.movement_date) AS first_movement_date,
-    MAX(im.movement_date) AS last_movement_date
+    SUM(ABS(im.quantity) * COALESCE(0, 0)) AS total_value,
+    ROUND(AVG(COALESCE(0, 0)), 2) AS average_unit_cost,
+    MIN(im.created_at) AS first_movement_date,
+    MAX(im.created_at) AS last_movement_date
 FROM inventory_movements im
-WHERE im.ativo = true
-GROUP BY im.movement_type
+WHERE TRUE
+GROUP BY im.type
 ORDER BY total_value DESC;
 
 COMMENT ON VIEW v_inventory_movements_summary_by_type IS 'Movement statistics grouped by movement type';
@@ -107,32 +105,30 @@ SELECT
     COUNT(*) AS total_movements,
 
     -- IN movements
-    COUNT(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 1 END) AS in_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
+    COUNT(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN 1 END) AS in_movements_count,
+    SUM(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
 
     -- OUT movements
-    COUNT(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 1 END) AS out_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
+    COUNT(CASE WHEN im.type IN ('OUT') THEN 1 END) AS out_movements_count,
+    SUM(CASE WHEN im.type IN ('OUT') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
 
     -- Net movement
     SUM(im.quantity) AS net_quantity_change,
 
     -- Value
-    SUM(ABS(im.quantity) * COALESCE(im.unit_cost, 0)) AS total_value_moved,
+    SUM(ABS(im.quantity) * COALESCE(0, 0)) AS total_value_moved,
 
     -- Dates
-    MIN(im.movement_date) AS first_movement_date,
-    MAX(im.movement_date) AS last_movement_date,
+    MIN(im.created_at) AS first_movement_date,
+    MAX(im.created_at) AS last_movement_date,
 
     -- Current stock
-    (SELECT SUM(quantity_available) FROM inventory WHERE product_id = p.id AND ativo = true) AS current_stock
+    (SELECT SUM(available_quantity) FROM inventory WHERE product_id = p.id) AS current_stock
 
 FROM inventory_movements im
-INNER JOIN inventory i ON i.id = im.inventory_id
-INNER JOIN products p ON p.id = i.product_id
+INNER JOIN products p ON p.id = im.product_id
 INNER JOIN categories c ON c.id = p.category_id
-WHERE im.ativo = true
-  AND i.ativo = true
+WHERE TRUE
   AND p.ativo = true
 GROUP BY p.id, p.sku, p.name, c.name
 ORDER BY total_value_moved DESC;
@@ -148,33 +144,31 @@ SELECT
     l.id AS location_id,
     l.code AS location_code,
     l.name AS location_name,
-    l.location_type,
+    l.type,
 
     -- Total movements
     COUNT(*) AS total_movements,
 
     -- IN movements
-    COUNT(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 1 END) AS in_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
+    COUNT(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN 1 END) AS in_movements_count,
+    SUM(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
 
     -- OUT movements
-    COUNT(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 1 END) AS out_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
+    COUNT(CASE WHEN im.type IN ('OUT') THEN 1 END) AS out_movements_count,
+    SUM(CASE WHEN im.type IN ('OUT') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
 
     -- Value
-    SUM(ABS(im.quantity) * COALESCE(im.unit_cost, 0)) AS total_value_moved,
+    SUM(ABS(im.quantity) * COALESCE(0, 0)) AS total_value_moved,
 
     -- Dates
-    MIN(im.movement_date) AS first_movement_date,
-    MAX(im.movement_date) AS last_movement_date
+    MIN(im.created_at) AS first_movement_date,
+    MAX(im.created_at) AS last_movement_date
 
 FROM inventory_movements im
-INNER JOIN inventory i ON i.id = im.inventory_id
-INNER JOIN locations l ON l.id = i.location_id
-WHERE im.ativo = true
-  AND i.ativo = true
-  AND l.ativo = true
-GROUP BY l.id, l.code, l.name, l.location_type
+LEFT JOIN locations l ON l.id = im.location_id
+WHERE TRUE
+  AND (l.ativo = true OR l.id IS NULL)
+GROUP BY l.id, l.code, l.name, l.type
 ORDER BY total_value_moved DESC;
 
 COMMENT ON VIEW v_inventory_movements_summary_by_location IS 'Movement statistics grouped by location';
@@ -185,26 +179,26 @@ COMMENT ON VIEW v_inventory_movements_summary_by_location IS 'Movement statistic
 -- Daily summary for trend analysis
 CREATE OR REPLACE VIEW v_inventory_movements_daily_summary AS
 SELECT
-    DATE(im.movement_date) AS movement_date,
+    DATE(im.created_at) AS movement_date,
     COUNT(*) AS total_movements,
 
     -- IN movements
-    COUNT(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 1 END) AS in_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
-    SUM(CASE WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN ABS(im.quantity) * COALESCE(im.unit_cost, 0) ELSE 0 END) AS total_value_in,
+    COUNT(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN 1 END) AS in_movements_count,
+    SUM(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN im.quantity ELSE 0 END) AS total_quantity_in,
+    SUM(CASE WHEN im.type IN ('IN', 'TRANSFER') THEN ABS(im.quantity) * COALESCE(0, 0) ELSE 0 END) AS total_value_in,
 
     -- OUT movements
-    COUNT(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 1 END) AS out_movements_count,
-    SUM(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
-    SUM(CASE WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN ABS(im.quantity) * COALESCE(im.unit_cost, 0) ELSE 0 END) AS total_value_out,
+    COUNT(CASE WHEN im.type IN ('OUT') THEN 1 END) AS out_movements_count,
+    SUM(CASE WHEN im.type IN ('OUT') THEN ABS(im.quantity) ELSE 0 END) AS total_quantity_out,
+    SUM(CASE WHEN im.type IN ('OUT') THEN ABS(im.quantity) * COALESCE(0, 0) ELSE 0 END) AS total_value_out,
 
     -- Net
     SUM(im.quantity) AS net_quantity_change,
-    SUM(ABS(im.quantity) * COALESCE(im.unit_cost, 0)) AS total_value_moved
+    SUM(ABS(im.quantity) * COALESCE(0, 0)) AS total_value_moved
 
 FROM inventory_movements im
-WHERE im.ativo = true
-GROUP BY DATE(im.movement_date)
+WHERE TRUE
+GROUP BY DATE(im.created_at)
 ORDER BY movement_date DESC;
 
 COMMENT ON VIEW v_inventory_movements_daily_summary IS 'Daily movement summary for trend analysis';
@@ -219,20 +213,20 @@ SELECT
     im.reference_id,
     COUNT(*) AS movement_count,
     SUM(ABS(im.quantity)) AS total_quantity,
-    SUM(ABS(im.quantity) * COALESCE(im.unit_cost, 0)) AS total_value,
-    MIN(im.movement_date) AS first_movement_date,
-    MAX(im.movement_date) AS last_movement_date,
+    SUM(ABS(im.quantity) * COALESCE(0, 0)) AS total_value,
+    MIN(im.created_at) AS first_movement_date,
+    MAX(im.created_at) AS last_movement_date,
 
     -- Get reference details based on type
     CASE im.reference_type
-        WHEN 'ORDER' THEN (SELECT order_number FROM orders WHERE id = im.reference_id AND ativo = true)
-        WHEN 'PURCHASE_ORDER' THEN (SELECT po_number FROM purchase_orders WHERE id = im.reference_id AND ativo = true)
-        WHEN 'TRANSFER' THEN (SELECT transfer_number FROM stock_transfers WHERE id = im.reference_id AND ativo = true)
+        WHEN 'ORDER' THEN (SELECT order_number FROM orders WHERE id = im.reference_id)
+        WHEN 'PURCHASE_ORDER' THEN (SELECT po_number FROM purchase_orders WHERE id = im.reference_id)
+        WHEN 'TRANSFER' THEN (SELECT transfer_number FROM stock_transfers WHERE id = im.reference_id)
         ELSE NULL
     END AS reference_number
 
 FROM inventory_movements im
-WHERE im.ativo = true
+WHERE TRUE
   AND im.reference_type IS NOT NULL
   AND im.reference_id IS NOT NULL
 GROUP BY im.reference_type, im.reference_id
@@ -246,28 +240,27 @@ COMMENT ON VIEW v_inventory_movements_by_reference IS 'Movement statistics group
 -- Quick view of recent movements
 CREATE OR REPLACE VIEW v_inventory_movements_recent AS
 SELECT
-    im.movement_date,
-    im.movement_type,
+    im.created_at,
+    im.type,
     p.sku,
     p.name AS product_name,
     l.name AS location_name,
     im.quantity,
-    im.unit_cost,
-    (im.quantity * COALESCE(im.unit_cost, 0)) AS total_value,
+    0,
+    (im.quantity * COALESCE(0, 0)) AS total_value,
     im.reference_type,
     im.notes,
     CASE
-        WHEN im.movement_type IN ('PURCHASE', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_FROM_CUSTOMER') THEN 'IN'
-        WHEN im.movement_type IN ('SALE', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_TO_SUPPLIER') THEN 'OUT'
+        WHEN im.type IN ('IN', 'TRANSFER') THEN 'IN'
+        WHEN im.type IN ('OUT') THEN 'OUT'
         ELSE 'OTHER'
     END AS movement_direction
 FROM inventory_movements im
-INNER JOIN inventory i ON i.id = im.inventory_id
-INNER JOIN products p ON p.id = i.product_id
-INNER JOIN locations l ON l.id = i.location_id
-WHERE im.ativo = true
-  AND im.movement_date >= CURRENT_DATE - INTERVAL '30 days'
-ORDER BY im.movement_date DESC
+INNER JOIN products p ON p.id = im.product_id
+LEFT JOIN locations l ON l.id = im.location_id
+WHERE TRUE
+  AND im.created_at >= CURRENT_DATE - INTERVAL '30 days'
+ORDER BY im.created_at DESC
 LIMIT 1000;
 
 COMMENT ON VIEW v_inventory_movements_recent IS 'Recent inventory movements (last 30 days, max 1000 records)';
@@ -349,23 +342,23 @@ COMMENT ON FUNCTION get_inventory_movement_report IS 'Returns filtered inventory
 
 -- Index for movement date range queries
 CREATE INDEX IF NOT EXISTS idx_inventory_movements_date
-    ON inventory_movements(movement_date DESC)
-    WHERE ativo = true;
+    ON inventory_movements(created_at DESC)
+;
 
 -- Index for movement type filtering
 CREATE INDEX IF NOT EXISTS idx_inventory_movements_type
-    ON inventory_movements(movement_type, movement_date DESC)
-    WHERE ativo = true;
+    ON inventory_movements(type, created_at DESC)
+;
 
 -- Index for product filtering
 CREATE INDEX IF NOT EXISTS idx_inventory_movements_inventory_product
-    ON inventory_movements(inventory_id, movement_date DESC)
-    WHERE ativo = true;
+    ON inventory_movements(product_id, created_at DESC)
+;
 
 -- Index for reference lookups
 CREATE INDEX IF NOT EXISTS idx_inventory_movements_reference
-    ON inventory_movements(reference_type, reference_id, movement_date DESC)
-    WHERE ativo = true AND reference_type IS NOT NULL;
+    ON inventory_movements(reference_type, reference_id, created_at DESC)
+    WHERE reference_type IS NOT NULL;
 
 -- =====================================================
 -- End of Migration V021

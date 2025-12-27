@@ -14,10 +14,10 @@ CREATE TABLE sales_orders (
     payment_terms VARCHAR(20),
     total_amount DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
     notes TEXT,
-    created_by_user_id UUID NOT NULL,
+    created_by_user_id BIGINT NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_by UUID,
+    updated_by BIGINT,
 
     CONSTRAINT fk_sales_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
     CONSTRAINT fk_sales_orders_location FOREIGN KEY (stock_location_id) REFERENCES locations(id),

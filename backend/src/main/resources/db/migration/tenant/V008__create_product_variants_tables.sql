@@ -167,85 +167,88 @@ CREATE TRIGGER trigger_variants_updated_at
 -- ============================================================
 -- Initial data: Create common attributes
 -- ============================================================
-
--- Insert Color attribute
-INSERT INTO variant_attributes (tenant_id, name, display_name, type, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    'color',
-    'Color',
-    'COLOR',
-    1
-WHERE EXISTS (SELECT 1 FROM tenants LIMIT 1);
-
--- Insert Size attribute
-INSERT INTO variant_attributes (tenant_id, name, display_name, type, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    'size',
-    'Size',
-    'SIZE',
-    2
-WHERE EXISTS (SELECT 1 FROM tenants LIMIT 1);
-
--- Insert common color values
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
-    'red',
-    'Red',
-    '#FF0000',
-    1
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
-
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
-    'blue',
-    'Blue',
-    '#0000FF',
-    2
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
-
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
-    'black',
-    'Black',
-    '#000000',
-    3
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
-
--- Insert common size values
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
-    'S',
-    'Small',
-    1
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
-
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
-    'M',
-    'Medium',
-    2
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
-
-INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
-SELECT
-    (SELECT id FROM tenants LIMIT 1),
-    (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
-    'L',
-    'Large',
-    3
-WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
+-- TODO: Seed data commented out - references non-existent 'tenants' table in tenant schema
+-- In schema-based tenancy, tenant_id should be provided by application logic
+-- These seed attributes should be added via application after tenant provisioning
+--
+-- -- Insert Color attribute
+-- INSERT INTO variant_attributes (tenant_id, name, display_name, type, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     'color',
+--     'Color',
+--     'COLOR',
+--     1
+-- WHERE EXISTS (SELECT 1 FROM tenants LIMIT 1);
+--
+-- -- Insert Size attribute
+-- INSERT INTO variant_attributes (tenant_id, name, display_name, type, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     'size',
+--     'Size',
+--     'SIZE',
+--     2
+-- WHERE EXISTS (SELECT 1 FROM tenants LIMIT 1);
+--
+-- -- Insert common color values
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
+--     'red',
+--     'Red',
+--     '#FF0000',
+--     1
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
+--
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
+--     'blue',
+--     'Blue',
+--     '#0000FF',
+--     2
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
+--
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, color_hex, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'color' LIMIT 1),
+--     'black',
+--     'Black',
+--     '#000000',
+--     3
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'color');
+--
+-- -- Insert common size values
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
+--     'S',
+--     'Small',
+--     1
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
+--
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
+--     'M',
+--     'Medium',
+--     2
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
+--
+-- INSERT INTO variant_attribute_values (tenant_id, attribute_id, value, display_value, sort_order)
+-- SELECT
+--     (SELECT id FROM tenants LIMIT 1),
+--     (SELECT id FROM variant_attributes WHERE name = 'size' LIMIT 1),
+--     'L',
+--     'Large',
+--     3
+-- WHERE EXISTS (SELECT id FROM variant_attributes WHERE name = 'size');
 
 -- ============================================================
 -- Update existing products table to support parent products
@@ -260,25 +263,27 @@ CREATE INDEX IF NOT EXISTS idx_products_has_variants ON products(has_variants) W
 -- ============================================================
 -- Example: Create a variant parent product and its variants
 -- ============================================================
-
--- Create parent product "T-shirt Basic"
-INSERT INTO products (id, tenant_id, type, name, sku, description, category_id, price, cost, unit, controls_inventory, status, has_variants)
-SELECT
-    gen_random_uuid(),
-    (SELECT id FROM tenants LIMIT 1),
-    'VARIANT_PARENT',
-    'T-shirt Basic',
-    'TSHIRT-BASIC-PARENT',
-    'Basic cotton t-shirt with multiple color and size options',
-    (SELECT id FROM categories WHERE name = 'Vestuário' LIMIT 1),
-    29.90,
-    15.00,
-    'UN',
-    true,
-    'ACTIVE',
-    true
-WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Vestuário')
-RETURNING id;
+-- TODO: Seed data commented out - references non-existent tables
+-- Sample variant products should be added via application logic after tenant provisioning
+--
+-- -- Create parent product "T-shirt Basic"
+-- INSERT INTO products (id, tenant_id, type, name, sku, description, category_id, price, cost, unit, controls_inventory, status, has_variants)
+-- SELECT
+--     gen_random_uuid(),
+--     (SELECT id FROM tenants LIMIT 1),
+--     'VARIANT_PARENT',
+--     'T-shirt Basic',
+--     'TSHIRT-BASIC-PARENT',
+--     'Basic cotton t-shirt with multiple color and size options',
+--     (SELECT id FROM categories WHERE name = 'Vestuário' LIMIT 1),
+--     29.90,
+--     15.00,
+--     'UN',
+--     true,
+--     'ACTIVE',
+--     true
+-- WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Vestuário')
+-- RETURNING id;
 
 -- Note: Variants would be created via API endpoints with proper SKU generation
 -- Example variant SKUs: TSHIRT-BASIC-RED-M, TSHIRT-BASIC-BLUE-L, etc.

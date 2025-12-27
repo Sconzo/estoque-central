@@ -9,9 +9,10 @@
 -- IMPORTANT: This migration runs in TENANT schemas, not public schema.
 -- ============================================================================
 
--- Add profile_id column (FK to public.profiles.id)
+-- Add profile_id column (without FK constraint)
+-- Note: FK constraint will be added in V069 after profiles table is created in V068
 ALTER TABLE usuarios
-ADD COLUMN IF NOT EXISTS profile_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS profile_id UUID;
 
 -- Create index for profile_id lookups
 CREATE INDEX IF NOT EXISTS idx_usuarios_profile_id
@@ -37,7 +38,7 @@ END $$;
 -- ============================================================================
 
 COMMENT ON COLUMN usuarios.profile_id IS
-'Profile ID this user belongs to. FK to public.profiles.id. Determines user roles/permissions.';
+'Profile ID this user belongs to. FK to profiles.id (added in V069). Determines user roles/permissions.';
 
 -- ============================================================================
 -- END OF MIGRATION

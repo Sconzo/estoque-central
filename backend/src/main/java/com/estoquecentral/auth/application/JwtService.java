@@ -334,4 +334,49 @@ public class JwtService {
 
         return token;
     }
+
+    /**
+     * Generates a JWT token for a new user without company/tenant (Epic 8 - Story 8.3).
+     *
+     * <p>This method is used when a user logs in via Google OAuth but hasn't created
+     * a company yet. The token allows the user to access the "create company" flow.
+     *
+     * <p>Token contains:
+     * <ul>
+     *   <li>sub: User ID (from public.users)</li>
+     *   <li>tenantId: null (user has no company yet)</li>
+     *   <li>email: User email</li>
+     *   <li>roles: [] (empty - user has no roles without a company)</li>
+     *   <li>iat: Issued at timestamp</li>
+     *   <li>exp: Expiration timestamp (iat + 24h)</li>
+     * </ul>
+     *
+     * @param userId User ID from public.users table
+     * @param email User email
+     * @return JWT token string without tenant context
+     */
+    public String generatePublicUserToken(Long userId, String email) {
+        logger.debug("Generating public user JWT token for userId: {} (no tenant)", userId);
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + JWT_EXPIRATION_MS);
+
+        // User has no tenant or roles yet
+        List<String> roles = Collections.emptyList();
+
+        String token = Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("tenantId", (String) null)  // Explicitly set tenantId to null
+                .claim("email", email)
+                .claim("roles", roles)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(signingKey, Jwts.SIG.HS256)
+                .compact();
+
+        logger.debug("Public user JWT token generated successfully for user: {} (no tenant, expires at: {})",
+                email, expiration);
+
+        return token;
+    }
 }

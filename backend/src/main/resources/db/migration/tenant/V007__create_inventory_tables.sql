@@ -127,65 +127,69 @@ ON CONFLICT (product_id, location) DO NOTHING;
 -- ============================================================
 -- Example: Add initial inventory for sample products
 -- ============================================================
--- Add 50 units to "Notebook Dell Inspiron 15"
-INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
-SELECT
-    p.tenant_id,
-    p.id,
-    'IN',
-    50,
-    0,
-    50,
-    'INITIAL',
-    'Initial inventory setup',
-    (SELECT created_by FROM products WHERE id = p.id)
-FROM products p
-WHERE p.sku = 'NOTE-DELL-I15-001'
-  AND p.ativo = true;
-
-UPDATE inventory
-SET quantity = 50
-WHERE product_id = (SELECT id FROM products WHERE sku = 'NOTE-DELL-I15-001' LIMIT 1)
-  AND location = 'DEFAULT';
-
--- Add 100 units to "Mouse Logitech MX Master 3"
-INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
-SELECT
-    p.tenant_id,
-    p.id,
-    'IN',
-    100,
-    0,
-    100,
-    'INITIAL',
-    'Initial inventory setup',
-    (SELECT created_by FROM products WHERE id = p.id)
-FROM products p
-WHERE p.sku = 'MOUSE-LOG-MX3-001'
-  AND p.ativo = true;
-
-UPDATE inventory
-SET quantity = 100
-WHERE product_id = (SELECT id FROM products WHERE sku = 'MOUSE-LOG-MX3-001' LIMIT 1)
-  AND location = 'DEFAULT';
-
--- Add 75 units to "Teclado Mecânico Keychron K8"
-INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
-SELECT
-    p.tenant_id,
-    p.id,
-    'IN',
-    75,
-    0,
-    75,
-    'INITIAL',
-    'Initial inventory setup',
-    (SELECT created_by FROM products WHERE id = p.id)
-FROM products p
-WHERE p.sku = 'KEYB-KEYCH-K8-001'
-  AND p.ativo = true;
-
-UPDATE inventory
-SET quantity = 75
-WHERE product_id = (SELECT id FROM products WHERE sku = 'KEYB-KEYCH-K8-001' LIMIT 1)
-  AND location = 'DEFAULT';
+-- TODO: Seed data commented out - these products don't exist yet during tenant provisioning
+-- They reference SKUs from V006 which were also removed
+-- Add initial inventory via application logic after tenant is provisioned
+--
+-- -- Add 50 units to "Notebook Dell Inspiron 15"
+-- INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
+-- SELECT
+--     p.tenant_id,
+--     p.id,
+--     'IN',
+--     50,
+--     0,
+--     50,
+--     'INITIAL',
+--     'Initial inventory setup',
+--     (SELECT created_by FROM products WHERE id = p.id)
+-- FROM products p
+-- WHERE p.sku = 'NOTE-DELL-I15-001'
+--   AND p.ativo = true;
+--
+-- UPDATE inventory
+-- SET quantity = 50
+-- WHERE product_id = (SELECT id FROM products WHERE sku = 'NOTE-DELL-I15-001' LIMIT 1)
+--   AND location = 'DEFAULT';
+--
+-- -- Add 100 units to "Mouse Logitech MX Master 3"
+-- INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
+-- SELECT
+--     p.tenant_id,
+--     p.id,
+--     'IN',
+--     100,
+--     0,
+--     100,
+--     'INITIAL',
+--     'Initial inventory setup',
+--     (SELECT created_by FROM products WHERE id = p.id)
+-- FROM products p
+-- WHERE p.sku = 'MOUSE-LOG-MX3-001'
+--   AND p.ativo = true;
+--
+-- UPDATE inventory
+-- SET quantity = 100
+-- WHERE product_id = (SELECT id FROM products WHERE sku = 'MOUSE-LOG-MX3-001' LIMIT 1)
+--   AND location = 'DEFAULT';
+--
+-- -- Add 75 units to "Teclado Mecânico Keychron K8"
+-- INSERT INTO inventory_movements (tenant_id, product_id, type, quantity, quantity_before, quantity_after, reason, notes, created_by)
+-- SELECT
+--     p.tenant_id,
+--     p.id,
+--     'IN',
+--     75,
+--     0,
+--     75,
+--     'INITIAL',
+--     'Initial inventory setup',
+--     (SELECT created_by FROM products WHERE id = p.id)
+-- FROM products p
+-- WHERE p.sku = 'KEYB-KEYCH-K8-001'
+--   AND p.ativo = true;
+--
+-- UPDATE inventory
+-- SET quantity = 75
+-- WHERE product_id = (SELECT id FROM products WHERE sku = 'KEYB-KEYCH-K8-001' LIMIT 1)
+--   AND location = 'DEFAULT';

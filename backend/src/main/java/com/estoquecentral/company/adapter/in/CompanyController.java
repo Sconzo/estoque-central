@@ -75,7 +75,7 @@ public class CompanyController {
 
             // AC5: Generate JWT token with tenantId and roles: [ADMIN]
             String token = jwtService.generateCompanyToken(
-                    request.userId(),
+                    Long.parseLong(request.userId()),
                     company.tenantId(),
                     request.email()
             );

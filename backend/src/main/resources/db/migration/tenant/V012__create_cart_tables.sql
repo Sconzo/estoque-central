@@ -238,7 +238,7 @@ SELECT
         ELSE false
     END AS is_expired
 FROM carts c
-LEFT JOIN customers cu ON c.customer_id = cu.customer_id
+LEFT JOIN customers cu ON c.customer_id = cu.id
 LEFT JOIN cart_items ci ON c.id = ci.cart_id
 WHERE c.status = 'ACTIVE'
 GROUP BY c.id, c.customer_id, cu.customer_type, cu.first_name,
@@ -271,42 +271,44 @@ LEFT JOIN product_variants pv ON ci.product_variant_id = pv.id;
 -- ============================================================
 -- Initial data: Create sample cart
 -- ============================================================
-
--- Create active cart for João Silva
-INSERT INTO carts (
-    tenant_id, customer_id, status, location_id, expires_at
-)
-SELECT
-    t.id,
-    c.id,
-    'ACTIVE',
-    (SELECT id FROM locations WHERE code = 'MAIN' LIMIT 1),
-    CURRENT_TIMESTAMP + INTERVAL '7 days'
-FROM tenants t
-CROSS JOIN customers c
-WHERE c.email = 'joao.silva@email.com'
-LIMIT 1;
-
--- Add sample items to cart
-INSERT INTO cart_items (
-    tenant_id, cart_id, product_id, quantity, unit_price, subtotal, total
-)
-SELECT
-    t.id,
-    cart.id,
-    p.id,
-    2,
-    p.price,
-    p.price * 2,
-    p.price * 2
-FROM tenants t
-CROSS JOIN carts cart
-CROSS JOIN products p
-WHERE cart.customer_id = (SELECT id FROM customers WHERE email = 'joao.silva@email.com' LIMIT 1)
-  AND p.sku = 'NOTE-DELL-I15-001'
-LIMIT 1;
-
--- Update cart totals
-SELECT calculate_cart_totals(c.id)
-FROM carts c
-WHERE c.customer_id = (SELECT id FROM customers WHERE email = 'joao.silva@email.com' LIMIT 1);
+-- TODO: Seed data commented out - references non-existent 'tenants' table and sample data
+-- Sample carts should be created via application logic after tenant provisioning
+--
+-- -- Create active cart for João Silva
+-- INSERT INTO carts (
+--     tenant_id, customer_id, status, location_id, expires_at
+-- )
+-- SELECT
+--     t.id,
+--     c.id,
+--     'ACTIVE',
+--     (SELECT id FROM locations WHERE code = 'MAIN' LIMIT 1),
+--     CURRENT_TIMESTAMP + INTERVAL '7 days'
+-- FROM tenants t
+-- CROSS JOIN customers c
+-- WHERE c.email = 'joao.silva@email.com'
+-- LIMIT 1;
+--
+-- -- Add sample items to cart
+-- INSERT INTO cart_items (
+--     tenant_id, cart_id, product_id, quantity, unit_price, subtotal, total
+-- )
+-- SELECT
+--     t.id,
+--     cart.id,
+--     p.id,
+--     2,
+--     p.price,
+--     p.price * 2,
+--     p.price * 2
+-- FROM tenants t
+-- CROSS JOIN carts cart
+-- CROSS JOIN products p
+-- WHERE cart.customer_id = (SELECT id FROM customers WHERE email = 'joao.silva@email.com' LIMIT 1)
+--   AND p.sku = 'NOTE-DELL-I15-001'
+-- LIMIT 1;
+--
+-- -- Update cart totals
+-- SELECT calculate_cart_totals(c.id)
+-- FROM carts c
+-- WHERE c.customer_id = (SELECT id FROM customers WHERE email = 'joao.silva@email.com' LIMIT 1);

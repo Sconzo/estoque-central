@@ -20,10 +20,9 @@ CREATE TABLE IF NOT EXISTS stock_adjustments (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Foreign Keys
-    CONSTRAINT fk_adjustments_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
     CONSTRAINT fk_adjustments_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     CONSTRAINT fk_adjustments_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_adjustments_location FOREIGN KEY (stock_location_id) REFERENCES stock_locations(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_adjustments_location FOREIGN KEY (stock_location_id) REFERENCES locations(id) ON DELETE RESTRICT,
 
     -- Constraints
     CONSTRAINT uq_adjustment_number_per_tenant UNIQUE (tenant_id, adjustment_number),

@@ -510,90 +510,92 @@ ORDER BY st.expected_date ASC NULLS LAST, st.created_at ASC;
 -- ============================================================
 -- Initial data: Create sample transfer
 -- ============================================================
-
-DO $$
-DECLARE
-    sample_tenant_id UUID;
-    sample_source_location UUID;
-    sample_dest_location UUID;
-    sample_product_id UUID;
-    new_transfer_id UUID;
-    new_transfer_number VARCHAR(50);
-BEGIN
-    -- Get sample data
-    SELECT id INTO sample_tenant_id FROM tenants LIMIT 1;
-
-    SELECT id INTO sample_source_location
-    FROM locations
-    WHERE code = 'MAIN'
-    LIMIT 1;
-
-    SELECT id INTO sample_dest_location
-    FROM locations
-    WHERE code != 'MAIN'
-    LIMIT 1;
-
-    SELECT id INTO sample_product_id
-    FROM products
-    WHERE sku = 'NOTE-DELL-I15-001'
-    LIMIT 1;
-
-    IF sample_tenant_id IS NOT NULL AND
-       sample_source_location IS NOT NULL AND
-       sample_dest_location IS NOT NULL AND
-       sample_product_id IS NOT NULL THEN
-
-        -- Generate transfer number
-        new_transfer_number := generate_transfer_number(sample_tenant_id);
-        new_transfer_id := gen_random_uuid();
-
-        -- Create transfer
-        INSERT INTO stock_transfers (
-            id, tenant_id, transfer_number,
-            source_location_id, destination_location_id,
-            status, transfer_type, reason,
-            requested_date, expected_date
-        )
-        VALUES (
-            new_transfer_id,
-            sample_tenant_id,
-            new_transfer_number,
-            sample_source_location,
-            sample_dest_location,
-            'APPROVED',
-            'REBALANCING',
-            'Stock rebalancing between locations',
-            CURRENT_DATE,
-            CURRENT_DATE + INTERVAL '2 days'
-        );
-
-        -- Create transfer item
-        INSERT INTO stock_transfer_items (
-            tenant_id, stock_transfer_id, product_id,
-            product_sku, product_name,
-            quantity_requested, unit_of_measure
-        )
-        SELECT
-            sample_tenant_id,
-            new_transfer_id,
-            p.id,
-            p.sku,
-            p.name,
-            3,
-            'UN'
-        FROM products p
-        WHERE p.id = sample_product_id;
-
-        -- Add status history
-        INSERT INTO stock_transfer_status_history (
-            tenant_id, stock_transfer_id, from_status, to_status, comment
-        )
-        VALUES (
-            sample_tenant_id,
-            new_transfer_id,
-            NULL,
-            'APPROVED',
-            'Sample transfer created and approved'
-        );
-    END IF;
-END $$;
+-- TODO: Seed data commented out - references non-existent 'tenants' table and SKUs
+-- Sample transfers should be created via application logic after tenant provisioning
+--
+-- DO $$
+-- DECLARE
+--     sample_tenant_id UUID;
+--     sample_source_location UUID;
+--     sample_dest_location UUID;
+--     sample_product_id UUID;
+--     new_transfer_id UUID;
+--     new_transfer_number VARCHAR(50);
+-- BEGIN
+--     -- Get sample data
+--     SELECT id INTO sample_tenant_id FROM tenants LIMIT 1;
+--
+--     SELECT id INTO sample_source_location
+--     FROM locations
+--     WHERE code = 'MAIN'
+--     LIMIT 1;
+--
+--     SELECT id INTO sample_dest_location
+--     FROM locations
+--     WHERE code != 'MAIN'
+--     LIMIT 1;
+--
+--     SELECT id INTO sample_product_id
+--     FROM products
+--     WHERE sku = 'NOTE-DELL-I15-001'
+--     LIMIT 1;
+--
+--     IF sample_tenant_id IS NOT NULL AND
+--        sample_source_location IS NOT NULL AND
+--        sample_dest_location IS NOT NULL AND
+--        sample_product_id IS NOT NULL THEN
+--
+--         -- Generate transfer number
+--         new_transfer_number := generate_transfer_number(sample_tenant_id);
+--         new_transfer_id := gen_random_uuid();
+--
+--         -- Create transfer
+--         INSERT INTO stock_transfers (
+--             id, tenant_id, transfer_number,
+--             source_location_id, destination_location_id,
+--             status, transfer_type, reason,
+--             requested_date, expected_date
+--         )
+--         VALUES (
+--             new_transfer_id,
+--             sample_tenant_id,
+--             new_transfer_number,
+--             sample_source_location,
+--             sample_dest_location,
+--             'APPROVED',
+--             'REBALANCING',
+--             'Stock rebalancing between locations',
+--             CURRENT_DATE,
+--             CURRENT_DATE + INTERVAL '2 days'
+--         );
+--
+--         -- Create transfer item
+--         INSERT INTO stock_transfer_items (
+--             tenant_id, stock_transfer_id, product_id,
+--             product_sku, product_name,
+--             quantity_requested, unit_of_measure
+--         )
+--         SELECT
+--             sample_tenant_id,
+--             new_transfer_id,
+--             p.id,
+--             p.sku,
+--             p.name,
+--             3,
+--             'UN'
+--         FROM products p
+--         WHERE p.id = sample_product_id;
+--
+--         -- Add status history
+--         INSERT INTO stock_transfer_status_history (
+--             tenant_id, stock_transfer_id, from_status, to_status, comment
+--         )
+--         VALUES (
+--             sample_tenant_id,
+--             new_transfer_id,
+--             NULL,
+--             'APPROVED',
+--             'Sample transfer created and approved'
+--         );
+--     END IF;
+-- END $$;

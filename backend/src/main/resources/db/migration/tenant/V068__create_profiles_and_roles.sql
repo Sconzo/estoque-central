@@ -103,12 +103,16 @@ DECLARE
 BEGIN
     -- Insert default profiles
     INSERT INTO profiles (nome, descricao, ativo)
-    VALUES
-        ('Admin', 'Administrador com acesso total ao sistema', true),
-        ('Gerente', 'Gerente com acesso a gestão e relatórios', true),
-        ('Vendedor', 'Vendedor com acesso a vendas e estoque', true)
-    ON CONFLICT (nome) DO NOTHING
-    RETURNING id INTO admin_profile_id;
+    VALUES ('Admin', 'Administrador com acesso total ao sistema', true)
+    ON CONFLICT (nome) DO NOTHING;
+
+    INSERT INTO profiles (nome, descricao, ativo)
+    VALUES ('Gerente', 'Gerente com acesso a gestão e relatórios', true)
+    ON CONFLICT (nome) DO NOTHING;
+
+    INSERT INTO profiles (nome, descricao, ativo)
+    VALUES ('Vendedor', 'Vendedor com acesso a vendas e estoque', true)
+    ON CONFLICT (nome) DO NOTHING;
 
     -- Get profile IDs
     SELECT id INTO admin_profile_id FROM profiles WHERE nome = 'Admin';

@@ -41,6 +41,6 @@ public record CreateCompanyRequest(
 
         String telefone,
 
-        @NotNull(message = "ID do usuário é obrigatório")
-        Long userId
+        @NotBlank(message = "ID do usuário é obrigatório")
+        String userId
 ) {}

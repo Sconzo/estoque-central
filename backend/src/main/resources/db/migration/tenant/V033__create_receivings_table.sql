@@ -13,9 +13,8 @@ CREATE TABLE IF NOT EXISTS receivings (
     status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_receivings_tenant FOREIGN KEY (tenant_id) REFERENCES public.tenants(id),
     CONSTRAINT fk_receivings_purchase_order FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id),
-    CONSTRAINT fk_receivings_stock_location FOREIGN KEY (stock_location_id) REFERENCES stock_locations(id),
+    CONSTRAINT fk_receivings_stock_location FOREIGN KEY (stock_location_id) REFERENCES locations(id),
     CONSTRAINT chk_receiving_status CHECK (status IN ('COMPLETED', 'CANCELLED')),
     CONSTRAINT uq_receiving_number_per_tenant UNIQUE (tenant_id, receiving_number)
 );

@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS suppliers (
 
     -- Constraints
     CONSTRAINT unique_supplier_code_per_tenant UNIQUE (tenant_id, supplier_code),
-    CONSTRAINT unique_cnpj_per_tenant UNIQUE (tenant_id, cnpj),
-    CONSTRAINT unique_cpf_per_tenant UNIQUE (tenant_id, cpf),
+    CONSTRAINT unique_supplier_cnpj_per_tenant UNIQUE (tenant_id, cnpj),
+    CONSTRAINT unique_supplier_cpf_per_tenant UNIQUE (tenant_id, cpf),
     CONSTRAINT check_supplier_type CHECK (supplier_type IN ('INDIVIDUAL', 'BUSINESS')),
     CONSTRAINT check_supplier_status CHECK (status IN ('ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING_APPROVAL')),
     CONSTRAINT check_tax_regime CHECK (tax_regime IN (

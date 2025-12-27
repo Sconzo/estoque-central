@@ -164,41 +164,43 @@ $$ LANGUAGE plpgsql;
 -- ============================================================
 -- Initial data: Create default alerts
 -- ============================================================
-
--- Global low stock alert (any product below min)
-INSERT INTO stock_alerts (
-    tenant_id, name, description, alert_type,
-    notify_email, notify_internal,
-    frequency_hours
-)
-SELECT
-    t.id,
-    'Global Low Stock Alert',
-    'Alert when any product falls below minimum quantity',
-    'LOW_STOCK',
-    false,
-    true,
-    24
-FROM tenants t
-ON CONFLICT DO NOTHING;
-
--- Out of stock alert
-INSERT INTO stock_alerts (
-    tenant_id, name, description, alert_type,
-    threshold_quantity,
-    notify_email, notify_internal,
-    frequency_hours
-)
-SELECT
-    t.id,
-    'Out of Stock Alert',
-    'Critical alert when any product reaches zero quantity',
-    'OUT_OF_STOCK',
-    0,
-    true,
-    1  -- Alert every hour
-FROM tenants t
-ON CONFLICT DO NOTHING;
+-- TODO: Seed data commented out - references non-existent 'tenants' table in tenant schema
+-- Default stock alerts should be created via application logic after tenant provisioning
+--
+-- -- Global low stock alert (any product below min)
+-- INSERT INTO stock_alerts (
+--     tenant_id, name, description, alert_type,
+--     notify_email, notify_internal,
+--     frequency_hours
+-- )
+-- SELECT
+--     t.id,
+--     'Global Low Stock Alert',
+--     'Alert when any product falls below minimum quantity',
+--     'LOW_STOCK',
+--     false,
+--     true,
+--     24
+-- FROM tenants t
+-- ON CONFLICT DO NOTHING;
+--
+-- -- Out of stock alert
+-- INSERT INTO stock_alerts (
+--     tenant_id, name, description, alert_type,
+--     threshold_quantity,
+--     notify_email, notify_internal,
+--     frequency_hours
+-- )
+-- SELECT
+--     t.id,
+--     'Out of Stock Alert',
+--     'Critical alert when any product reaches zero quantity',
+--     'OUT_OF_STOCK',
+--     0,
+--     true,
+--     1  -- Alert every hour
+-- FROM tenants t
+-- ON CONFLICT DO NOTHING;
 
 -- ============================================================
 -- View: Active alerts summary

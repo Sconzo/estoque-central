@@ -1,9 +1,11 @@
 package com.estoquecentral.auth.adapter.in.security;
 
 import com.estoquecentral.auth.application.JwtService;
+import com.estoquecentral.auth.application.PublicUserService;
 import com.estoquecentral.auth.application.UserService;
 import com.estoquecentral.auth.domain.Usuario;
 import com.estoquecentral.shared.tenant.TenantContext;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,11 +62,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserService userService;
+    private final PublicUserService publicUserService;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserService userService, PublicUserService publicUserService) {
         this.jwtService = jwtService;
         this.userService = userService;
+        this.publicUserService = publicUserService;
     }
 
     /**
@@ -109,44 +114,84 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = authHeader.substring(BEARER_PREFIX.length()).trim();
 
             // Step 3: Validate token and extract claims
-            UUID userId = jwtService.getUserIdFromToken(jwt);
-            UUID tenantId = jwtService.getTenantIdFromToken(jwt);
+            Claims claims = jwtService.validateToken(jwt);
+            String userIdStr = claims.getSubject();
+            String tenantIdStr = claims.get("tenantId", String.class);
             List<String> roles = jwtService.getRolesFromToken(jwt);
 
-            logg.debug("JWT validated for user: {} (tenant: {})", userId, tenantId);
+            logg.debug("JWT validated for user: {} (tenant: {})", userIdStr, tenantIdStr);
 
-            // Step 4: Set TenantContext (CRITICAL for multi-tenancy)
-            TenantContext.setTenantId(tenantId.toString());
-            logg.trace("TenantContext set to: {}", tenantId);
+            // Step 4: Check if this is a public user (no tenant) or tenant user
+            boolean hasValidTenant = (tenantIdStr != null && !tenantIdStr.equals("null"));
 
-            // Step 5: Load user from database (in tenant schema)
-            Usuario usuario = userService.getUserById(userId);
+            if (hasValidTenant) {
+                // Existing flow: User has a company/tenant
+                UUID userId = UUID.fromString(userIdStr);
+                UUID tenantId = UUID.fromString(tenantIdStr);
 
-            // Check if user is active
-            if (!usuario.getAtivo()) {
-                logg.warn("Inactive user attempted to login: {}", userId);
-                filterChain.doFilter(request, response);
-                return;
+                // Set TenantContext (CRITICAL for multi-tenancy)
+                TenantContext.setTenantId(tenantId.toString());
+                logg.trace("TenantContext set to: {}", tenantId);
+
+                // Load user from database (in tenant schema)
+                Usuario usuario = userService.getUserById(userId);
+
+                // Check if user is active
+                if (!usuario.getAtivo()) {
+                    logg.warn("Inactive user attempted to login: {}", userId);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // Create Spring Security Authentication
+                List<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .toList();
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userId.toString(), // Principal (user ID)
+                                null,              // Credentials (not needed for JWT)
+                                authorities        // Authorities (roles)
+                        );
+
+                authentication.setDetails(claims);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                logg.debug("SecurityContext populated for tenant user: {} (roles: {})", userId, roles);
+
+            } else {
+                // New flow: Public user without company/tenant
+                Long userId = Long.parseLong(userIdStr);
+
+                // NO TenantContext - user doesn't belong to any tenant yet
+                logg.debug("Public user (no tenant): userId={}", userId);
+
+                // Load user from public.users
+                com.estoquecentral.auth.domain.User publicUser = publicUserService.getUserById(userId);
+
+                // Check if user is active
+                if (!publicUser.getAtivo()) {
+                    logg.warn("Inactive public user attempted to login: {}", userId);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // Create Spring Security Authentication with empty roles
+                List<SimpleGrantedAuthority> authorities = Collections.emptyList();
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userId.toString(), // Principal (user ID)
+                                null,              // Credentials (not needed for JWT)
+                                authorities        // Authorities (empty - no roles without company)
+                        );
+
+                authentication.setDetails(claims);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                logg.debug("SecurityContext populated for public user: {} (no roles, no tenant)", userId);
             }
-
-            // Step 6: Create Spring Security Authentication
-            List<SimpleGrantedAuthority> authorities = roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .toList();
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userId.toString(), // Principal (user ID)
-                            null,              // Credentials (not needed for JWT)
-                            authorities        // Authorities (roles)
-                    );
-
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Step 7: Set SecurityContext
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            logg.debug("SecurityContext populated for user: {} (roles: {})", userId, roles);
 
         } catch (JwtException e) {
             logg.warn("JWT validation failed: {}", e.getMessage());

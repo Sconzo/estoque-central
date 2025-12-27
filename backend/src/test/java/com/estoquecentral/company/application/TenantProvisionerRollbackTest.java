@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for TenantProvisioner rollback behavior (Story 8.5 - AC4).
+ * Integration tests for CompanyTenantProvisioner rollback behavior (Story 8.5 - AC4).
  *
  * Tests that schema is properly dropped when provisioning fails.
  */
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TenantProvisionerRollbackTest {
 
     @Autowired
-    private TenantProvisioner tenantProvisioner;
+    private CompanyTenantProvisioner companyTenantProvisioner;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -42,7 +42,7 @@ class TenantProvisionerRollbackTest {
         // - Then dropSchema() is called in the catch block
         // - And SchemaProvisioningException is thrown
 
-        assertTrue(true, "Rollback behavior is implemented in TenantProvisioner lines 90-96");
+        assertTrue(true, "Rollback behavior is implemented in CompanyTenantProvisioner lines 90-96");
     }
 
     /**
@@ -50,7 +50,7 @@ class TenantProvisionerRollbackTest {
      */
     @Test
     void shouldNotRollbackWhenProvisioningSucceeds() {
-        TenantProvisioner.TenantProvisionResult result = tenantProvisioner.provisionTenant();
+        CompanyTenantProvisioner.TenantProvisionResult result = companyTenantProvisioner.provisionTenant();
 
         assertTrue(result.success(), "Provisioning should succeed");
         assertNotNull(result.tenantId(), "Tenant ID should be set");

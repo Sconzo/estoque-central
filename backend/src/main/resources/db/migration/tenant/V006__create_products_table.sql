@@ -56,55 +56,23 @@ CREATE INDEX idx_products_name ON products(name);
 CREATE INDEX idx_products_status ON products(status) WHERE ativo = true;
 CREATE INDEX idx_products_type ON products(type);
 
--- Insert example products for testing (will use existing category IDs from V005)
--- Electronics → Computers → Notebooks
-INSERT INTO products (id, tenant_id, type, name, sku, barcode, description, category_id, price, cost, unit, controls_inventory, status)
-SELECT
-    gen_random_uuid(),
-    (SELECT id FROM tenants LIMIT 1),
-    'SIMPLE',
-    'Notebook Dell Inspiron 15',
-    'NOTE-DELL-I15-001',
-    '7891234567890',
-    'Notebook Dell Inspiron 15 - Intel Core i7, 16GB RAM, 512GB SSD',
-    (SELECT id FROM categories WHERE name = 'Notebooks' LIMIT 1),
-    4500.00,
-    3200.00,
-    'UN',
-    true,
-    'ACTIVE'
-WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Notebooks');
-
-INSERT INTO products (id, tenant_id, type, name, sku, barcode, description, category_id, price, cost, unit, controls_inventory, status)
-SELECT
-    gen_random_uuid(),
-    (SELECT id FROM tenants LIMIT 1),
-    'SIMPLE',
-    'Mouse Logitech MX Master 3',
-    'MOUSE-LOG-MX3-001',
-    '7891234567891',
-    'Mouse sem fio Logitech MX Master 3 - Ergonômico',
-    (SELECT id FROM categories WHERE name = 'Periféricos' LIMIT 1),
-    350.00,
-    200.00,
-    'UN',
-    true,
-    'ACTIVE'
-WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Periféricos');
-
-INSERT INTO products (id, tenant_id, type, name, sku, barcode, description, category_id, price, cost, unit, controls_inventory, status)
-SELECT
-    gen_random_uuid(),
-    (SELECT id FROM tenants LIMIT 1),
-    'SIMPLE',
-    'Teclado Mecânico Keychron K8',
-    'KEYB-KEYCH-K8-001',
-    NULL,
-    'Teclado mecânico sem fio Keychron K8 - Switch Brown',
-    (SELECT id FROM categories WHERE name = 'Periféricos' LIMIT 1),
-    650.00,
-    450.00,
-    'UN',
-    true,
-    'ACTIVE'
-WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Periféricos');
+-- TODO: Example products seed data commented out due to tenant_id issue
+-- In schema-based tenancy, we don't have access to public.tenants table
+-- These seed products should be added via application logic after tenant provisioning
+--
+-- INSERT INTO products (id, tenant_id, type, name, sku, barcode, description, category_id, price, cost, unit, controls_inventory, status)
+-- SELECT
+--     gen_random_uuid(),
+--     gen_random_uuid(), -- TODO: Use actual tenant_id from application
+--     'SIMPLE',
+--     'Notebook Dell Inspiron 15',
+--     'NOTE-DELL-I15-001',
+--     '7891234567890',
+--     'Notebook Dell Inspiron 15 - Intel Core i7, 16GB RAM, 512GB SSD',
+--     (SELECT id FROM categories WHERE name = 'Notebooks' LIMIT 1),
+--     4500.00,
+--     3200.00,
+--     'UN',
+--     true,
+--     'ACTIVE'
+-- WHERE EXISTS (SELECT 1 FROM categories WHERE name = 'Notebooks');

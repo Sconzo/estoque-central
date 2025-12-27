@@ -47,9 +47,11 @@ public class GoogleAuthService {
     private static final Logger logger = LoggerFactory.getLogger(GoogleAuthService.class);
 
     private static final String GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token=";
+    private static final UUID NULL_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final String googleClientId;
     private final UserService userService;
+    private final PublicUserService publicUserService;
     private final JwtService jwtService;
     private final RestTemplate restTemplate;
 
@@ -57,9 +59,11 @@ public class GoogleAuthService {
     public GoogleAuthService(
             @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId,
             UserService userService,
+            PublicUserService publicUserService,
             JwtService jwtService) {
         this.googleClientId = googleClientId;
         this.userService = userService;
+        this.publicUserService = publicUserService;
         this.jwtService = jwtService;
         this.restTemplate = new RestTemplate();
         logger.info("GoogleAuthService initialized with clientId: {}", googleClientId);
@@ -71,42 +75,45 @@ public class GoogleAuthService {
      * <p>Flow:
      * <ol>
      *   <li>Validate Google ID token with Google's servers</li>
-     *   <li>Extract user information (sub, email, name, picture)</li>
-     *   <li>Find or create user in tenant database</li>
+     *   <li>Extract user information (sub, email, name)</li>
+     *   <li>Check if tenantId is valid (not null UUID)</li>
+     *   <li>If tenant is valid: authenticate in tenant schema (existing flow)</li>
+     *   <li>If tenant is null/zero: authenticate as public user (new user without company)</li>
      *   <li>Generate JWT token for our application</li>
      * </ol>
      *
-     * <p><strong>IMPORTANT:</strong> TenantContext must be set BEFORE calling this method.
-     * The frontend must determine the tenant (e.g., from subdomain or URL path)
-     * and set it via X-Tenant-ID header.
+     * <p><strong>Two Authentication Modes:</strong>
+     * <ul>
+     *   <li><strong>With Tenant:</strong> User has created a company → Authenticate in tenant schema → JWT with tenantId</li>
+     *   <li><strong>Without Tenant:</strong> New user without company → Create/update in public.users → JWT without tenantId</li>
+     * </ul>
      *
      * @param googleIdToken the Google ID token received from frontend
      * @return JWT token for our application
-     * @throws IllegalArgumentException if token is invalid or tenant context not set
+     * @throws IllegalArgumentException if token is invalid or user inactive
      * @throws RestClientException if Google API is unreachable
      */
     @Transactional
     public String authenticateWithGoogle(String googleIdToken) {
         logger.info("Authenticating user with Google OAuth 2.0");
 
-        // Step 1: Validate tenantId from TenantContext
+        // Step 1: Get tenantId from TenantContext (may be null or zero UUID for new users)
         String tenantIdStr = TenantContext.getTenantId();
-        if (tenantIdStr == null || tenantIdStr.isBlank()) {
-            logger.error("TenantContext not set - cannot authenticate user");
-            throw new IllegalArgumentException(
-                    "Tenant context not set. Frontend must send X-Tenant-ID header."
-            );
+        UUID tenantId = null;
+        boolean hasValidTenant = false;
+
+        if (tenantIdStr != null && !tenantIdStr.isBlank()) {
+            try {
+                tenantId = UUID.fromString(tenantIdStr);
+                // Check if tenant is the null UUID (00000000-0000-0000-0000-000000000000)
+                hasValidTenant = !NULL_TENANT_ID.equals(tenantId);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Invalid tenant ID format: {}", tenantIdStr);
+                // Continue with hasValidTenant = false
+            }
         }
 
-        UUID tenantId;
-        try {
-            tenantId = UUID.fromString(tenantIdStr);
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid tenant ID: {}", tenantIdStr);
-            throw new IllegalArgumentException("Invalid tenant ID: " + tenantIdStr, e);
-        }
-
-        logger.debug("TenantContext set to: {}", tenantId);
+        logger.debug("TenantContext: tenantIdStr={}, hasValidTenant={}", tenantIdStr, hasValidTenant);
 
         // Step 2: Validate Google ID token with Google's servers
         Map<String, Object> googleUserInfo = validateGoogleToken(googleIdToken);
@@ -119,19 +126,39 @@ public class GoogleAuthService {
 
         logger.info("Google token validated successfully for email: {}", email);
 
-        // Step 4: Find or create user in tenant database
-        Usuario usuario = userService.findOrCreateUser(googleId, email, nome, pictureUrl, tenantId);
+        // Step 4: Authenticate based on tenant presence
+        String jwtToken;
 
-        // Check if user is active
-        if (!usuario.getAtivo()) {
-            logger.warn("Inactive user attempted to login: {} ({})", email, usuario.getId());
-            throw new IllegalArgumentException("User account is inactive. Please contact support.");
+        if (hasValidTenant) {
+            // Existing flow: User has a company, authenticate in tenant schema
+            logger.info("Authenticating user in tenant schema: tenantId={}", tenantId);
+            Usuario usuario = userService.findOrCreateUser(googleId, email, nome, pictureUrl, tenantId);
+
+            // Check if user is active
+            if (!usuario.getAtivo()) {
+                logger.warn("Inactive user attempted to login: {} ({})", email, usuario.getId());
+                throw new IllegalArgumentException("User account is inactive. Please contact support.");
+            }
+
+            // Generate JWT with tenant context
+            jwtToken = jwtService.generateToken(usuario);
+            logger.info("User authenticated successfully in tenant: {} ({})", email, usuario.getId());
+
+        } else {
+            // New flow: User doesn't have a company yet, authenticate in public.users
+            logger.info("Authenticating user in public.users (no company yet)");
+            com.estoquecentral.auth.domain.User publicUser = publicUserService.findOrCreateUser(googleId, email, nome);
+
+            // Check if user is active
+            if (!publicUser.getAtivo()) {
+                logger.warn("Inactive user attempted to login: {} ({})", email, publicUser.getId());
+                throw new IllegalArgumentException("User account is inactive. Please contact support.");
+            }
+
+            // Generate JWT without tenant context (tenantId = null)
+            jwtToken = jwtService.generatePublicUserToken(publicUser.getId(), email);
+            logger.info("User authenticated successfully in public.users: {} (id={})", email, publicUser.getId());
         }
-
-        // Step 5: Generate JWT token for our application
-        String jwtToken = jwtService.generateToken(usuario);
-
-        logger.info("User authenticated successfully: {} ({})", email, usuario.getId());
 
         return jwtToken;
     }

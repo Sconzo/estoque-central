@@ -109,80 +109,94 @@ CREATE INDEX IF NOT EXISTS idx_movements_destination_id ON inventory_movements(d
 -- ============================================================
 -- Initial data: Create default location
 -- ============================================================
-INSERT INTO locations (tenant_id, code, name, description, type, is_default)
-SELECT
-    t.id,
-    'MAIN',
-    'Main Warehouse',
-    'Default main warehouse location',
-    'WAREHOUSE',
-    true
-FROM tenants t
-ON CONFLICT (tenant_id, code) DO NOTHING;
+-- TODO: Seed data commented out - references non-existent 'tenants' table in tenant schema
+-- Default location should be created via application logic after tenant provisioning
+--
+-- INSERT INTO locations (tenant_id, code, name, description, type, is_default)
+-- SELECT
+--     t.id,
+--     'MAIN',
+--     'Main Warehouse',
+--     'Default main warehouse location',
+--     'WAREHOUSE',
+--     true
+-- FROM tenants t
+-- ON CONFLICT (tenant_id, code) DO NOTHING;
 
 -- ============================================================
 -- Migrate existing inventory to default location
 -- ============================================================
-UPDATE inventory
-SET location_id = (
-    SELECT id FROM locations
-    WHERE tenant_id = inventory.tenant_id
-    AND is_default = true
-    LIMIT 1
-)
-WHERE location_id IS NULL;
+-- TODO: Migration commented out - references non-existent locations
+-- Since we commented out default location seed data, this migration would fail
+-- Location management should be handled via application logic
+--
+-- UPDATE inventory
+-- SET location_id = (
+--     SELECT id FROM locations
+--     WHERE tenant_id = inventory.tenant_id
+--     AND is_default = true
+--     LIMIT 1
+-- )
+-- WHERE location_id IS NULL;
 
 -- ============================================================
 -- Migrate existing movements to default location
 -- ============================================================
-UPDATE inventory_movements
-SET location_id = (
-    SELECT id FROM locations
-    WHERE tenant_id = inventory_movements.tenant_id
-    AND is_default = true
-    LIMIT 1
-)
-WHERE location_id IS NULL;
+-- TODO: Migration commented out - references non-existent locations
+--
+-- UPDATE inventory_movements
+-- SET location_id = (
+--     SELECT id FROM locations
+--     WHERE tenant_id = inventory_movements.tenant_id
+--     AND is_default = true
+--     LIMIT 1
+-- )
+-- WHERE location_id IS NULL;
 
 -- ============================================================
 -- Add NOT NULL constraint after migration
 -- ============================================================
-ALTER TABLE inventory ALTER COLUMN location_id SET NOT NULL;
-ALTER TABLE inventory_movements ALTER COLUMN location_id SET NOT NULL;
+-- TODO: NOT NULL constraints commented out - would fail without seed data
+-- Application logic should ensure location_id is provided when creating records
+--
+-- ALTER TABLE inventory ALTER COLUMN location_id SET NOT NULL;
+-- ALTER TABLE inventory_movements ALTER COLUMN location_id SET NOT NULL;
 
 -- ============================================================
 -- Example: Create additional locations
 -- ============================================================
-
--- Store location
-INSERT INTO locations (tenant_id, code, name, description, type, city, state, country)
-SELECT
-    t.id,
-    'STORE-01',
-    'Store Downtown',
-    'Main retail store - Downtown location',
-    'STORE',
-    'São Paulo',
-    'SP',
-    'Brazil'
-FROM tenants t
-WHERE EXISTS (SELECT 1 FROM tenants)
-ON CONFLICT (tenant_id, code) DO NOTHING;
-
--- Distribution center
-INSERT INTO locations (tenant_id, code, name, description, type, city, state, country)
-SELECT
-    t.id,
-    'DC-01',
-    'Distribution Center North',
-    'Regional distribution center - North region',
-    'DISTRIBUTION_CENTER',
-    'São Paulo',
-    'SP',
-    'Brazil'
-FROM tenants t
-WHERE EXISTS (SELECT 1 FROM tenants)
-ON CONFLICT (tenant_id, code) DO NOTHING;
+-- TODO: Seed data commented out - references non-existent 'tenants' table
+-- Additional locations should be created via application logic
+--
+-- -- Store location
+-- INSERT INTO locations (tenant_id, code, name, description, type, city, state, country)
+-- SELECT
+--     t.id,
+--     'STORE-01',
+--     'Store Downtown',
+--     'Main retail store - Downtown location',
+--     'STORE',
+--     'São Paulo',
+--     'SP',
+--     'Brazil'
+-- FROM tenants t
+-- WHERE EXISTS (SELECT 1 FROM tenants)
+-- ON CONFLICT (tenant_id, code) DO NOTHING;
+--
+-- -- Distribution center
+-- INSERT INTO locations (tenant_id, code, name, description, type, city, state, country)
+-- SELECT
+--     t.id,
+--     'DC-01',
+--     'Distribution Center North',
+--     'Regional distribution center - North region',
+--     'DISTRIBUTION_CENTER',
+--     'São Paulo',
+--     'SP',
+--     'Brazil'
+-- FROM tenants t
+-- WHERE EXISTS (SELECT 1 FROM tenants)
+-- ON CONFLICT (tenant_id, code) DO NOTHING;
 
 -- ============================================================
 -- View: Inventory summary by location
