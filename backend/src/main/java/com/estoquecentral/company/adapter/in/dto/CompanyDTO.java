@@ -11,14 +11,14 @@ import java.util.UUID;
  * @since 1.0
  */
 public record CompanyDTO(
-    Long id,
+    UUID id,
     UUID tenantId,
     String schemaName,
     String name,
     String cnpj,
     String email,
     String phone,
-    Long ownerUserId,
+    UUID ownerUserId,
     Instant createdAt,
     Instant updatedAt,
     boolean active

@@ -69,7 +69,7 @@ public class CompanyManagementController {
             Authentication authentication,
             @RequestHeader("Authorization") String authHeader) {
 
-        Long currentUserId = Long.parseLong(authentication.getName());
+        UUID currentUserId = UUID.fromString(authentication.getName());
         logger.info("PUT /api/companies/current - Admin {} updating company", currentUserId);
 
         try {
@@ -131,7 +131,7 @@ public class CompanyManagementController {
             Authentication authentication,
             @RequestHeader("Authorization") String authHeader) {
 
-        Long currentUserId = Long.parseLong(authentication.getName());
+        UUID currentUserId = UUID.fromString(authentication.getName());
         logger.info("DELETE /api/companies/current - Admin {} deleting company", currentUserId);
 
         try {

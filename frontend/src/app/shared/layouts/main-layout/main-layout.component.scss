@@ -127,6 +127,25 @@ mat-nav-list {
   z-index: 2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
+  .company-name {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #6A1B9A !important; // Purple
+
+    .company-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      color: #6A1B9A !important;
+    }
+  }
+
   .toolbar-spacer {
     flex: 1 1 auto;
   }

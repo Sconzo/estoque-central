@@ -3,6 +3,7 @@ package com.estoquecentral.company.adapter.in.dto;
 import com.estoquecentral.company.domain.CompanyUser;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * DTO for CompanyUser (collaborator) responses.
@@ -10,9 +11,9 @@ import java.time.Instant;
  * @since 1.0
  */
 public record CollaboratorDTO(
-    Long id,
-    Long companyId,
-    Long userId,
+    UUID id,
+    UUID companyId,
+    UUID userId,
     String role,
     Instant invitedAt,
     Instant acceptedAt,

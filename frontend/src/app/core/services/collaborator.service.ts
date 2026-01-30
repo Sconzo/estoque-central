@@ -21,7 +21,7 @@ export class CollaboratorService {
   /**
    * Invites a user to join a company as a collaborator (Epic 10).
    */
-  inviteCollaborator(companyId: number, request: InviteCollaboratorRequest): Observable<CollaboratorResponse> {
+  inviteCollaborator(companyId: string, request: InviteCollaboratorRequest): Observable<CollaboratorResponse> {
     return this.http.post<CollaboratorResponse>(
       `${this.apiUrl}/${companyId}/collaborators`,
       request
@@ -31,21 +31,21 @@ export class CollaboratorService {
   /**
    * Lists all collaborators for a company (Epic 10).
    */
-  listCollaborators(companyId: number): Observable<CollaboratorResponse[]> {
+  listCollaborators(companyId: string): Observable<CollaboratorResponse[]> {
     return this.http.get<CollaboratorResponse[]>(`${this.apiUrl}/${companyId}/collaborators`);
   }
 
   /**
    * Removes a collaborator from a company (Epic 10).
    */
-  removeCollaborator(companyId: number, userId: number): Observable<void> {
+  removeCollaborator(companyId: string, userId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${companyId}/collaborators/${userId}`);
   }
 
   /**
    * Promotes a collaborator to ADMIN role (Epic 10).
    */
-  promoteToAdmin(companyId: number, userId: number): Observable<void> {
+  promoteToAdmin(companyId: string, userId: string): Observable<void> {
     return this.http.post<void>(
       `${this.apiUrl}/${companyId}/collaborators/${userId}/promote`,
       {}
@@ -55,7 +55,7 @@ export class CollaboratorService {
   /**
    * Updates a collaborator's role (Epic 10).
    */
-  updateRole(companyId: number, userId: number, role: string): Observable<void> {
+  updateRole(companyId: string, userId: string, role: string): Observable<void> {
     return this.http.put<void>(
       `${this.apiUrl}/${companyId}/collaborators/${userId}/role`,
       { role }
@@ -77,9 +77,9 @@ export interface InviteCollaboratorRequest {
  * Matches backend CollaboratorDetailDTO with user information.
  */
 export interface CollaboratorResponse {
-  id: number;
-  companyId: number;
-  userId: number;
+  id: string;
+  companyId: string;
+  userId: string;
   userName: string;
   userEmail: string;
   role: string;

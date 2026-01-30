@@ -19,8 +19,8 @@
 -- Each company maps to a tenant with its own isolated schema
 
 CREATE TABLE IF NOT EXISTS public.companies (
-    -- Primary key: Auto-incremented Long (matches Java entity)
-    id BIGSERIAL PRIMARY KEY,
+    -- Primary key: UUID for consistency
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Tenant UUID (maps to tenant schema)
     -- Generated when tenant schema is provisioned
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.companies (
 
     -- User ID of the company owner (creator)
     -- FK to public.users.id
-    owner_user_id BIGINT NOT NULL,
+    owner_user_id UUID NOT NULL,
 
     -- Timestamp when company was created
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -65,14 +65,14 @@ CREATE TABLE IF NOT EXISTS public.companies (
 -- Enables multi-company access per user with different roles per company
 
 CREATE TABLE IF NOT EXISTS public.company_users (
-    -- Primary key: Auto-incremented Long
-    id BIGSERIAL PRIMARY KEY,
+    -- Primary key: UUID for consistency
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- FK to public.companies.id
-    company_id BIGINT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
+    company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
 
     -- FK to public.users.id (user who has access to this company)
-    user_id BIGINT NOT NULL,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
 
     -- Role of user in this company (ADMIN, USER, etc.)
     -- This is a simple string role for now; can be enhanced with FK to roles table

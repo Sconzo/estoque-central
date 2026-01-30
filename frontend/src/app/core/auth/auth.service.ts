@@ -7,6 +7,7 @@ import { User } from './models/user.model';
 import { LoginResponse } from './models/login-response.model';
 import { GoogleCallbackRequest } from './models/google-callback-request.model';
 import { TenantService } from '../services/tenant.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * AuthService - Service for authentication and JWT token management
@@ -21,7 +22,7 @@ import { TenantService } from '../services/tenant.service';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8080/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'jwt_token';
 
   // BehaviorSubject to track authentication state
@@ -192,6 +193,30 @@ export class AuthService {
    */
   getCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/me`);
+  }
+
+  /**
+   * Extracts user info from JWT token.
+   *
+   * @returns User info object or null
+   */
+  getUserFromToken(): { nome: string; email: string; pictureUrl?: string } | null {
+    const token = this.getToken();
+
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const payload = this.parseJwt(token);
+      return {
+        nome: payload.nome || payload.name || 'Usuário',
+        email: payload.email || payload.sub || '',
+        pictureUrl: payload.pictureUrl || payload.picture || null
+      };
+    } catch (error) {
+      return null;
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * PublicUserService - Application service for public.users management
@@ -99,7 +100,7 @@ public class PublicUserService {
      * @return the User
      * @throws IllegalArgumentException if user not found
      */
-    public User getUserById(Long userId) {
+    public User getUserById(UUID userId) {
         logger.debug("Retrieving user from public.users by ID: {}", userId);
 
         return publicUserRepository.findById(userId)
@@ -137,7 +138,7 @@ public class PublicUserService {
      * @param userId User ID
      * @return true if user exists and is active, false otherwise
      */
-    public boolean isUserActive(Long userId) {
+    public boolean isUserActive(UUID userId) {
         return publicUserRepository.findById(userId)
                 .map(User::getAtivo)
                 .orElse(false);
@@ -150,7 +151,7 @@ public class PublicUserService {
      * @throws IllegalArgumentException if user not found
      */
     @Transactional
-    public void deactivateUser(Long userId) {
+    public void deactivateUser(UUID userId) {
         logger.info("Deactivating user in public.users: {}", userId);
 
         User user = getUserById(userId);
@@ -167,7 +168,7 @@ public class PublicUserService {
      * @throws IllegalArgumentException if user not found
      */
     @Transactional
-    public void activateUser(Long userId) {
+    public void activateUser(UUID userId) {
         logger.info("Activating user in public.users: {}", userId);
 
         User user = getUserById(userId);

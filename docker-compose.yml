@@ -12,7 +12,7 @@ services:
     image: estoque-central:latest
     container_name: estoque-central-app
     ports:
-      - "8080:8080"
+      - "8080:8081"
       - "5005:5005"  # Remote Debug Port
     environment:
       # Spring Profile

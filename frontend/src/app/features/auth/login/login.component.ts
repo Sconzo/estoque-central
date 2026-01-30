@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import { environment } from '../../../../environments/environment';
 
 declare const google: any;
@@ -30,7 +31,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private tenantService: TenantService
   ) {}
 
   ngOnInit(): void {
@@ -104,8 +106,53 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.authService.login(response.credential, this.TENANT_ID)
       .subscribe({
         next: () => {
-          console.log('Login successful!');
-          this.router.navigate(['/dashboard']);
+          console.log('Login successful! Checking user companies...');
+
+          // Check if user has companies
+          this.tenantService.getUserCompanies().subscribe({
+            next: (companies) => {
+              console.log(`User has ${companies.length} companies`);
+
+              if (companies.length === 0) {
+                // No companies - redirect to create company
+                console.log('No companies found - redirecting to create-company');
+                this.router.navigate(['/create-company']);
+              } else if (companies.length === 1) {
+                // One company - auto-select and switch context to get JWT with roles
+                const company = companies[0];
+                console.log('Auto-selecting company:', company.nome);
+                this.tenantService.switchCompanyContext(company.tenantId).subscribe({
+                  next: (response) => {
+                    console.log('Context switched successfully, roles:', response.roles);
+                    this.tenantService.switchCompany(company.id);
+                    this.router.navigate(['/dashboard']);
+                    this.isLoading = false;
+                  },
+                  error: (error) => {
+                    console.error('Failed to switch context:', error);
+                    // Fallback: still navigate but user won't have proper roles
+                    this.tenantService.setCurrentTenant(company.tenantId);
+                    this.tenantService.switchCompany(company.id);
+                    this.router.navigate(['/dashboard']);
+                    this.isLoading = false;
+                  }
+                });
+                return; // Don't set isLoading = false here, wait for switchCompanyContext
+              } else {
+                // Multiple companies - let user select
+                console.log('Multiple companies - redirecting to select-company');
+                this.router.navigate(['/select-company']);
+              }
+
+              this.isLoading = false;
+            },
+            error: (error) => {
+              console.error('Failed to fetch companies', error);
+              // If fetch fails, still go to dashboard
+              this.router.navigate(['/dashboard']);
+              this.isLoading = false;
+            }
+          });
         },
         error: (error) => {
           console.error('Login failed', error);

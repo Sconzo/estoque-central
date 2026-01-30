@@ -81,7 +81,7 @@ public class CompanyService {
      */
     // NOTE: NO @Transactional here! CompanyTenantProvisioner.provisionTenant() uses REQUIRES_NEW
     // to create its own transaction. Having @Transactional here causes nested transaction conflicts.
-    public Company createCompany(String name, String cnpj, String email, String phone, String ownerUserId) {
+    public Company createCompany(String name, String cnpj, String email, String phone, UUID ownerUserId) {
         logger.info("Creating company: name={}, cnpj={}, email={}, ownerUserId={}",
                 name, cnpj, email, ownerUserId);
 
@@ -105,7 +105,7 @@ public class CompanyService {
 
             // AC2: Create company record with tenantId and schemaName
             // Note: Duplicate names are allowed - only schema_name is unique
-            Company company = Company.create(name, cnpj, email, phone, Long.parseLong(ownerUserId));
+            Company company = Company.create(name, cnpj, email, phone, ownerUserId);
             Company companyWithTenant = company.withTenantSchema(
                     provisionResult.tenantId(),
                     provisionResult.schemaName()
@@ -116,7 +116,7 @@ public class CompanyService {
                     savedCompany.id(), savedCompany.tenantId(), savedCompany.schemaName());
 
             // AC4: Create user-company association with ADMIN role
-            CompanyUser ownerAssociation = CompanyUser.invite(savedCompany.id(), Long.parseLong(ownerUserId), "ADMIN");
+            CompanyUser ownerAssociation = CompanyUser.invite(savedCompany.id(), ownerUserId, "ADMIN");
             CompanyUser acceptedAssociation = ownerAssociation.accept();
             companyUserRepository.save(acceptedAssociation);
 
@@ -143,7 +143,7 @@ public class CompanyService {
      * @param userId User ID
      * @return List of companies where user is a collaborator
      */
-    public List<Company> findUserCompanies(Long userId) {
+    public List<Company> findUserCompanies(UUID userId) {
         return companyRepository.findAllByUserId(userId);
     }
 
@@ -162,10 +162,40 @@ public class CompanyService {
      * @param userId User ID from JWT authentication
      * @return List of UserCompanyResponse (empty list if user has no companies)
      */
-    public List<UserCompanyResponse> getUserCompanies(Long userId) {
+    public List<UserCompanyResponse> getUserCompanies(UUID userId) {
         logger.debug("Fetching companies for user: {}", userId);
-        List<UserCompanyResponse> companies = companyRepository.findUserCompaniesWithRoles(userId);
-        logger.debug("Found {} companies for user {}", companies.size(), userId);
+
+        // Direct JDBC query to avoid Spring Data JDBC mapping issues with UUID
+        String sql = """
+            SELECT
+                c.id,
+                c.tenant_id,
+                c.name,
+                c.cnpj,
+                cu.role
+            FROM public.companies c
+            INNER JOIN public.company_users cu ON c.id = cu.company_id
+            WHERE cu.user_id = ?
+              AND cu.active = true
+              AND c.active = true
+            ORDER BY c.name
+            """;
+
+        List<UserCompanyResponse> companies = jdbcTemplate.query(sql,
+            (rs, rowNum) -> new UserCompanyResponse(
+                UUID.fromString(rs.getString("id")),
+                rs.getObject("tenant_id") != null ? rs.getObject("tenant_id").toString() : null,
+                rs.getString("name"),
+                rs.getString("cnpj"),
+                null,
+                rs.getString("role")
+            ),
+            userId
+        );
+
+        logger.debug("Found {} companies for user {} with tenantIds: {}",
+            companies.size(), userId,
+            companies.stream().map(UserCompanyResponse::tenantId).toList());
         return companies;
     }
 
@@ -178,7 +208,7 @@ public class CompanyService {
      * @param phone New company phone
      * @return Updated company
      */
-    public Company getCompanyById(Long companyId) {
+    public Company getCompanyById(UUID companyId) {
         return companyRepository.findById(companyId)
             .orElseThrow(() -> new IllegalArgumentException("Company not found: " + companyId));
     }
@@ -205,7 +235,7 @@ public class CompanyService {
      * @return Updated company
      */
     @Transactional
-    public Company updateCompany(Long companyId, String name, String email, String phone) {
+    public Company updateCompany(UUID companyId, String name, String email, String phone) {
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new IllegalArgumentException("Company not found: " + companyId));
 
@@ -221,7 +251,7 @@ public class CompanyService {
      */
     @Deprecated
     @Transactional
-    public void deleteCompany(Long companyId) {
+    public void deleteCompany(UUID companyId) {
         Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new IllegalArgumentException("Company not found: " + companyId));
 
@@ -250,7 +280,7 @@ public class CompanyService {
      * @throws IllegalStateException if orphan users exist
      */
     @Transactional
-    public void deleteCompanyWithValidation(Long companyId) {
+    public void deleteCompanyWithValidation(UUID companyId) {
         logger.info("Deleting company with validation: companyId={}", companyId);
 
         Company company = companyRepository.findById(companyId)
@@ -307,7 +337,7 @@ public class CompanyService {
      * @throws IllegalArgumentException if tenantId is invalid UUID
      * @throws AccessDeniedException if user doesn't have access to tenant (Story 9.1 - AC4)
      */
-    public SwitchContextResponse switchContext(Long userId, String email, String tenantId) {
+    public SwitchContextResponse switchContext(UUID userId, String email, String tenantId) {
         logger.info("Switching context for user {} to tenant {}", userId, tenantId);
 
         long startTime = System.currentTimeMillis();
@@ -368,19 +398,23 @@ public class CompanyService {
      * Inserts a tenant record into public.tenants table.
      * This is required for tenant context management and multi-tenant schema isolation.
      *
+     * <p>Note: CNPJ is stored only in public.companies table, not in tenants.
+     * The tenants table is for schema management, while companies holds business data.
+     *
      * @param tenantId Tenant UUID
      * @param schemaName Schema name (e.g., tenant_xxxxx)
      * @param name Company/tenant name
      * @param email Company email
-     * @param cnpj Company CNPJ (optional)
+     * @param cnpj Company CNPJ (ignored - stored only in companies table)
      */
     private void insertTenantRecord(UUID tenantId, String schemaName, String name, String email, String cnpj) {
         logger.debug("Inserting tenant record: tenantId={}, schemaName={}", tenantId, schemaName);
 
-        String sql = "INSERT INTO tenants (id, nome, schema_name, email, cnpj, ativo, data_criacao, data_atualizacao) " +
-                     "VALUES (?, ?, ?, ?, ?, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+        // Note: CNPJ is not inserted here - it's stored in public.companies table only
+        String sql = "INSERT INTO tenants (id, nome, schema_name, email, ativo, data_criacao, data_atualizacao) " +
+                     "VALUES (?, ?, ?, ?, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
-        jdbcTemplate.update(sql, tenantId, name, schemaName, email, cnpj);
+        jdbcTemplate.update(sql, tenantId, name, schemaName, email);
 
         logger.info("Tenant record inserted: tenantId={}, schemaName={}", tenantId, schemaName);
     }

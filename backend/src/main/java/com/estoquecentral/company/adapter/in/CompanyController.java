@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 /**
  * CompanyController - REST API for company management.
  *
@@ -61,13 +63,16 @@ public class CompanyController {
                 request.nome(), request.cnpj(), request.userId());
 
         try {
+            // Parse userId as UUID
+            UUID userId = UUID.fromString(request.userId());
+
             // Create company with tenant provisioning (AC2, AC3, AC4)
             Company company = companyService.createCompany(
                     request.nome(),
                     request.cnpj(),
                     request.email(),
                     request.telefone(),
-                    request.userId()
+                    userId
             );
 
             logger.info("Company created successfully: id={}, tenantId={}, schemaName={}",
@@ -75,7 +80,7 @@ public class CompanyController {
 
             // AC5: Generate JWT token with tenantId and roles: [ADMIN]
             String token = jwtService.generateCompanyToken(
-                    Long.parseLong(request.userId()),
+                    userId,
                     company.tenantId(),
                     request.email()
             );
@@ -93,7 +98,7 @@ public class CompanyController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException e) {
-            // AC6: Error handling for validation errors (e.g., duplicate CNPJ)
+            // AC6: Error handling for validation errors (e.g., duplicate CNPJ, invalid UUID)
             logger.warn("Company creation failed - validation error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 

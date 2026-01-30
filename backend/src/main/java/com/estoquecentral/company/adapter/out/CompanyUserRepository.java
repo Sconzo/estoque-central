@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository for CompanyUser associations.
@@ -15,7 +16,7 @@ import java.util.Optional;
  * @since 1.0
  */
 @Repository
-public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long> {
+public interface CompanyUserRepository extends CrudRepository<CompanyUser, UUID> {
 
     /**
      * Finds all active users (collaborators) for a specific company.
@@ -25,7 +26,7 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         WHERE cu.company_id = :companyId AND cu.active = true
         ORDER BY cu.accepted_at DESC
         """)
-    List<CompanyUser> findAllActiveByCompanyId(@Param("companyId") Long companyId);
+    List<CompanyUser> findAllActiveByCompanyId(@Param("companyId") UUID companyId);
 
     /**
      * Finds the association between a user and a company.
@@ -35,8 +36,8 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         WHERE cu.company_id = :companyId AND cu.user_id = :userId
         """)
     Optional<CompanyUser> findByCompanyIdAndUserId(
-        @Param("companyId") Long companyId,
-        @Param("userId") Long userId
+        @Param("companyId") UUID companyId,
+        @Param("userId") UUID userId
     );
 
     /**
@@ -47,8 +48,8 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         WHERE company_id = :companyId AND user_id = :userId
         """)
     boolean existsByCompanyIdAndUserId(
-        @Param("companyId") Long companyId,
-        @Param("userId") Long userId
+        @Param("companyId") UUID companyId,
+        @Param("userId") UUID userId
     );
 
     /**
@@ -59,7 +60,7 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         WHERE cu.user_id = :userId AND cu.active = true
         ORDER BY cu.accepted_at DESC
         """)
-    List<CompanyUser> findAllByUserId(@Param("userId") Long userId);
+    List<CompanyUser> findAllByUserId(@Param("userId") UUID userId);
 
     /**
      * Finds all active companies for a specific user (Story 10.6 - orphan protection).
@@ -69,5 +70,5 @@ public interface CompanyUserRepository extends CrudRepository<CompanyUser, Long>
         WHERE cu.user_id = :userId AND cu.active = true
         ORDER BY cu.accepted_at DESC
         """)
-    List<CompanyUser> findAllActiveByUserId(@Param("userId") Long userId);
+    List<CompanyUser> findAllActiveByUserId(@Param("userId") UUID userId);
 }

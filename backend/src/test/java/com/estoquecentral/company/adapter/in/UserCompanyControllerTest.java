@@ -48,14 +48,15 @@ class UserCompanyControllerTest {
 
     private UserCompanyResponse company1;
     private UserCompanyResponse company2;
-    private Long userId;
+    private UUID userId;
 
     @BeforeEach
     void setUp() {
-        userId = 123L;
+        userId = UUID.randomUUID();
 
         company1 = new UserCompanyResponse(
-                UUID.randomUUID(),
+                UUID.randomUUID(),  // id
+                UUID.randomUUID().toString(),  // tenantId
                 "Empresa ABC Ltda",
                 "12345678000190",
                 null, // profileId not used yet
@@ -63,7 +64,8 @@ class UserCompanyControllerTest {
         );
 
         company2 = new UserCompanyResponse(
-                UUID.randomUUID(),
+                UUID.randomUUID(),  // id
+                UUID.randomUUID().toString(),  // tenantId
                 "Empresa XYZ S.A.",
                 "98765432000111",
                 null,
@@ -99,7 +101,7 @@ class UserCompanyControllerTest {
     @DisplayName("AC3: Should return empty array with 200 OK when user has no companies")
     void shouldReturnEmptyArrayWhenUserHasNoCompanies() throws Exception {
         // Given
-        Long userWithNoCompanies = 456L;
+        UUID userWithNoCompanies = UUID.randomUUID();
         when(companyService.getUserCompanies(userWithNoCompanies)).thenReturn(List.of());
 
         // When/Then
@@ -116,7 +118,7 @@ class UserCompanyControllerTest {
     @DisplayName("AC2: Should extract userId from JWT token (authentication.getName())")
     void shouldExtractUserIdFromJwt() throws Exception {
         // Given
-        Long jwtUserId = 999L;
+        UUID jwtUserId = UUID.randomUUID();
         when(companyService.getUserCompanies(jwtUserId)).thenReturn(List.of(company1));
 
         // When/Then
@@ -150,7 +152,8 @@ class UserCompanyControllerTest {
     void shouldReturnCompaniesOrderedByName() throws Exception{
         // Given - Service already orders by name in query
         UserCompanyResponse alphaCompany = new UserCompanyResponse(
-                UUID.randomUUID(),
+                UUID.randomUUID(),  // id
+                UUID.randomUUID().toString(),  // tenantId
                 "Alpha Comercio",
                 "11111111000111",
                 null,
@@ -158,7 +161,8 @@ class UserCompanyControllerTest {
         );
 
         UserCompanyResponse zebraCompany = new UserCompanyResponse(
-                UUID.randomUUID(),
+                UUID.randomUUID(),  // id
+                UUID.randomUUID().toString(),  // tenantId
                 "Zebra Distribuidora",
                 "22222222000122",
                 null,

@@ -12,8 +12,8 @@
 
 -- Create users table in public schema
 CREATE TABLE IF NOT EXISTS public.users (
-    -- Primary key: Auto-incremented Long (matches Java entity)
-    id BIGSERIAL PRIMARY KEY,
+    -- Primary key: UUID for consistency across all tables
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- User full name (required)
     nome VARCHAR(255) NOT NULL,

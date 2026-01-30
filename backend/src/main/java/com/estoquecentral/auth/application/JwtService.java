@@ -262,7 +262,7 @@ public class JwtService {
      * @param email User email
      * @return JWT token string
      */
-    public String generateCompanyToken(Long userId, UUID tenantId, String email) {
+    public String generateCompanyToken(UUID userId, UUID tenantId, String email) {
         logger.debug("Generating company JWT token for userId: {} in tenantId: {}", userId, tenantId);
 
         Date now = new Date();
@@ -309,7 +309,7 @@ public class JwtService {
      * @param role User's role in the new company
      * @return JWT token string
      */
-    public String generateContextSwitchToken(Long userId, UUID tenantId, String email, String role) {
+    public String generateContextSwitchToken(UUID userId, UUID tenantId, String email, String role) {
         logger.debug("Generating context switch JWT token for userId: {} to tenantId: {} with role: {}",
                 userId, tenantId, role);
 
@@ -355,7 +355,7 @@ public class JwtService {
      * @param email User email
      * @return JWT token string without tenant context
      */
-    public String generatePublicUserToken(Long userId, String email) {
+    public String generatePublicUserToken(UUID userId, String email) {
         logger.debug("Generating public user JWT token for userId: {} (no tenant)", userId);
 
         Date now = new Date();

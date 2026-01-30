@@ -126,3 +126,122 @@ body.user-is-tabbing .mat-mdc-raised-button:focus {
     scroll-behavior: auto !important;
   }
 }
+
+/* ===========================
+   Material Form Fields - Enhanced Styling
+   Fix for Material Design 3 (Angular 19) issues
+   =========================== */
+
+/* Improve form field appearance and consistency */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Fix outlined form fields notch issues */
+.mat-mdc-text-field-wrapper.mdc-text-field--outlined {
+  .mdc-notched-outline {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: rgba(0, 0, 0, 0.38) !important;
+    }
+  }
+
+  /* Fix notch alignment */
+  .mdc-notched-outline__notch {
+    border-right: none !important;
+    border-left: none !important;
+  }
+
+  .mdc-notched-outline__leading {
+    border-right: none !important;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  .mdc-notched-outline__trailing {
+    border-left: none !important;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+}
+
+/* Fix focused state */
+.mat-mdc-form-field.mat-focused {
+  .mdc-notched-outline {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #6A1B9A !important;
+      border-width: 2px !important;
+    }
+  }
+}
+
+/* Better spacing for outlined fields */
+.mat-mdc-form-field-type-mat-input.mat-form-field-appearance-outline {
+  .mat-mdc-text-field-wrapper {
+    padding-bottom: 0;
+  }
+}
+
+/* Better hint text spacing */
+.mat-mdc-form-field-hint-wrapper,
+.mat-mdc-form-field-error-wrapper {
+  padding: 0 16px;
+}
+
+/* Improve disabled field appearance */
+.mat-mdc-form-field-disabled {
+  opacity: 0.6;
+}
+
+/* ===========================
+   Collaborators Table - Fix row borders and alignment
+   =========================== */
+.collaborators-table {
+  width: 100% !important;
+}
+
+/* Reset all cell borders and fix vertical alignment */
+.collaborators-table .mat-mdc-cell,
+.collaborators-table .mat-mdc-header-cell {
+  border-bottom: none !important;
+  padding: 16px !important;
+  vertical-align: middle !important;
+}
+
+/* Header row styling */
+.collaborators-table .mat-mdc-header-row {
+  background-color: #f5f5f5 !important;
+  border-bottom: 2px solid #bdbdbd !important;
+}
+
+.collaborators-table .mat-mdc-header-cell {
+  font-weight: 600 !important;
+  color: #424242 !important;
+}
+
+/* Data row styling - border on the row itself */
+.collaborators-table .mat-mdc-row {
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.collaborators-table .mat-mdc-row:last-of-type {
+  border-bottom: none !important;
+}
+
+.collaborators-table .mat-mdc-row:hover {
+  background-color: #fafafa !important;
+}
+
+/* Fix action buttons alignment */
+.collaborators-table .mat-mdc-cell:last-child {
+  vertical-align: middle !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.collaborators-table .mat-mdc-cell:last-child .mat-mdc-icon-button {
+  vertical-align: middle !important;
+}

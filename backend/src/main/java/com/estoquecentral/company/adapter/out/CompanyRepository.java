@@ -17,7 +17,7 @@ import java.util.UUID;
  * @since 1.0
  */
 @Repository
-public interface CompanyRepository extends CrudRepository<Company, Long> {
+public interface CompanyRepository extends CrudRepository<Company, UUID> {
 
     /**
      * Finds all active companies for a specific user.
@@ -28,7 +28,7 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
         WHERE cu.user_id = :userId AND cu.active = true AND c.active = true
         ORDER BY c.name
         """)
-    List<Company> findAllByUserId(@Param("userId") Long userId);
+    List<Company> findAllByUserId(@Param("userId") UUID userId);
 
     /**
      * Finds a company by CNPJ.
@@ -58,11 +58,12 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
      */
     @Query("""
         SELECT
-            c.tenant_id AS tenantId,
-            c.name AS nome,
-            c.cnpj AS cnpj,
-            NULL AS profileId,
-            cu.role AS profileName
+            c.id,
+            c.tenant_id::text AS "tenantId",
+            c.name AS "nome",
+            c.cnpj,
+            NULL AS "profileId",
+            cu.role AS "profileName"
         FROM public.companies c
         INNER JOIN public.company_users cu ON c.id = cu.company_id
         WHERE cu.user_id = :userId
@@ -70,7 +71,7 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
           AND c.active = true
         ORDER BY c.name
         """)
-    List<UserCompanyResponse> findUserCompaniesWithRoles(@Param("userId") Long userId);
+    List<UserCompanyResponse> findUserCompaniesWithRoles(@Param("userId") UUID userId);
 
     /**
      * Finds a company by tenant ID (Story 9.1 - AC2).
@@ -105,7 +106,7 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
           AND cu.active = true
           AND c.active = true
         """)
-    boolean hasUserAccessToTenant(@Param("userId") Long userId, @Param("tenantId") UUID tenantId);
+    boolean hasUserAccessToTenant(@Param("userId") UUID userId, @Param("tenantId") UUID tenantId);
 
     /**
      * Finds user's role in a specific company (Story 9.1 - AC3).
@@ -123,5 +124,5 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
           AND cu.active = true
           AND c.active = true
         """)
-    Optional<String> findUserRoleInTenant(@Param("userId") Long userId, @Param("tenantId") UUID tenantId);
+    Optional<String> findUserRoleInTenant(@Param("userId") UUID userId, @Param("tenantId") UUID tenantId);
 }

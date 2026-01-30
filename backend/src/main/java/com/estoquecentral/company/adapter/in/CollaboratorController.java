@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -94,12 +95,12 @@ public class CollaboratorController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InviteCollaboratorResponse> inviteCollaborator(
-            @PathVariable Long companyId,
+            @PathVariable UUID companyId,
             @Valid @RequestBody InviteCollaboratorRequest request,
             Authentication authentication) {
 
-        // Get current user ID from JWT
-        Long currentUserId = Long.parseLong(authentication.getName());
+        // Get current user ID from JWT (now always UUID)
+        UUID currentUserId = UUID.fromString(authentication.getName());
 
         logger.info("POST /api/companies/{}/collaborators - Admin user {} inviting: email={}, role={}",
                 companyId, currentUserId, request.email(), request.role());
@@ -157,10 +158,10 @@ public class CollaboratorController {
      */
     @GetMapping
     public ResponseEntity<List<CollaboratorDetailDTO>> listCollaborators(
-            @PathVariable Long companyId,
+            @PathVariable UUID companyId,
             Authentication authentication) {
 
-        Long currentUserId = Long.parseLong(authentication.getName());
+        UUID currentUserId = UUID.fromString(authentication.getName());
         logger.info("GET /api/companies/{}/collaborators - User {} listing collaborators", companyId, currentUserId);
 
         // AC2: Fetch collaborators with user details (joins company_users + users)
@@ -195,11 +196,11 @@ public class CollaboratorController {
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeCollaborator(
-            @PathVariable Long companyId,
-            @PathVariable Long userId,
+            @PathVariable UUID companyId,
+            @PathVariable UUID userId,
             Authentication authentication) {
 
-        Long currentUserId = Long.parseLong(authentication.getName());
+        UUID currentUserId = UUID.fromString(authentication.getName());
         logger.info("DELETE /api/companies/{}/collaborators/{} - Admin {} removing collaborator",
                 companyId, userId, currentUserId);
 
@@ -240,11 +241,11 @@ public class CollaboratorController {
     @PutMapping("/{userId}/promote")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> promoteToAdmin(
-            @PathVariable Long companyId,
-            @PathVariable Long userId,
+            @PathVariable UUID companyId,
+            @PathVariable UUID userId,
             Authentication authentication) {
 
-        Long currentUserId = Long.parseLong(authentication.getName());
+        UUID currentUserId = UUID.fromString(authentication.getName());
         logger.info("PUT /api/companies/{}/collaborators/{}/promote - Admin {} promoting collaborator to ADMIN",
                 companyId, userId, currentUserId);
 

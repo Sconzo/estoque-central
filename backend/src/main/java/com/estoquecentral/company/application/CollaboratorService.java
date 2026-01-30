@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Application service for collaborator management.
@@ -50,7 +51,7 @@ public class CollaboratorService {
      * @throws IllegalArgumentException if user is already invited
      */
     @Transactional
-    public CompanyUser inviteCollaboratorByEmail(Long companyId, String email, String role) {
+    public CompanyUser inviteCollaboratorByEmail(UUID companyId, String email, String role) {
         logger.info("Inviting collaborator: companyId={}, email={}, role={}", companyId, email, role);
 
         // Find or create user
@@ -92,7 +93,7 @@ public class CollaboratorService {
      */
     @Deprecated
     @Transactional
-    public CompanyUser inviteCollaborator(Long companyId, Long userId, String role) {
+    public CompanyUser inviteCollaborator(UUID companyId, UUID userId, String role) {
         if (companyUserRepository.existsByCompanyIdAndUserId(companyId, userId)) {
             throw new IllegalArgumentException("User is already associated with this company");
         }
@@ -111,7 +112,7 @@ public class CollaboratorService {
      * @param companyId Company ID
      * @return List of active collaborators
      */
-    public List<CompanyUser> listCollaborators(Long companyId) {
+    public List<CompanyUser> listCollaborators(UUID companyId) {
         return companyUserRepository.findAllActiveByCompanyId(companyId);
     }
 
@@ -124,7 +125,7 @@ public class CollaboratorService {
      * @param companyId Company ID
      * @return Map of CompanyUser to User entities
      */
-    public java.util.Map<CompanyUser, User> listCollaboratorsWithDetails(Long companyId) {
+    public java.util.Map<CompanyUser, User> listCollaboratorsWithDetails(UUID companyId) {
         logger.debug("Listing collaborators with details for company: {}", companyId);
 
         List<CompanyUser> collaborators = companyUserRepository.findAllActiveByCompanyId(companyId);
@@ -158,7 +159,7 @@ public class CollaboratorService {
      * @throws IllegalStateException if self-removal attempt (AC3) or last admin (AC4)
      */
     @Transactional
-    public void removeCollaborator(Long companyId, Long userId, Long currentUserId) {
+    public void removeCollaborator(UUID companyId, UUID userId, UUID currentUserId) {
         logger.info("Removing collaborator: companyId={}, userId={}, requestedBy={}", companyId, userId, currentUserId);
 
         // AC3: Self-removal protection
@@ -192,7 +193,7 @@ public class CollaboratorService {
      * @param companyId Company ID
      * @return Number of active admins
      */
-    private long countActiveAdmins(Long companyId) {
+    private long countActiveAdmins(UUID companyId) {
         List<CompanyUser> collaborators = companyUserRepository.findAllActiveByCompanyId(companyId);
         return collaborators.stream()
                 .filter(cu -> "ADMIN".equalsIgnoreCase(cu.role()))
@@ -218,7 +219,7 @@ public class CollaboratorService {
      * @throws IllegalStateException if user is already admin (AC2)
      */
     @Transactional
-    public void promoteToAdmin(Long companyId, Long userId) {
+    public void promoteToAdmin(UUID companyId, UUID userId) {
         logger.info("Promoting collaborator to ADMIN: companyId={}, userId={}", companyId, userId);
 
         CompanyUser association = companyUserRepository.findByCompanyIdAndUserId(companyId, userId)
@@ -244,7 +245,7 @@ public class CollaboratorService {
      * @return User entity
      * @throws IllegalArgumentException if user not found
      */
-    public User findUserById(Long userId) {
+    public User findUserById(UUID userId) {
         return publicUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
     }

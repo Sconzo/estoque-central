@@ -104,7 +104,7 @@ export class CreateCompanyComponent implements OnInit, OnDestroy {
     }
 
     const payload = this.parseJwt(token);
-    const userId = parseInt(payload.sub, 10);
+    const userId = payload.sub;
 
     if (!userId) {
       this.showError('Token inválido. Faça login novamente.');
@@ -112,7 +112,7 @@ export class CreateCompanyComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // AC4: Build request with form data + userId
+    // AC4: Build request with form data + userId (UUID string)
     const request: CreateCompanyRequest = {
       ...this.companyForm.value,
       userId

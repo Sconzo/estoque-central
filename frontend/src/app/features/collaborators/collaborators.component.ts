@@ -11,8 +11,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CollaboratorService, CollaboratorResponse, InviteCollaboratorRequest } from '../../core/services/collaborator.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { TenantService } from '../../core/services/tenant.service';
 import { HasRoleDirective } from '../../core/directives/has-role.directive';
 
 /**
@@ -42,6 +44,7 @@ import { HasRoleDirective } from '../../core/directives/has-role.directive';
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     HasRoleDirective
   ],
   templateUrl: './collaborators.component.html',
@@ -50,13 +53,14 @@ import { HasRoleDirective } from '../../core/directives/has-role.directive';
 export class CollaboratorsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private collaboratorService = inject(CollaboratorService);
+  private tenantService = inject(TenantService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
 
   collaborators = signal<CollaboratorResponse[]>([]);
   loading = signal(false);
-  companyId: number | null = null;
+  companyId: string | null = null;
 
   displayedColumns: string[] = [
     'userName',
@@ -82,7 +86,7 @@ export class CollaboratorsComponent implements OnInit {
   loadCollaborators(): void {
     this.loading.set(true);
 
-    // Get company ID from JWT token
+    // Get tenantId from current context
     const tenantId = this.authService.getTenantIdFromToken();
 
     if (!tenantId) {
@@ -91,17 +95,31 @@ export class CollaboratorsComponent implements OnInit {
       return;
     }
 
-    // For now, we'll use a placeholder company ID
-    // In a real scenario, you'd need to map tenantId to companyId
-    this.companyId = 1; // TODO: Get actual companyId from tenantId
+    // Get companyId by looking up the company with this tenantId
+    this.tenantService.getUserCompanies().subscribe({
+      next: (companies) => {
+        const company = companies.find(c => c.tenantId === tenantId);
+        if (!company) {
+          this.snackBar.open('Erro: Empresa não encontrada', 'OK', { duration: 3000 });
+          this.loading.set(false);
+          return;
+        }
 
-    this.collaboratorService.listCollaborators(this.companyId).subscribe({
-      next: (collaborators) => {
-        this.collaborators.set(collaborators);
-        this.loading.set(false);
+        this.companyId = company.id;
+
+        this.collaboratorService.listCollaborators(this.companyId).subscribe({
+          next: (collaborators) => {
+            this.collaborators.set(collaborators);
+            this.loading.set(false);
+          },
+          error: (error) => {
+            this.snackBar.open('Erro ao carregar colaboradores: ' + error.message, 'OK', { duration: 5000 });
+            this.loading.set(false);
+          }
+        });
       },
       error: (error) => {
-        this.snackBar.open('Erro ao carregar colaboradores: ' + error.message, 'OK', { duration: 5000 });
+        this.snackBar.open('Erro ao buscar empresas: ' + error.message, 'OK', { duration: 5000 });
         this.loading.set(false);
       }
     });

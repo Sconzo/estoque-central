@@ -60,19 +60,12 @@
         (click)="toggleSidenav()">
         <mat-icon>menu</mat-icon>
       </button>
-      <span class="toolbar-title">{{ title }}</span>
-      @if (currentUser()) {
-        <!-- Story 9.3: User avatar menu (mobile) -->
-        <app-user-avatar-menu></app-user-avatar-menu>
+      @if (currentCompany()) {
+        <span class="toolbar-title">{{ currentCompany()!.nome }}</span>
+      } @else {
+        <span class="toolbar-title">{{ title }}</span>
       }
-      @if (currentUser()) {
-        <!-- Story 9.3: User avatar menu (mobile) -->
-        <app-user-avatar-menu></app-user-avatar-menu>
-      }
-      @if (currentUser()) {
-        <!-- Story 9.3: User avatar menu (mobile) -->
-        <app-user-avatar-menu></app-user-avatar-menu>
-      }
+      <span class="toolbar-spacer"></span>
       @if (currentUser()) {
         <!-- Story 9.3: User avatar menu (mobile) -->
         <app-user-avatar-menu></app-user-avatar-menu>
@@ -147,6 +140,12 @@
     <mat-sidenav-content>
       <!-- Desktop Toolbar -->
       <mat-toolbar color="primary" class="desktop-toolbar">
+        @if (currentCompany()) {
+          <span class="company-name">
+            <mat-icon class="company-icon">business</mat-icon>
+            {{ currentCompany()!.nome }}
+          </span>
+        }
         <span class="toolbar-spacer"></span>
         @if (currentUser()) {
           <button

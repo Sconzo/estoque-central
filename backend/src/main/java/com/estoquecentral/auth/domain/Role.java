@@ -32,7 +32,7 @@ import java.util.UUID;
  * @see Profile
  * @see Usuario
  */
-@Table("public.roles")
+@Table("roles")
 public class Role {
 
     @Id

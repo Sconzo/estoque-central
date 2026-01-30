@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * User - Domain entity for public.users table
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    private Long id;
+    private UUID id;
     private String nome;
     private String email;
     private String googleId;
@@ -45,7 +46,7 @@ public class User {
     /**
      * Constructor for existing users (from database).
      */
-    public User(Long id, String nome, String email, String googleId, Boolean ativo,
+    public User(UUID id, String nome, String email, String googleId, Boolean ativo,
                 LocalDateTime ultimoLogin, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.nome = nome;
@@ -81,11 +82,11 @@ public class User {
 
     // Getters and Setters
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

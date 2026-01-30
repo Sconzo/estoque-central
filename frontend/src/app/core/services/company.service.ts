@@ -110,7 +110,7 @@ export class CompanyService {
    * Updates company information (Epic 10).
    * @deprecated Use updateCurrentCompany() for Story 10.5+
    */
-  updateCompany(companyId: number, request: UpdateCompanyRequest): Observable<CompanyResponse> {
+  updateCompany(companyId: string, request: UpdateCompanyRequest): Observable<CompanyResponse> {
     return this.http.put<CompanyResponse>(`${this.apiUrl}/${companyId}`, request);
   }
 
@@ -118,7 +118,7 @@ export class CompanyService {
    * Deletes (deactivates) a company (Epic 10).
    * @deprecated Use deleteCurrentCompany() for Story 10.6+
    */
-  deleteCompany(companyId: number): Observable<void> {
+  deleteCompany(companyId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${companyId}`);
   }
 
@@ -138,7 +138,7 @@ export interface CreateCompanyRequest {
   cnpj?: string;
   email: string;
   telefone?: string;
-  userId: number;
+  userId: string;  // UUID string
 }
 
 /**
@@ -165,12 +165,12 @@ export interface UpdateCompanyRequest {
  * Response interface matching backend CompanyDTO.
  */
 export interface CompanyResponse {
-  id: number;
+  id: string;  // UUID string
   name: string;
   cnpj: string;
   email: string;
   phone: string;
-  ownerUserId: number;
+  ownerUserId: string;  // UUID string
   createdAt: string;
   updatedAt: string;
   active: boolean;
@@ -181,6 +181,7 @@ export interface CompanyResponse {
  * Matches backend UserCompanyResponse DTO.
  */
 export interface UserCompanyResponse {
+  id: string;
   tenantId: string;
   nome: string;
   cnpj: string;

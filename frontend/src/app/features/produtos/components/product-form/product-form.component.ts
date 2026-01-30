@@ -73,7 +73,12 @@ export class ProductFormComponent implements OnInit {
   readonly STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }));
   readonly PRODUCT_TYPE_OPTIONS = [
     { value: ProductType.SIMPLE, label: 'Produto Simples' },
-    { value: ProductType.VARIANT_PARENT, label: 'Produto com Variantes (matriz)' }
+    { value: ProductType.VARIANT_PARENT, label: 'Produto com Variantes (matriz)' },
+    { value: ProductType.COMPOSITE, label: 'Kit/Composto (BOM)' }
+  ];
+  readonly BOM_TYPE_OPTIONS = [
+    { value: 'VIRTUAL', label: 'Virtual (estoque calculado dos componentes)' },
+    { value: 'PHYSICAL', label: 'Físico (kit pré-montado com estoque próprio)' }
   ];
   readonly ProductStatus = ProductStatus;
   readonly ProductType = ProductType;
@@ -107,7 +112,8 @@ export class ProductFormComponent implements OnInit {
       cost: [0, Validators.min(0)],
       unit: ['UN', Validators.required],
       controlsInventory: [true],
-      status: [ProductStatus.ACTIVE, Validators.required]
+      status: [ProductStatus.ACTIVE, Validators.required],
+      bomType: ['']
     });
   }
 
@@ -162,6 +168,8 @@ export class ProductFormComponent implements OnInit {
    * Patches form with product data
    */
   patchFormWithProduct(product: ProductDTO): void {
+    this.selectedProductType = product.type;
+
     this.productForm.patchValue({
       name: product.name,
       sku: product.sku,
@@ -172,7 +180,8 @@ export class ProductFormComponent implements OnInit {
       cost: product.cost || 0,
       unit: product.unit,
       controlsInventory: product.controlsInventory,
-      status: product.status
+      status: product.status,
+      bomType: product.bomType || ''
     });
 
     // Disable SKU in edit mode (cannot change)
@@ -203,6 +212,7 @@ export class ProductFormComponent implements OnInit {
 
     const request: ProductCreateRequest = {
       type: this.selectedProductType,
+      bomType: this.selectedProductType === ProductType.COMPOSITE ? formValue.bomType : undefined,
       name: formValue.name,
       sku: formValue.sku,
       barcode: formValue.barcode || undefined,
@@ -228,7 +238,8 @@ export class ProductFormComponent implements OnInit {
           this.saving = false;
           // Don't navigate yet - let user configure variants
         } else {
-          // Simple product - navigate back to list
+          // Simple or Composite product - navigate back to list
+          // TODO: For COMPOSITE, consider showing component configuration screen
           this.router.navigate(['/produtos']);
         }
       },
@@ -347,5 +358,16 @@ export class ProductFormComponent implements OnInit {
    */
   onProductTypeChange(event: any): void {
     this.selectedProductType = event.value as ProductType;
+
+    // Update bomType validation based on product type
+    const bomTypeControl = this.productForm.get('bomType');
+    if (this.selectedProductType === ProductType.COMPOSITE) {
+      bomTypeControl?.setValidators([Validators.required]);
+      bomTypeControl?.setValue('VIRTUAL'); // Default to VIRTUAL
+    } else {
+      bomTypeControl?.clearValidators();
+      bomTypeControl?.setValue('');
+    }
+    bomTypeControl?.updateValueAndValidity();
   }
 }

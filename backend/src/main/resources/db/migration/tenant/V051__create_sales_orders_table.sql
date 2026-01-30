@@ -14,15 +14,14 @@ CREATE TABLE sales_orders (
     payment_terms VARCHAR(20),
     total_amount DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
     notes TEXT,
-    created_by_user_id BIGINT NOT NULL,
+    created_by_user_id UUID NOT NULL,
     data_criacao TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_by BIGINT,
+    updated_by UUID,
 
     CONSTRAINT fk_sales_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
     CONSTRAINT fk_sales_orders_location FOREIGN KEY (stock_location_id) REFERENCES locations(id),
-    CONSTRAINT fk_sales_orders_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    CONSTRAINT fk_sales_orders_updated_by FOREIGN KEY (updated_by) REFERENCES users(id),
+    -- Note: created_by_user_id and updated_by reference public.users (cross-schema, no FK constraint)
 
     CONSTRAINT chk_status CHECK (status IN ('DRAFT', 'CONFIRMED', 'INVOICED', 'CANCELLED')),
     CONSTRAINT chk_payment_terms CHECK (payment_terms IN ('A_VISTA', 'DIAS_7', 'DIAS_14', 'DIAS_30', 'DIAS_60', 'DIAS_90')),

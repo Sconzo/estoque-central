@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository for User entity (public.users table).
@@ -18,7 +19,7 @@ import java.util.Optional;
  * @since 1.0
  */
 @Repository
-public interface PublicUserRepository extends CrudRepository<User, Long> {
+public interface PublicUserRepository extends CrudRepository<User, UUID> {
 
     /**
      * Finds a user by Google OAuth ID.

@@ -16,14 +16,14 @@ import java.util.UUID;
  */
 @Table("companies")
 public record Company(
-    @Id Long id,
+    @Id UUID id,
     UUID tenantId,
     String schemaName,
     String name,
     String cnpj,
     String email,
     String phone,
-    Long ownerUserId,
+    UUID ownerUserId,
     Instant createdAt,
     Instant updatedAt,
     boolean active
@@ -32,7 +32,7 @@ public record Company(
      * Creates a new company for self-service registration.
      * TenantId and schemaName will be set after tenant provisioning.
      */
-    public static Company create(String name, String cnpj, String email, String phone, Long ownerUserId) {
+    public static Company create(String name, String cnpj, String email, String phone, UUID ownerUserId) {
         Instant now = Instant.now();
         return new Company(
             null,

@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * UserCompanyController - REST API for user-company associations.
@@ -58,8 +59,8 @@ public class UserCompanyController {
      */
     @GetMapping("/companies")
     public ResponseEntity<List<UserCompanyResponse>> getMyCompanies(Authentication authentication) {
-        // AC1: Extract userId from JWT payload
-        Long userId = Long.parseLong(authentication.getName());
+        // AC1: Extract userId from JWT payload (now always UUID)
+        UUID userId = UUID.fromString(authentication.getName());
 
         logger.info("GET /api/users/me/companies - Fetching companies for user: {}", userId);
 
@@ -112,8 +113,8 @@ public class UserCompanyController {
             @Valid @RequestBody SwitchContextRequest request,
             Authentication authentication) {
 
-        // AC1: Extract user info from JWT
-        Long userId = Long.parseLong(authentication.getName());
+        // AC1: Extract user info from JWT (now always UUID)
+        UUID userId = UUID.fromString(authentication.getName());
 
         // Get email from authentication details
         String email = (String) ((Claims) authentication.getDetails()).get("email");

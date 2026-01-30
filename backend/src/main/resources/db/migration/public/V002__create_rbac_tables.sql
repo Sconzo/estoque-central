@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 
     -- Tenant this profile belongs to
     -- FK to public.tenants.id
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
 
     -- Profile name (unique per tenant)
     -- Examples: "Gerente Loja", "Vendedor Senior", "Caixa"

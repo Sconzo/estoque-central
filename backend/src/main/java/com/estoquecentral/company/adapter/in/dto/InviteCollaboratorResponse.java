@@ -4,6 +4,7 @@ import com.estoquecentral.company.domain.CompanyUser;
 import com.estoquecentral.auth.domain.User;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Response DTO for collaborator invitation.
@@ -13,9 +14,9 @@ import java.time.Instant;
  * @since 1.0
  */
 public record InviteCollaboratorResponse(
-    Long id,
-    Long companyId,
-    Long userId,
+    UUID id,
+    UUID companyId,
+    UUID userId,
     String userName,
     String userEmail,
     String role,

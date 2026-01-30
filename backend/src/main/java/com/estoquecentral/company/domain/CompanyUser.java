@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * CompanyUser - represents the association between a user and a company with a specific role.
@@ -15,9 +16,9 @@ import java.time.Instant;
  */
 @Table("company_users")
 public record CompanyUser(
-    @Id Long id,
-    Long companyId,
-    Long userId,
+    @Id UUID id,
+    UUID companyId,
+    UUID userId,
     String role,
     Instant invitedAt,
     Instant acceptedAt,
@@ -26,7 +27,7 @@ public record CompanyUser(
     /**
      * Creates a new company-user association (invitation).
      */
-    public static CompanyUser invite(Long companyId, Long userId, String role) {
+    public static CompanyUser invite(UUID companyId, UUID userId, String role) {
         return new CompanyUser(
             null,
             companyId,

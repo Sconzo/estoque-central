@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -21,10 +21,10 @@ import { environment } from '../../../environments/environment';
 export class TenantService {
   private readonly STORAGE_KEY = 'current_company_id';
   private readonly TENANT_STORAGE_KEY = 'currentTenantId';
-  private readonly apiUrl = `${environment.apiUrl}/api/companies`;
+  private readonly apiUrl = `${environment.apiUrl}/api/users/me`;
 
-  // Signal for reactive current company ID (legacy)
-  currentCompanyId = signal<number | null>(this.loadCurrentCompanyId());
+  // Signal for reactive current company ID (legacy - now uses UUID string)
+  currentCompanyId = signal<string | null>(this.loadCurrentCompanyId());
 
   // Story 9.5 - AC1: Signal for reactive current tenant (UUID)
   // Components subscribe to this signal for real-time context updates
@@ -35,10 +35,36 @@ export class TenantService {
   /**
    * Switches the current company context (Epic 9).
    * Stores the selection in localStorage for persistence across sessions.
+   * @deprecated Use switchCompanyContext() for proper JWT token update
    */
-  switchCompany(companyId: number): void {
+  switchCompany(companyId: string): void {
     this.currentCompanyId.set(companyId);
-    localStorage.setItem(this.STORAGE_KEY, companyId.toString());
+    localStorage.setItem(this.STORAGE_KEY, companyId);
+  }
+
+  /**
+   * Switches the company context and updates JWT token with correct roles (Story 9.1).
+   * Calls backend PUT /api/users/me/context to get new JWT with roles.
+   *
+   * @param tenantId - The tenant UUID to switch to
+   * @returns Observable with switch response containing new token
+   */
+  switchCompanyContext(tenantId: string): Observable<SwitchContextResponse> {
+    return this.http.put<SwitchContextResponse>(`${this.apiUrl}/context`, { tenantId }).pipe(
+      tap(response => {
+        // Save new JWT token with correct roles
+        if (response.token) {
+          localStorage.setItem('jwt_token', response.token);
+          console.log('🔐 JWT token updated with roles:', response.roles);
+        }
+        // Update tenant context
+        this.setCurrentTenant(response.tenantId);
+      }),
+      catchError(error => {
+        console.error('Failed to switch company context:', error);
+        throw error;
+      })
+    );
   }
 
   /**
@@ -91,7 +117,7 @@ export class TenantService {
   /**
    * Gets the current company ID from memory.
    */
-  getCurrentCompanyId(): number | null {
+  getCurrentCompanyId(): string | null {
     return this.currentCompanyId();
   }
 
@@ -106,9 +132,8 @@ export class TenantService {
   /**
    * Loads the current company ID from localStorage on service initialization.
    */
-  private loadCurrentCompanyId(): number | null {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    return stored ? parseInt(stored, 10) : null;
+  private loadCurrentCompanyId(): string | null {
+    return localStorage.getItem(this.STORAGE_KEY);
   }
 
   /**
@@ -123,7 +148,7 @@ export class TenantService {
    * Fetches all companies accessible by the current user (Epic 9).
    */
   getUserCompanies(): Observable<Company[]> {
-    return this.http.get<Company[]>(`${this.apiUrl}/my-companies`);
+    return this.http.get<Company[]>(`${this.apiUrl}/companies`);
   }
 
   /**
@@ -143,16 +168,23 @@ export class TenantService {
 }
 
 /**
- * Company interface matching backend CompanyDTO.
+ * Company interface matching backend UserCompanyResponse.
  */
 export interface Company {
-  id: number;
-  name: string;
+  id: string;
+  tenantId: string;
+  nome: string;
   cnpj: string;
-  email: string;
-  phone: string;
-  ownerUserId: number;
-  createdAt: string;
-  updatedAt: string;
-  active: boolean;
+  profileId: string | null;
+  profileName: string;
+}
+
+/**
+ * Response from context switch endpoint (Story 9.1).
+ */
+export interface SwitchContextResponse {
+  token: string;
+  tenantId: string;
+  companyName: string;
+  roles: string[];
 }

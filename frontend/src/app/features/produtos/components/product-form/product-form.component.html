@@ -40,8 +40,31 @@
             </mat-select>
             <mat-hint id="product-type-hint">
               <strong>Produto Simples:</strong> produto único sem variações.<br>
-              <strong>Produto com Variantes:</strong> produto com múltiplas variações (ex: cores, tamanhos).
+              <strong>Produto com Variantes:</strong> produto com múltiplas variações (ex: cores, tamanhos).<br>
+              <strong>Kit/Composto:</strong> produto formado por outros produtos (BOM).
             </mat-hint>
+          </mat-form-field>
+
+          <!-- BOM Type (only for COMPOSITE products) -->
+          <mat-form-field appearance="outline" class="full-width" *ngIf="selectedProductType === ProductType.COMPOSITE">
+            <mat-label>Tipo de Composição <span class="required">*</span></mat-label>
+            <mat-select
+              formControlName="bomType"
+              required
+              aria-label="Tipo de composição do kit"
+              aria-required="true"
+              aria-describedby="bom-type-hint">
+              <mat-option *ngFor="let option of BOM_TYPE_OPTIONS" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+            <mat-hint id="bom-type-hint">
+              <strong>Virtual:</strong> estoque calculado automaticamente dos componentes.<br>
+              <strong>Físico:</strong> kit pré-montado com controle de estoque próprio.
+            </mat-hint>
+            <mat-error *ngIf="productForm.get('bomType')?.hasError('required')">
+              Tipo de composição é obrigatório para kits
+            </mat-error>
           </mat-form-field>
         </div>
       </div>
@@ -254,8 +277,8 @@
       </div>
     </div>
 
-    <!-- Form Actions (only for simple products or edit mode) -->
-    <div class="form-actions" *ngIf="selectedProductType === ProductType.SIMPLE || isEditMode">
+    <!-- Form Actions (for simple products, composite products, or edit mode) -->
+    <div class="form-actions" *ngIf="selectedProductType === ProductType.SIMPLE || selectedProductType === ProductType.COMPOSITE || isEditMode">
       <button
         mat-stroked-button
         type="button"

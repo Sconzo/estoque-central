@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserAvatarMenuComponent } from '../../components/user-avatar-menu/user-avatar-menu.component';
+import { TenantService, Company } from '../../../core/services/tenant.service';
 
 /**
  * MainLayoutComponent - Main application shell with responsive navigation
@@ -49,6 +50,7 @@ export class MainLayoutComponent implements OnInit {
 
   title = 'Estoque Central';
   currentUser = signal<any>(null);
+  currentCompany = signal<Company | null>(null);
 
   // Responsive detection
   isHandset$!: Observable<boolean>;
@@ -115,7 +117,8 @@ export class MainLayoutComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private tenantService: TenantService
   ) {
     // Initialize responsive detection - Handset devices (phones/tablets)
     this.isHandset$ = this.breakpointObserver.observe(Breakpoints.Handset)
@@ -123,12 +126,51 @@ export class MainLayoutComponent implements OnInit {
         map(result => result.matches),
         shareReplay()
       );
+
+    // Subscribe to tenant changes to update company name
+    effect(() => {
+      const tenantId = this.tenantService.currentTenant$();
+      if (tenantId) {
+        this.loadCurrentCompany();
+      }
+    });
   }
 
   ngOnInit(): void {
-    // Load current user
-    const user = this.authService.getCurrentUser();
-    this.currentUser.set(user);
+    // Load current user from JWT token
+    const user = this.authService.getUserFromToken();
+    if (user) {
+      this.currentUser.set(user);
+    }
+
+    // Load current company
+    this.loadCurrentCompany();
+  }
+
+  /**
+   * Loads the current company information
+   */
+  private loadCurrentCompany(): void {
+    const tenantId = this.tenantService.getCurrentTenant();
+    console.log('🏢 Loading company for tenantId:', tenantId);
+
+    if (tenantId) {
+      this.tenantService.getUserCompanies().subscribe({
+        next: (companies) => {
+          console.log('🏢 Companies received:', companies);
+          const company = companies.find(c => c.tenantId === tenantId);
+          console.log('🏢 Matched company:', company);
+          if (company) {
+            this.currentCompany.set(company);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading companies:', err);
+        }
+      });
+    } else {
+      console.log('🏢 No tenantId found in localStorage');
+    }
   }
 
   /**

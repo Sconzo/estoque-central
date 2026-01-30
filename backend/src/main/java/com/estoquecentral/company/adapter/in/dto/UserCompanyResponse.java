@@ -7,19 +7,21 @@ import java.util.UUID;
  *
  * <p>Returns company information along with user's profile/role in that company.
  *
- * @param tenantId Tenant UUID
+ * @param id Company ID
+ * @param tenantId Tenant UUID (as String)
  * @param nome Company name
  * @param cnpj Company CNPJ
- * @param profileId User's profile ID in this company
+ * @param profileId User's profile ID in this company (as String)
  * @param profileName User's profile name (e.g., "Admin", "Gerente", "Vendedor")
  *
  * @since 1.0
  */
 public record UserCompanyResponse(
-    UUID tenantId,
+    UUID id,
+    String tenantId,
     String nome,
     String cnpj,
-    UUID profileId,
+    String profileId,
     String profileName
 ) {
 }
