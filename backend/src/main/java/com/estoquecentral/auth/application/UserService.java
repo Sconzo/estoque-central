@@ -126,6 +126,26 @@ public class UserService {
     }
 
     /**
+     * Lists all users in the current tenant.
+     *
+     * @return list of all users ordered by name
+     */
+    public List<Usuario> listAll() {
+        logger.debug("Listing all users");
+        return usuarioRepository.findAllOrderByNome();
+    }
+
+    /**
+     * Lists all active users in the current tenant.
+     *
+     * @return list of active users ordered by name
+     */
+    public List<Usuario> listActive() {
+        logger.debug("Listing active users");
+        return usuarioRepository.findByAtivoTrue();
+    }
+
+    /**
      * Retrieves a user by ID.
      *
      * <p><strong>Important:</strong> TenantContext must be set before calling,

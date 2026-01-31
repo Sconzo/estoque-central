@@ -1,9 +1,11 @@
 package com.estoquecentral.auth.adapter.out;
 
 import com.estoquecentral.auth.domain.Usuario;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,4 +60,20 @@ public interface UsuarioRepository extends CrudRepository<Usuario, UUID> {
      * @return true if user exists in current tenant's schema, false otherwise
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Lists all users in the current tenant.
+     *
+     * @return list of all users
+     */
+    @Query("SELECT * FROM usuarios ORDER BY nome")
+    List<Usuario> findAllOrderByNome();
+
+    /**
+     * Lists all active users in the current tenant.
+     *
+     * @return list of active users
+     */
+    @Query("SELECT * FROM usuarios WHERE ativo = true ORDER BY nome")
+    List<Usuario> findByAtivoTrue();
 }

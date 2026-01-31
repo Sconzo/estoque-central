@@ -106,8 +106,9 @@ export class MainLayoutComponent implements OnInit {
     {
       icon: 'admin_panel_settings',
       label: 'Gestão de Usuários',
-      route: '/usuarios/profiles',
+      route: '/settings/collaborators',
       children: [
+        { label: 'Usuários', route: '/settings/collaborators' },
         { label: 'Perfis de Acesso', route: '/usuarios/profiles' },
         { label: 'Novo Perfil', route: '/usuarios/profiles/new' }
       ]

@@ -75,78 +75,87 @@ export interface Categoria {
   ativa: boolean;
 }
 
-// src/app/shared/models/produto.model.ts
-export interface Produto {
+// src/app/features/produtos/models/product.model.ts
+export interface Product {
   id: string;
-  tipo: TipoProduto;
+  tenantId: string;
+  type: ProductType;
+  bomType?: BomType;              // Only for COMPOSITE products
+  name: string;
   sku: string;
-  nome: string;
-  descricao?: string;
-  categoriaId: string;
-  categoria?: Categoria; // Populated em DTOs
-  preco: Money;
-  custo: Money;
-  codigoBarras?: string;
-  ncm?: string;
-  cfop?: string;
-  unidadeMedida: string;
-  ativo: boolean;
-
-  // Para produtos variantes
-  produtoPaiId?: string;
-  atributos?: VarianteAtributo[];
-
-  // Para produtos compostos
-  itensCompostos?: ProdutoCompostoItem[];
-
-  // Integração Mercado Livre
-  integracaoML?: IntegracaoML;
-
-  createdAt: Date;
-  updatedAt: Date;
+  barcode?: string;
+  description?: string;
+  categoryId: string;
+  categoryName?: string;          // Populated in DTOs
+  price: number;                  // Decimal (e.g., 19.90)
+  cost?: number;                  // Decimal (e.g., 15.00)
+  unit: string;                   // Default: 'UN'
+  controlsInventory: boolean;     // Default: true
+  status: ProductStatus;          // ACTIVE, INACTIVE, DISCONTINUED
+  ativo: boolean;                 // Soft delete flag
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
-export enum TipoProduto {
-  SIMPLES = 'SIMPLES',
-  VARIANTE_PAI = 'VARIANTE_PAI',
-  VARIANTE_FILHO = 'VARIANTE_FILHO',
-  COMPOSTO = 'COMPOSTO'
+export enum ProductType {
+  SIMPLE = 'SIMPLE',
+  VARIANT_PARENT = 'VARIANT_PARENT',
+  VARIANT = 'VARIANT',
+  COMPOSITE = 'COMPOSITE'
 }
 
-export interface VarianteAtributo {
-  nome: string; // ex: "Cor", "Tamanho"
-  valor: string; // ex: "Azul", "M"
+export enum ProductStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DISCONTINUED = 'DISCONTINUED'
 }
 
-export interface ProdutoCompostoItem {
-  produtoId: string;
-  produto?: Produto;
-  quantidade: number;
+export enum BomType {
+  VIRTUAL = 'VIRTUAL',     // Stock calculated from components
+  PHYSICAL = 'PHYSICAL'    // Pre-assembled kit with own stock
 }
 
-// src/app/shared/models/money.model.ts
-export interface Money {
-  valor: number; // Centavos (ex: 1990 = R$ 19,90)
-  moeda: string; // "BRL"
+// Product variant attributes (for VARIANT products)
+export interface VariantAttribute {
+  id: string;
+  name: string;           // e.g., "Color", "Size"
+  displayOrder: number;
 }
 
-export class MoneyUtils {
-  static fromReais(reais: number): Money {
-    return { valor: Math.round(reais * 100), moeda: 'BRL' };
-  }
-
-  static toReais(money: Money): number {
-    return money.valor / 100;
-  }
-
-  static format(money: Money): string {
-    const reais = MoneyUtils.toReais(money);
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: money.moeda
-    }).format(reais);
-  }
+export interface VariantAttributeValue {
+  id: string;
+  attributeId: string;
+  value: string;          // e.g., "Blue", "M"
+  displayOrder: number;
 }
+
+// Product components (for COMPOSITE products - BOM)
+export interface ProductComponent {
+  id: string;
+  parentProductId: string;
+  componentProductId: string;
+  componentProduct?: Product;
+  quantity: number;
+}
+
+// Unit options
+export const UNIT_OPTIONS = [
+  { value: 'UN', label: 'Unidade' },
+  { value: 'KG', label: 'Quilograma' },
+  { value: 'G', label: 'Grama' },
+  { value: 'L', label: 'Litro' },
+  { value: 'ML', label: 'Mililitro' },
+  { value: 'M', label: 'Metro' },
+  { value: 'CM', label: 'Centímetro' },
+  { value: 'CX', label: 'Caixa' },
+  { value: 'PCT', label: 'Pacote' },
+  { value: 'FD', label: 'Fardo' }
+];
+
+// NOTE: Price/Cost stored as NUMERIC(15,2) in database
+// Frontend uses number type (decimal format, e.g., 19.90)
 
 // src/app/shared/models/estoque.model.ts
 export interface Estoque {
@@ -406,103 +415,90 @@ export interface CompradorML {
 ### **4.3.1. Core Aggregates**
 
 ```java
-// backend/src/main/java/com/estoquecentral/produtos/domain/model/Produto.java
-public class Produto extends AggregateRoot {
-    private final ProdutoId id;
-    private String nome;
+// backend/src/main/java/com/estoquecentral/catalog/domain/Product.java
+@Entity
+@Table(name = "products")
+public class Product {
+    @Id
+    private UUID id;
+
+    @Column(name = "tenant_id", nullable = false)
+    private UUID tenantId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductType type;               // SIMPLE, VARIANT_PARENT, VARIANT, COMPOSITE
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bom_type")
+    private BomType bomType;                // VIRTUAL, PHYSICAL (only for COMPOSITE)
+
+    @Column(nullable = false, length = 200)
+    private String name;
+
+    @Column(nullable = false, length = 100)
     private String sku;
-    private TipoProduto tipo;
-    private Money preco;
-    private Money custo;
-    private CategoriaId categoriaId;
-    private boolean ativo;
 
-    // Variantes
-    private ProdutoId produtoPaiId;
-    private List<VarianteAtributo> atributos;
+    @Column(length = 100)
+    private String barcode;
 
-    // Compostos
-    private List<ProdutoCompostoItem> itensCompostos;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    public static Produto criar(String nome, String sku, Money preco, CategoriaId categoriaId) {
-        var produto = new Produto(
-            ProdutoId.generate(),
-            nome,
-            sku,
-            TipoProduto.SIMPLES,
-            preco,
-            Money.zero(),
-            categoriaId,
-            true
-        );
-        produto.registerEvent(new ProdutoCriadoEvent(produto.id));
-        return produto;
-    }
+    @Column(name = "category_id", nullable = false)
+    private UUID categoryId;
 
-    public void atualizarPreco(Money novoPreco) {
-        if (novoPreco.isNegative()) {
-            throw new DomainException("Preço não pode ser negativo");
-        }
-        this.preco = novoPreco;
-        registerEvent(new ProdutoPrecoAtualizadoEvent(id, novoPreco));
-    }
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal price;               // Stored as NUMERIC(15,2)
 
-    // Value Objects
-    public record ProdutoId(UUID value) {
-        public static ProdutoId generate() {
-            return new ProdutoId(UUID.randomUUID());
-        }
-        public static ProdutoId of(UUID value) {
-            return new ProdutoId(value);
-        }
-    }
+    @Column(precision = 15, scale = 2)
+    private BigDecimal cost;                // Stored as NUMERIC(15,2)
 
-    public record CategoriaId(UUID value) {
-        public static CategoriaId of(UUID value) {
-            return new CategoriaId(value);
-        }
-    }
+    @Column(nullable = false, length = 20)
+    private String unit = "UN";
+
+    @Column(name = "controls_inventory", nullable = false)
+    private Boolean controlsInventory = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status;           // ACTIVE, INACTIVE, DISCONTINUED
+
+    @Column(nullable = false)
+    private Boolean ativo = true;           // Soft delete flag
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    private UUID createdBy;
+
+    @Column(name = "updated_by")
+    private UUID updatedBy;
 }
 
-// backend/src/main/java/com/estoquecentral/shared/domain/valueobject/Money.java
-public record Money(long valor, String moeda) {
-    public static Money fromReais(BigDecimal reais) {
-        long centavos = reais.multiply(BigDecimal.valueOf(100))
-                             .setScale(0, RoundingMode.HALF_UP)
-                             .longValue();
-        return new Money(centavos, "BRL");
-    }
-
-    public static Money zero() {
-        return new Money(0L, "BRL");
-    }
-
-    public BigDecimal toReais() {
-        return BigDecimal.valueOf(valor).divide(BigDecimal.valueOf(100));
-    }
-
-    public Money add(Money other) {
-        if (!moeda.equals(other.moeda)) {
-            throw new IllegalArgumentException("Cannot add different currencies");
-        }
-        return new Money(valor + other.valor, moeda);
-    }
-
-    public Money multiply(int quantidade) {
-        return new Money(valor * quantidade, moeda);
-    }
-
-    public boolean isNegative() {
-        return valor < 0;
-    }
+// backend/src/main/java/com/estoquecentral/catalog/domain/ProductType.java
+public enum ProductType {
+    SIMPLE,
+    VARIANT_PARENT,
+    VARIANT,
+    COMPOSITE
 }
 
-// backend/src/main/java/com/estoquecentral/produtos/domain/model/TipoProduto.java
-public enum TipoProduto {
-    SIMPLES,
-    VARIANTE_PAI,
-    VARIANTE_FILHO,
-    COMPOSTO
+// backend/src/main/java/com/estoquecentral/catalog/domain/ProductStatus.java
+public enum ProductStatus {
+    ACTIVE,
+    INACTIVE,
+    DISCONTINUED
+}
+
+// backend/src/main/java/com/estoquecentral/catalog/domain/BomType.java
+public enum BomType {
+    VIRTUAL,    // Stock calculated dynamically from components
+    PHYSICAL    // Pre-assembled kit with own stock records
 }
 
 // backend/src/main/java/com/estoquecentral/vendas/domain/model/Venda.java

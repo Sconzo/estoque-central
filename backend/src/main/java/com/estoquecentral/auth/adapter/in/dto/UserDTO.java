@@ -33,7 +33,8 @@ public class UserDTO {
     private String nome;
     private String pictureUrl;
     private UUID tenantId;
-    private String role;
+    private UUID profileId;
+    private String profileNome;
     private Boolean ativo;
     private Instant dataCriacao;
 
@@ -41,13 +42,14 @@ public class UserDTO {
     }
 
     public UserDTO(UUID id, String email, String nome, String pictureUrl,
-                   UUID tenantId, String role, Boolean ativo, Instant dataCriacao) {
+                   UUID tenantId, UUID profileId, String profileNome, Boolean ativo, Instant dataCriacao) {
         this.id = id;
         this.email = email;
         this.nome = nome;
         this.pictureUrl = pictureUrl;
         this.tenantId = tenantId;
-        this.role = role;
+        this.profileId = profileId;
+        this.profileNome = profileNome;
         this.ativo = ativo;
         this.dataCriacao = dataCriacao;
     }
@@ -62,7 +64,25 @@ public class UserDTO {
                 usuario.getNome(),
                 usuario.getPictureUrl(),
                 usuario.getTenantId(),
-                "ADMIN",
+                usuario.getProfileId(),
+                null,
+                usuario.getAtivo(),
+                usuario.getDataCriacao()
+        );
+    }
+
+    /**
+     * Factory method to create DTO from domain entity with profile name.
+     */
+    public static UserDTO fromEntityWithProfile(Usuario usuario, String profileNome) {
+        return new UserDTO(
+                usuario.getId(),
+                usuario.getEmail(),
+                usuario.getNome(),
+                usuario.getPictureUrl(),
+                usuario.getTenantId(),
+                usuario.getProfileId(),
+                profileNome,
                 usuario.getAtivo(),
                 usuario.getDataCriacao()
         );
@@ -110,12 +130,20 @@ public class UserDTO {
         this.tenantId = tenantId;
     }
 
-    public String getRole() {
-        return role;
+    public UUID getProfileId() {
+        return profileId;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setProfileId(UUID profileId) {
+        this.profileId = profileId;
+    }
+
+    public String getProfileNome() {
+        return profileNome;
+    }
+
+    public void setProfileNome(String profileNome) {
+        this.profileNome = profileNome;
     }
 
     public Boolean getAtivo() {
