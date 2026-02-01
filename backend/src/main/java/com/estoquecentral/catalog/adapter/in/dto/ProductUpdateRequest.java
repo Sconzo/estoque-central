@@ -1,5 +1,6 @@
 package com.estoquecentral.catalog.adapter.in.dto;
 
+import com.estoquecentral.catalog.domain.ProductStatus;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -35,12 +36,14 @@ public class ProductUpdateRequest {
 
     private Boolean controlsInventory;
 
+    private ProductStatus status;
+
     public ProductUpdateRequest() {
     }
 
     public ProductUpdateRequest(String name, String description, UUID categoryId,
                                  BigDecimal price, BigDecimal cost, String unit,
-                                 Boolean controlsInventory) {
+                                 Boolean controlsInventory, ProductStatus status) {
         this.name = name;
         this.description = description;
         this.categoryId = categoryId;
@@ -48,6 +51,7 @@ public class ProductUpdateRequest {
         this.cost = cost;
         this.unit = unit;
         this.controlsInventory = controlsInventory;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -106,5 +110,13 @@ public class ProductUpdateRequest {
 
     public void setControlsInventory(Boolean controlsInventory) {
         this.controlsInventory = controlsInventory;
+    }
+
+    public ProductStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ProductStatus status) {
+        this.status = status;
     }
 }

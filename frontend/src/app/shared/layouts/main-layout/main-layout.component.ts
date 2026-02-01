@@ -109,8 +109,7 @@ export class MainLayoutComponent implements OnInit {
       route: '/settings/collaborators',
       children: [
         { label: 'Usuários', route: '/settings/collaborators' },
-        { label: 'Perfis de Acesso', route: '/usuarios/profiles' },
-        { label: 'Novo Perfil', route: '/usuarios/profiles/new' }
+        { label: 'Perfis de Acesso', route: '/usuarios/profiles' }
       ]
     }
   ];

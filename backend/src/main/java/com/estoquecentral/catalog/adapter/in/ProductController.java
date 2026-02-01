@@ -256,6 +256,7 @@ public class ProductController {
                 request.getCost(),
                 request.getUnit(),
                 request.getControlsInventory(),
+                request.getStatus(),
                 userId
         );
 

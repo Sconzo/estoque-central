@@ -1,6 +1,8 @@
 package com.estoquecentral.catalog.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -33,11 +35,14 @@ import java.util.UUID;
  * @see ProductStatus
  */
 @Table("products")
-public class Product {
+public class Product implements Persistable<UUID> {
 
     @Id
     private UUID id;
     private UUID tenantId;
+
+    @Transient
+    private boolean isNew = false;
     private ProductType type;
     private BomType bomType;
     private String name;
@@ -89,6 +94,7 @@ public class Product {
         this.ativo = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
     }
 
     /**
@@ -107,10 +113,12 @@ public class Product {
      * @param cost new cost
      * @param unit new unit
      * @param controlsInventory new inventory control flag
+     * @param status new status
      * @param updatedBy user making the update
      */
     public void update(String name, String description, UUID categoryId, BigDecimal price,
-                       BigDecimal cost, String unit, Boolean controlsInventory, UUID updatedBy) {
+                       BigDecimal cost, String unit, Boolean controlsInventory,
+                       ProductStatus status, UUID updatedBy) {
         this.name = name;
         this.description = description;
         this.categoryId = categoryId;
@@ -118,6 +126,9 @@ public class Product {
         this.cost = cost;
         this.unit = unit;
         this.controlsInventory = controlsInventory;
+        if (status != null) {
+            this.status = status;
+        }
         this.updatedAt = LocalDateTime.now();
         this.updatedBy = updatedBy;
     }
@@ -189,6 +200,17 @@ public class Product {
         BigDecimal profit = price.subtract(cost);
         return profit.divide(cost, 4, BigDecimal.ROUND_HALF_UP)
                 .multiply(new BigDecimal("100"));
+    }
+
+    // Persistable implementation
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     // Getters and Setters

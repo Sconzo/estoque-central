@@ -294,15 +294,18 @@ public class ProductService {
      * @param cost new cost
      * @param unit new unit
      * @param controlsInventory new inventory control flag
+     * @param status new status
      * @param updatedBy user making the update
      * @return updated product
      * @throws IllegalArgumentException if validation fails
      */
+    @Transactional
     public Product update(UUID id, String name, String description, UUID categoryId,
                           BigDecimal price, BigDecimal cost, String unit,
-                          Boolean controlsInventory, UUID updatedBy) {
-        // Find product
-        Product product = getById(id);
+                          Boolean controlsInventory, ProductStatus status, UUID updatedBy) {
+        // Find product directly (avoid readOnly transaction from getById)
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
 
         // Validation
         validateProductName(name);
@@ -312,7 +315,7 @@ public class ProductService {
 
         // Update
         product.update(name, description, categoryId, price, cost, unit,
-                controlsInventory, updatedBy);
+                controlsInventory, status, updatedBy);
 
         return productRepository.save(product);
     }
@@ -325,8 +328,10 @@ public class ProductService {
      * @param updatedBy user making the update
      * @return updated product
      */
+    @Transactional
     public Product updateStatus(UUID id, ProductStatus status, UUID updatedBy) {
-        Product product = getById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.updateStatus(status, updatedBy);
         return productRepository.save(product);
     }
@@ -337,8 +342,10 @@ public class ProductService {
      * @param id product ID
      * @throws IllegalArgumentException if product not found
      */
+    @Transactional
     public void delete(UUID id) {
-        Product product = getById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
         product.deactivate();
         productRepository.save(product);
     }

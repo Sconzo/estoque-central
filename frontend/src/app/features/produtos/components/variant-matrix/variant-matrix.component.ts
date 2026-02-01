@@ -27,6 +27,7 @@ export class VariantMatrixComponent implements OnInit {
   @Input() baseSku: string = '';
   @Input() basePrice: number = 0;
   @Input() baseCost: number = 0;
+  @Input() initialAttributes: VariantAttribute[] = [];
   @Output() variantsGenerated = new EventEmitter<ProductVariant[]>();
 
   // Attributes definition
@@ -49,8 +50,19 @@ export class VariantMatrixComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Initialize with one empty attribute
-    if (this.attributes.length === 0) {
+    // Use initial attributes if provided, otherwise initialize with one empty attribute
+    if (this.initialAttributes && this.initialAttributes.length > 0) {
+      // Deep copy to avoid modifying the original
+      this.attributes = this.initialAttributes.map(attr => ({
+        name: attr.name,
+        values: [...attr.values]
+      }));
+      this.calculateEstimatedVariants();
+      // Auto-generate matrix if attributes are already configured
+      if (this.estimatedVariants > 0 && this.estimatedVariants <= 100) {
+        this.generateMatrix();
+      }
+    } else if (this.attributes.length === 0) {
       this.addAttribute();
     }
   }
