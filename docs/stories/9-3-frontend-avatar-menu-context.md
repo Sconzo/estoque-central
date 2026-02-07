@@ -209,3 +209,21 @@ So that **I can quickly change context without navigating away**.
 **Implementada por**: Claude Sonnet 4.5
 **Data de implementação**: 2025-12-24
 **Baseado em**: Epic 9, PRD (FR9, FR10, UX4, UX14, UX19, UX25)
+
+---
+
+### Correção Desktop (2025-02-07)
+
+**Issue Identificada:**
+Durante testes manuais, descobriu-se que o desktop toolbar estava usando menu avatar simplificado (linhas 151-183) ao invés do `UserAvatarMenuComponent` completo.
+
+**Correção Aplicada:**
+- Removido: Menu inline antigo (linhas 151-183)
+- Adicionado: `<app-user-avatar-menu></app-user-avatar-menu>`
+- Verificado: Desktop e mobile agora usam mesmo componente
+
+**Resultado:**
+- ✅ Desktop avatar menu mostra lista de empresas
+- ✅ Troca de contexto funciona em < 500ms
+- ✅ Consistência UX entre mobile e desktop
+- ✅ Journey 1 (Joaquin) funcional em todas plataformas

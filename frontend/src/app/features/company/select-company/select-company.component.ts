@@ -75,8 +75,10 @@ export class SelectCompanyComponent implements OnInit, OnDestroy {
           this.companies = companies;
           this.isLoading = false;
 
-          // Auto-select if user only has 1 company
-          if (companies.length === 1) {
+          // Auto-select if user only has 1 company AND no current tenant context
+          // (i.e., user is coming from login, not from "Gerenciar Empresas")
+          const currentTenantId = this.tenantService.getCurrentTenant();
+          if (companies.length === 1 && !currentTenantId) {
             this.selectCompany(companies[0]);
           }
         },
