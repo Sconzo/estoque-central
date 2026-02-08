@@ -487,6 +487,170 @@ mat-form-field {
   margin-top: 32px;
 }
 
+// ==================== Type Display Section (Edit Mode) ====================
+.type-display-section {
+  .type-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+
+    &.type-simple {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    &.type-variant_parent {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &.type-variant {
+      background: #fce7f3;
+      color: #9d174d;
+    }
+
+    &.type-composite {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+  }
+
+  .type-hint {
+    font-size: 13px;
+    color: #6b7280;
+    font-style: italic;
+  }
+}
+
+// ==================== Existing Variants Section (Edit Mode) ====================
+.existing-variants-section {
+  .section-header-with-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+
+    h3 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  .section-description {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+}
+
+.variants-table-container {
+  overflow-x: auto;
+  margin: 0 -8px;
+  padding: 8px;
+}
+
+.variants-table {
+  width: 100%;
+  min-width: 600px;
+
+  th.mat-mdc-header-cell {
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+    font-size: 13px;
+  }
+
+  td.mat-mdc-cell {
+    font-size: 14px;
+    color: #1f2937;
+  }
+
+  .attributes-text {
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .variant-status {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+
+    &.status-active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    &.status-inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    &.status-discontinued {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}
+
+// ==================== Existing BOM Section (Edit Mode) ====================
+.existing-bom-section {
+  .section-header-with-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+
+    h3 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  .section-description {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+}
+
+// ==================== Loading Inline ====================
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: #6b7280;
+
+  .spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
 // ==================== BOM Components Section ====================
 .bom-components-section {
   .section-header-with-action {

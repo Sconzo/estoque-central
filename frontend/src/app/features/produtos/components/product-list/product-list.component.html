@@ -124,7 +124,6 @@
         <th mat-header-cell *matHeaderCellDef>SKU</th>
         <td mat-cell *matCellDef="let product" (click)="viewProduct(product)">
           <strong>{{ product.sku }}</strong>
-          <div class="subtitle" *ngIf="product.barcode">{{ product.barcode }}</div>
         </td>
       </ng-container>
 
@@ -188,6 +187,13 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let product" class="actions">
+          <button
+            mat-icon-button
+            (click)="viewProduct(product); $event.stopPropagation()"
+            [attr.aria-label]="'Visualizar produto ' + product.name"
+            matTooltip="Visualizar Produto">
+            <mat-icon>visibility</mat-icon>
+          </button>
           <button
             mat-icon-button
             color="primary"

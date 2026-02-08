@@ -43,6 +43,30 @@ table {
   width: 100%;
 }
 
+table .mat-mdc-header-cell {
+  border-bottom: none;
+}
+
+table .mat-mdc-header-row {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+table .mat-mdc-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table .mat-mdc-row:last-of-type {
+  border-bottom: none;
+}
+
+table .mat-mdc-row:hover {
+  background-color: #fafafa;
+}
+
+table .mat-mdc-cell {
+  border-bottom: none;
+}
+
 .loading, .no-data {
   text-align: center;
   padding: 40px;

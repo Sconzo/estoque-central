@@ -3,9 +3,13 @@ package com.estoquecentral.catalog.adapter.in;
 import com.estoquecentral.catalog.adapter.in.dto.ProductCreateRequest;
 import com.estoquecentral.catalog.adapter.in.dto.ProductDTO;
 import com.estoquecentral.catalog.adapter.in.dto.ProductUpdateRequest;
+import com.estoquecentral.catalog.adapter.out.CategoryRepository;
 import com.estoquecentral.catalog.application.ProductService;
+import com.estoquecentral.catalog.domain.BomType;
+import com.estoquecentral.catalog.domain.Category;
 import com.estoquecentral.catalog.domain.Product;
 import com.estoquecentral.catalog.domain.ProductStatus;
+import com.estoquecentral.catalog.domain.ProductType;
 import com.estoquecentral.shared.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,7 +25,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * ProductController - REST API for product management
@@ -52,10 +59,31 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final CategoryRepository categoryRepository;
 
     @Autowired
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CategoryRepository categoryRepository) {
         this.productService = productService;
+        this.categoryRepository = categoryRepository;
+    }
+
+    /**
+     * Converts Product to ProductDTO with category name
+     */
+    private ProductDTO toDTO(Product product, Map<UUID, String> categoryNames) {
+        ProductDTO dto = ProductDTO.fromEntity(product);
+        if (product.getCategoryId() != null && categoryNames.containsKey(product.getCategoryId())) {
+            dto.setCategoryName(categoryNames.get(product.getCategoryId()));
+        }
+        return dto;
+    }
+
+    /**
+     * Builds a map of category ID to category name
+     */
+    private Map<UUID, String> getCategoryNamesMap() {
+        return StreamSupport.stream(categoryRepository.findAll().spliterator(), false)
+                .collect(Collectors.toMap(Category::getId, Category::getName));
     }
 
     /**
@@ -75,7 +103,8 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.listAll(pageable, status);
 
-        Page<ProductDTO> dtos = products.map(ProductDTO::fromEntity);
+        Map<UUID, String> categoryNames = getCategoryNamesMap();
+        Page<ProductDTO> dtos = products.map(product -> toDTO(product, categoryNames));
 
         return ResponseEntity.ok(dtos);
     }
@@ -90,7 +119,12 @@ public class ProductController {
     @Operation(summary = "Get product by ID", description = "Returns product details")
     public ResponseEntity<ProductDTO> getById(@PathVariable UUID id) {
         Product product = productService.getById(id);
-        return ResponseEntity.ok(ProductDTO.fromEntity(product));
+        ProductDTO dto = ProductDTO.fromEntity(product);
+        if (product.getCategoryId() != null) {
+            categoryRepository.findById(product.getCategoryId())
+                    .ifPresent(category -> dto.setCategoryName(category.getName()));
+        }
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -105,7 +139,12 @@ public class ProductController {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         Product product = productService.getBySku(tenantId, sku)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with SKU: " + sku));
-        return ResponseEntity.ok(ProductDTO.fromEntity(product));
+        ProductDTO dto = ProductDTO.fromEntity(product);
+        if (product.getCategoryId() != null) {
+            categoryRepository.findById(product.getCategoryId())
+                    .ifPresent(category -> dto.setCategoryName(category.getName()));
+        }
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -120,7 +159,12 @@ public class ProductController {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         Product product = productService.getByBarcode(tenantId, barcode)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with barcode: " + barcode));
-        return ResponseEntity.ok(ProductDTO.fromEntity(product));
+        ProductDTO dto = ProductDTO.fromEntity(product);
+        if (product.getCategoryId() != null) {
+            categoryRepository.findById(product.getCategoryId())
+                    .ifPresent(category -> dto.setCategoryName(category.getName()));
+        }
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -141,7 +185,8 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.search(q, pageable);
 
-        Page<ProductDTO> dtos = products.map(ProductDTO::fromEntity);
+        Map<UUID, String> categoryNames = getCategoryNamesMap();
+        Page<ProductDTO> dtos = products.map(product -> toDTO(product, categoryNames));
 
         return ResponseEntity.ok(dtos);
     }
@@ -166,7 +211,8 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.findByCategory(categoryId, includeSubcategories, pageable);
 
-        Page<ProductDTO> dtos = products.map(ProductDTO::fromEntity);
+        Map<UUID, String> categoryNames = getCategoryNamesMap();
+        Page<ProductDTO> dtos = products.map(product -> toDTO(product, categoryNames));
 
         return ResponseEntity.ok(dtos);
     }
@@ -189,7 +235,8 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.findByStatus(status, pageable);
 
-        Page<ProductDTO> dtos = products.map(ProductDTO::fromEntity);
+        Map<UUID, String> categoryNames = getCategoryNamesMap();
+        Page<ProductDTO> dtos = products.map(product -> toDTO(product, categoryNames));
 
         return ResponseEntity.ok(dtos);
     }
@@ -211,8 +258,14 @@ public class ProductController {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         UUID userId = UUID.fromString(authentication.getName());
 
+        // Use type from request, default to SIMPLE if not provided
+        ProductType type = request.getType() != null ? request.getType() : ProductType.SIMPLE;
+        BomType bomType = request.getBomType();
+
         Product product = productService.create(
                 tenantId,
+                type,
+                bomType,
                 request.getName(),
                 request.getSku(),
                 request.getBarcode(),
@@ -225,8 +278,12 @@ public class ProductController {
                 userId
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ProductDTO.fromEntity(product));
+        ProductDTO dto = ProductDTO.fromEntity(product);
+        if (product.getCategoryId() != null) {
+            categoryRepository.findById(product.getCategoryId())
+                    .ifPresent(category -> dto.setCategoryName(category.getName()));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     /**

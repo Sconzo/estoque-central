@@ -105,10 +105,20 @@
     text-transform: uppercase;
     font-size: 12px;
     letter-spacing: 0.5px;
+    border-bottom: none;
+  }
+
+  .mat-mdc-header-row {
+    border-bottom: 2px solid var(--mat-sys-outline-variant);
   }
 
   .mat-mdc-row {
     transition: background 0.2s;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
 
     &:hover {
       background: var(--mat-sys-surface-container);
@@ -117,6 +127,7 @@
 
   .mat-mdc-cell {
     color: var(--mat-sys-on-surface);
+    border-bottom: none;
 
     strong {
       font-weight: 600;

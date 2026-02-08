@@ -1,0 +1,412 @@
+.product-detail-container {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+// ==================== Loading ====================
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  p {
+    margin-top: 16px;
+    color: #6b7280;
+  }
+}
+
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: #6b7280;
+
+  .spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ==================== Error Banner ====================
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #991b1b;
+  }
+
+  p {
+    margin: 0;
+    flex: 1;
+    color: #991b1b;
+    font-weight: 500;
+  }
+}
+
+// ==================== Header ====================
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+
+  .header-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    .back-button {
+      margin-top: 4px;
+    }
+
+    .title-section {
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+
+    button {
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+
+    .header-actions {
+      width: 100%;
+
+      button {
+        flex: 1;
+      }
+    }
+  }
+}
+
+// ==================== Badges ====================
+.type-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+
+  &.type-simple {
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+
+  &.type-variant_parent {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  &.type-variant {
+    background: #fce7f3;
+    color: #9d174d;
+  }
+
+  &.type-composite {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+}
+
+.status-badge {
+  &.status-active {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  &.status-discontinued {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+}
+
+// ==================== Content ====================
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ==================== Cards ====================
+.detail-card {
+  mat-card-header {
+    margin-bottom: 16px;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+
+      mat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        color: #6b7280;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 0 16px 16px;
+  }
+}
+
+// ==================== Info Grid ====================
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+
+  &.pricing-grid {
+    grid-template-columns: repeat(3, 1fr);
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  span {
+    font-size: 14px;
+    color: #1f2937;
+  }
+
+  .sku-value {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+    background: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .id-value {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .description {
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .price-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #059669;
+  }
+
+  .cost-value {
+    font-size: 16px;
+    color: #6b7280;
+  }
+
+  .margin-value {
+    font-size: 16px;
+    font-weight: 600;
+
+    &.positive {
+      color: #059669;
+    }
+
+    &.negative {
+      color: #dc2626;
+    }
+  }
+
+  .controls-yes {
+    color: #059669;
+    font-weight: 500;
+  }
+
+  .controls-no {
+    color: #6b7280;
+  }
+}
+
+// ==================== Tables ====================
+.table-container {
+  overflow-x: auto;
+  margin: -8px;
+  padding: 8px;
+}
+
+.variants-table,
+.bom-table {
+  width: 100%;
+  min-width: 500px;
+
+  th.mat-mdc-header-cell {
+    font-weight: 600;
+    color: #374151;
+    background: #f9fafb;
+  }
+
+  td.mat-mdc-cell {
+    font-size: 14px;
+    color: #1f2937;
+  }
+
+  .attributes-text {
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .variant-status {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+
+    &.status-active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    &.status-inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    &.status-discontinued {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}
+
+// ==================== Empty State ====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #e5e7eb;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+}
+
+// ==================== Audit Card ====================
+.audit-card {
+  background: #f9fafb;
+
+  mat-card-title {
+    mat-icon {
+      color: #9ca3af !important;
+    }
+  }
+
+  .info-item {
+    span {
+      font-size: 13px;
+      color: #6b7280;
+    }
+  }
+}

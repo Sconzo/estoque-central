@@ -62,7 +62,9 @@
       "Bash(done)",
       "Bash(timeout 120 ./mvnw package:*)",
       "Bash(timeout 45 bash:*)",
-      "Bash(docker restart:*)"
+      "Bash(docker restart:*)",
+      "Bash(cmd.exe /c \"mvnw.cmd compile -q\")",
+      "Bash(cmd.exe /c \"mvnw.cmd compile\")"
     ],
     "deny": [],
     "ask": []

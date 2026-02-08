@@ -1,6 +1,8 @@
 package com.estoquecentral.catalog.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -21,7 +23,7 @@ import java.util.UUID;
  * </ul>
  */
 @Table("product_components")
-public class ProductComponent {
+public class ProductComponent implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -32,6 +34,9 @@ public class ProductComponent {
     private LocalDateTime updatedAt;
     private UUID createdBy;
     private UUID updatedBy;
+
+    @Transient
+    private boolean isNew = false;
 
     /**
      * Constructor for creating new product component
@@ -53,12 +58,24 @@ public class ProductComponent {
         this.quantityRequired = quantityRequired;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
     }
 
     /**
      * Default constructor for Spring Data JDBC
      */
     public ProductComponent() {
+    }
+
+    // Persistable implementation
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     /**

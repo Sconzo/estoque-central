@@ -2,6 +2,8 @@ package com.estoquecentral.catalog.domain.variant;
 
 import com.estoquecentral.catalog.domain.ProductStatus;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -19,7 +21,7 @@ import java.util.UUID;
  * </ul>
  */
 @Table("product_variants")
-public class ProductVariant {
+public class ProductVariant implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -39,6 +41,9 @@ public class ProductVariant {
     private UUID createdBy;
     private UUID updatedBy;
 
+    @Transient
+    private boolean isNew = false;
+
     public ProductVariant() {
     }
 
@@ -55,6 +60,7 @@ public class ProductVariant {
         this.ativo = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
     }
 
     public void update(String name, String description, BigDecimal price, BigDecimal cost,
@@ -81,6 +87,17 @@ public class ProductVariant {
 
     public boolean isActive() {
         return this.ativo != null && this.ativo;
+    }
+
+    // Persistable implementation
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     // Getters and Setters

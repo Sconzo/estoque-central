@@ -56,13 +56,29 @@ mat-card-title {
   min-width: 800px;
 }
 
-.items-table th {
+.items-table th,
+.items-table .mat-mdc-header-cell {
   font-weight: 600;
   color: #333;
+  border-bottom: none;
 }
 
-.items-table td {
+.items-table .mat-mdc-header-row {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.items-table .mat-mdc-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.items-table .mat-mdc-row:last-of-type {
+  border-bottom: none;
+}
+
+.items-table td,
+.items-table .mat-mdc-cell {
   padding: 8px 4px;
+  border-bottom: none;
 }
 
 .item-field {

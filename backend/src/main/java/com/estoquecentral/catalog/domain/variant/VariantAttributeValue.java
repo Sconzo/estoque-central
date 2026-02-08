@@ -1,13 +1,15 @@
 package com.estoquecentral.catalog.domain.variant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Table("variant_attribute_values")
-public class VariantAttributeValue {
+public class VariantAttributeValue implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -19,6 +21,9 @@ public class VariantAttributeValue {
     private Integer sortOrder;
     private Boolean ativo;
     private LocalDateTime createdAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public VariantAttributeValue() {
     }
@@ -33,6 +38,18 @@ public class VariantAttributeValue {
         this.sortOrder = sortOrder != null ? sortOrder : 0;
         this.ativo = true;
         this.createdAt = LocalDateTime.now();
+        this.isNew = true;
+    }
+
+    // Persistable implementation
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     // Getters and Setters

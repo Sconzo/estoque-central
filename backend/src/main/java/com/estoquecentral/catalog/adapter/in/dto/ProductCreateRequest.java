@@ -1,5 +1,7 @@
 package com.estoquecentral.catalog.adapter.in.dto;
 
+import com.estoquecentral.catalog.domain.BomType;
+import com.estoquecentral.catalog.domain.ProductType;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -11,6 +13,10 @@ import java.util.UUID;
  * <p>Contains validation rules for product creation.
  */
 public class ProductCreateRequest {
+
+    private ProductType type;
+
+    private BomType bomType;
 
     @NotBlank(message = "Product name is required")
     @Size(min = 1, max = 200, message = "Product name must be between 1 and 200 characters")
@@ -59,6 +65,22 @@ public class ProductCreateRequest {
     }
 
     // Getters and Setters
+
+    public ProductType getType() {
+        return type;
+    }
+
+    public void setType(ProductType type) {
+        this.type = type;
+    }
+
+    public BomType getBomType() {
+        return bomType;
+    }
+
+    public void setBomType(BomType bomType) {
+        this.bomType = bomType;
+    }
 
     public String getName() {
         return name;

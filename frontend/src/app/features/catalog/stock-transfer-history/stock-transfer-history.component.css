@@ -51,14 +51,34 @@ mat-card-title {
   background: white;
 }
 
-.transfers-table th {
+.transfers-table th,
+.transfers-table .mat-mdc-header-cell {
   background-color: #f5f5f5;
   font-weight: 600;
   color: #333;
+  border-bottom: none;
 }
 
-.transfers-table td {
+.transfers-table .mat-mdc-header-row {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.transfers-table .mat-mdc-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.transfers-table .mat-mdc-row:last-of-type {
+  border-bottom: none;
+}
+
+.transfers-table .mat-mdc-row:hover {
+  background-color: #fafafa;
+}
+
+.transfers-table td,
+.transfers-table .mat-mdc-cell {
   padding: 12px 8px;
+  border-bottom: none;
 }
 
 .product-info,

@@ -1,0 +1,276 @@
+<div class="product-detail-container">
+  <!-- Loading -->
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Carregando produto...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error">
+    <mat-icon>warning</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-stroked-button (click)="goBack()">Voltar</button>
+  </div>
+
+  <!-- Product Detail -->
+  <ng-container *ngIf="!loading && !error && product">
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="header-content">
+        <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Voltar para lista">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-section">
+          <h1>{{ product.name }}</h1>
+          <div class="badges">
+            <span class="type-badge" [ngClass]="'type-' + product.type.toLowerCase()">
+              {{ TYPE_LABELS[product.type] }}
+            </span>
+            <span class="status-badge" [ngClass]="'status-' + product.status.toLowerCase()">
+              {{ STATUS_LABELS[product.status] }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="editProduct()">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="detail-content">
+      <!-- Basic Information -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>info</mat-icon>
+            Informações Básicas
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>SKU</label>
+              <span class="sku-value">{{ product.sku }}</span>
+            </div>
+            <div class="info-item">
+              <label>Código de Barras</label>
+              <span>{{ product.barcode || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Categoria</label>
+              <span>{{ product.categoryName || product.categoryPath || '-' }}</span>
+            </div>
+            <div class="info-item full-width" *ngIf="product.description">
+              <label>Descrição</label>
+              <span class="description">{{ product.description }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Pricing -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>attach_money</mat-icon>
+            Preços
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid pricing-grid">
+            <div class="info-item">
+              <label>Preço de Venda</label>
+              <span class="price-value">R$ {{ product.price | number:'1.2-2' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Custo</label>
+              <span class="cost-value">{{ product.cost ? ('R$ ' + (product.cost | number:'1.2-2')) : '-' }}</span>
+            </div>
+            <div class="info-item" *ngIf="calculateMargin() !== null">
+              <label>Margem</label>
+              <span class="margin-value" [ngClass]="{'positive': calculateMargin()! > 0, 'negative': calculateMargin()! < 0}">
+                {{ calculateMargin() | number:'1.1-1' }}%
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Inventory Control -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>inventory</mat-icon>
+            Controle de Estoque
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Unidade de Medida</label>
+              <span>{{ getUnitLabel(product.unit) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Controla Estoque</label>
+              <span [ngClass]="{'controls-yes': product.controlsInventory, 'controls-no': !product.controlsInventory}">
+                {{ product.controlsInventory ? 'Sim' : 'Não' }}
+              </span>
+            </div>
+            <div class="info-item" *ngIf="product.type === ProductType.COMPOSITE && product.bomType">
+              <label>Tipo de Composição</label>
+              <span>{{ getBomTypeLabel(product.bomType) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Variants Section (VARIANT_PARENT) -->
+      <mat-card class="detail-card" *ngIf="product.type === ProductType.VARIANT_PARENT">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>view_module</mat-icon>
+            Variantes ({{ variants.length }})
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="loading-inline" *ngIf="loadingVariants">
+            <div class="spinner-small"></div>
+            <span>Carregando variantes...</span>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingVariants && variants.length === 0">
+            <mat-icon>view_module</mat-icon>
+            <p>Nenhuma variante cadastrada</p>
+          </div>
+
+          <div class="table-container" *ngIf="!loadingVariants && variants.length > 0">
+            <table mat-table [dataSource]="variants" class="variants-table">
+              <!-- SKU Column -->
+              <ng-container matColumnDef="sku">
+                <th mat-header-cell *matHeaderCellDef>SKU</th>
+                <td mat-cell *matCellDef="let variant">{{ variant.sku }}</td>
+              </ng-container>
+
+              <!-- Name Column -->
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Nome</th>
+                <td mat-cell *matCellDef="let variant">{{ variant.name }}</td>
+              </ng-container>
+
+              <!-- Attributes Column -->
+              <ng-container matColumnDef="attributes">
+                <th mat-header-cell *matHeaderCellDef>Atributos</th>
+                <td mat-cell *matCellDef="let variant">
+                  <span class="attributes-text">{{ formatAttributes(variant) }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Price Column -->
+              <ng-container matColumnDef="price">
+                <th mat-header-cell *matHeaderCellDef>Preço</th>
+                <td mat-cell *matCellDef="let variant">
+                  {{ variant.price ? ('R$ ' + (variant.price | number:'1.2-2')) : '-' }}
+                </td>
+              </ng-container>
+
+              <!-- Status Column -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let variant">
+                  <span class="variant-status" [ngClass]="'status-' + variant.status.toLowerCase()">
+                    {{ getStatusLabel(variant.status) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="variantColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: variantColumns;"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- BOM Components Section (COMPOSITE) -->
+      <mat-card class="detail-card" *ngIf="product.type === ProductType.COMPOSITE">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>inventory_2</mat-icon>
+            Componentes do Kit ({{ bomComponents.length }})
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="loading-inline" *ngIf="loadingBom">
+            <div class="spinner-small"></div>
+            <span>Carregando componentes...</span>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingBom && bomComponents.length === 0">
+            <mat-icon>inventory_2</mat-icon>
+            <p>Nenhum componente cadastrado</p>
+          </div>
+
+          <div class="table-container" *ngIf="!loadingBom && bomComponents.length > 0">
+            <table mat-table [dataSource]="bomComponents" class="bom-table">
+              <!-- SKU Column -->
+              <ng-container matColumnDef="sku">
+                <th mat-header-cell *matHeaderCellDef>SKU</th>
+                <td mat-cell *matCellDef="let component">{{ component.componentSku }}</td>
+              </ng-container>
+
+              <!-- Name Column -->
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Nome</th>
+                <td mat-cell *matCellDef="let component">{{ component.componentName }}</td>
+              </ng-container>
+
+              <!-- Quantity Column -->
+              <ng-container matColumnDef="quantity">
+                <th mat-header-cell *matHeaderCellDef>Quantidade</th>
+                <td mat-cell *matCellDef="let component">{{ component.quantityRequired }}</td>
+              </ng-container>
+
+              <!-- Unit Column -->
+              <ng-container matColumnDef="unit">
+                <th mat-header-cell *matHeaderCellDef>Unidade</th>
+                <td mat-cell *matCellDef="let component">{{ component.unit }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="bomColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: bomColumns;"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Audit Information -->
+      <mat-card class="detail-card audit-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Auditoria
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>ID</label>
+              <span class="id-value">{{ product.id }}</span>
+            </div>
+            <div class="info-item">
+              <label>Criado em</label>
+              <span>{{ product.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Atualizado em</label>
+              <span>{{ product.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-container>
+</div>

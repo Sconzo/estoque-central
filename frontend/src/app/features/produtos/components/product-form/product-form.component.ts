@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatTableModule } from '@angular/material/table';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { VariantService } from '../../services/variant.service';
@@ -66,6 +67,7 @@ interface BomComponentDraft {
     MatCheckboxModule,
     MatChipsModule,
     MatAutocompleteModule,
+    MatTableModule,
     VariantMatrixComponent
   ],
   templateUrl: './product-form.component.html',
@@ -96,6 +98,20 @@ export class ProductFormComponent implements OnInit {
   productSearchQuery = '';
   searchingProducts = false;
   private productSearchSubject = new Subject<string>();
+
+  // Edit mode: existing data for type-specific products
+  existingVariants: ProductVariant[] = [];      // For VARIANT_PARENT (read-only in edit)
+  existingBomComponents: BomComponent[] = [];   // For COMPOSITE (editable in edit)
+  loadingTypeData = false;
+
+  // Type labels for display
+  readonly TYPE_LABELS: Record<ProductType, string> = {
+    [ProductType.SIMPLE]: 'Produto Simples',
+    [ProductType.VARIANT_PARENT]: 'Produto com Variantes',
+    [ProductType.VARIANT]: 'Variante',
+    [ProductType.COMPOSITE]: 'Kit/Composto (BOM)'
+  };
+  readonly STATUS_LABELS = STATUS_LABELS;
 
   // Options for template
   readonly UNIT_OPTIONS = UNIT_OPTIONS;
@@ -159,6 +175,7 @@ export class ProductFormComponent implements OnInit {
    */
   initForm(): void {
     this.productForm = this.fb.group({
+      type: [ProductType.SIMPLE],
       name: ['', [Validators.required, Validators.maxLength(200)]],
       sku: ['', [Validators.required, Validators.maxLength(100)]],
       barcode: ['', Validators.maxLength(100)],
@@ -170,6 +187,31 @@ export class ProductFormComponent implements OnInit {
       controlsInventory: [true],
       status: [ProductStatus.ACTIVE, Validators.required],
       bomType: ['']
+    });
+
+    // Sync type form control with selectedProductType and handle type-specific logic
+    this.productForm.get('type')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.selectedProductType = value;
+
+        // Update bomType validation based on product type
+        const bomTypeControl = this.productForm.get('bomType');
+        if (value === ProductType.COMPOSITE) {
+          bomTypeControl?.setValidators([Validators.required]);
+          if (!bomTypeControl?.value) {
+            bomTypeControl?.setValue('VIRTUAL'); // Default to VIRTUAL
+          }
+        } else {
+          bomTypeControl?.clearValidators();
+          bomTypeControl?.setValue('');
+        }
+        bomTypeControl?.updateValueAndValidity();
+
+        // Initialize attributes array for VARIANT_PARENT
+        if (value === ProductType.VARIANT_PARENT && this.variantAttributes.length === 0) {
+          this.addAttribute();
+        }
+      }
     });
   }
 
@@ -211,6 +253,7 @@ export class ProductFormComponent implements OnInit {
       next: (product) => {
         this.patchFormWithProduct(product);
         this.loading = false;
+        this.loadTypeSpecificDataForEdit(product);
       },
       error: (err) => {
         this.error = 'Erro ao carregar produto: ' + (err.message || 'Erro desconhecido');
@@ -221,12 +264,44 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
+   * Loads type-specific data for edit mode (variants or BOM components)
+   */
+  loadTypeSpecificDataForEdit(product: ProductDTO): void {
+    if (product.type === ProductType.VARIANT_PARENT) {
+      this.loadingTypeData = true;
+      this.variantService.listVariants(product.id).subscribe({
+        next: (variants) => {
+          this.existingVariants = variants;
+          this.loadingTypeData = false;
+        },
+        error: (err) => {
+          console.error('Error loading variants:', err);
+          this.loadingTypeData = false;
+        }
+      });
+    } else if (product.type === ProductType.COMPOSITE) {
+      this.loadingTypeData = true;
+      this.compositeService.listComponents(product.id).subscribe({
+        next: (components) => {
+          this.existingBomComponents = components;
+          this.loadingTypeData = false;
+        },
+        error: (err) => {
+          console.error('Error loading BOM components:', err);
+          this.loadingTypeData = false;
+        }
+      });
+    }
+  }
+
+  /**
    * Patches form with product data
    */
   patchFormWithProduct(product: ProductDTO): void {
     this.selectedProductType = product.type;
 
     this.productForm.patchValue({
+      type: product.type,
       name: product.name,
       sku: product.sku,
       barcode: product.barcode || '',
@@ -278,11 +353,11 @@ export class ProductFormComponent implements OnInit {
       }
     }
 
-    const formValue = this.productForm.value;
+    const formValue = this.productForm.getRawValue();
 
     const request: ProductCreateRequest = {
-      type: this.selectedProductType,
-      bomType: this.selectedProductType === ProductType.COMPOSITE ? formValue.bomType : undefined,
+      type: formValue.type || ProductType.SIMPLE,
+      bomType: formValue.type === ProductType.COMPOSITE ? formValue.bomType : undefined,
       name: formValue.name,
       sku: formValue.sku,
       barcode: formValue.barcode || undefined,
@@ -426,26 +501,10 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Handles product type change
+   * Handles product type change (kept for compatibility, logic moved to valueChanges subscription)
    */
   onProductTypeChange(event: any): void {
-    this.selectedProductType = event.value as ProductType;
-
-    // Update bomType validation based on product type
-    const bomTypeControl = this.productForm.get('bomType');
-    if (this.selectedProductType === ProductType.COMPOSITE) {
-      bomTypeControl?.setValidators([Validators.required]);
-      bomTypeControl?.setValue('VIRTUAL'); // Default to VIRTUAL
-    } else {
-      bomTypeControl?.clearValidators();
-      bomTypeControl?.setValue('');
-    }
-    bomTypeControl?.updateValueAndValidity();
-
-    // Initialize attributes array for VARIANT_PARENT
-    if (this.selectedProductType === ProductType.VARIANT_PARENT && this.variantAttributes.length === 0) {
-      this.addAttribute();
-    }
+    // Logic moved to initForm() valueChanges subscription
   }
 
   // ==================== Variant Attribute Methods ====================
@@ -674,5 +733,99 @@ export class ProductFormComponent implements OnInit {
    */
   displayProduct(product: ProductDTO): string {
     return product ? `${product.name} (${product.sku})` : '';
+  }
+
+  // ==================== Edit Mode BOM Management ====================
+
+  /**
+   * Adds BOM component in edit mode (saves to backend immediately)
+   */
+  addBomComponentInEdit(product: ProductDTO): void {
+    if (!this.productId) return;
+
+    // Check if already added
+    if (this.existingBomComponents.some(c => c.componentProductId === product.id)) {
+      this.feedbackService.showWarning('Este produto já foi adicionado');
+      return;
+    }
+
+    const request: AddBomComponentRequest = {
+      componentProductId: product.id,
+      quantityRequired: 1
+    };
+
+    this.compositeService.addComponent(this.productId, request).subscribe({
+      next: (component) => {
+        this.existingBomComponents.push(component);
+        this.feedbackService.showSuccess('Componente adicionado');
+        // Clear search
+        this.productSearchQuery = '';
+        this.productSearchResults = [];
+      },
+      error: (err) => {
+        this.feedbackService.showError('Erro ao adicionar componente: ' + (err.error?.message || err.message));
+        console.error('Error adding BOM component:', err);
+      }
+    });
+  }
+
+  /**
+   * Updates BOM component quantity in edit mode
+   */
+  updateBomComponentInEdit(component: BomComponent, quantity: number): void {
+    if (!this.productId || quantity <= 0) return;
+
+    const request: AddBomComponentRequest = {
+      componentProductId: component.componentProductId,
+      quantityRequired: quantity
+    };
+
+    this.compositeService.updateComponentQuantity(this.productId, component.componentProductId, request).subscribe({
+      next: (updated) => {
+        const index = this.existingBomComponents.findIndex(c => c.id === component.id);
+        if (index !== -1) {
+          this.existingBomComponents[index] = updated;
+        }
+      },
+      error: (err) => {
+        this.feedbackService.showError('Erro ao atualizar quantidade: ' + (err.error?.message || err.message));
+        console.error('Error updating BOM component:', err);
+      }
+    });
+  }
+
+  /**
+   * Removes BOM component in edit mode
+   */
+  removeBomComponentInEdit(component: BomComponent): void {
+    if (!this.productId) return;
+
+    this.compositeService.removeComponent(this.productId, component.componentProductId).subscribe({
+      next: () => {
+        this.existingBomComponents = this.existingBomComponents.filter(c => c.id !== component.id);
+        this.feedbackService.showSuccess('Componente removido');
+      },
+      error: (err) => {
+        this.feedbackService.showError('Erro ao remover componente: ' + (err.error?.message || err.message));
+        console.error('Error removing BOM component:', err);
+      }
+    });
+  }
+
+  /**
+   * Formats variant attributes for display
+   */
+  formatVariantAttributes(variant: ProductVariant): string {
+    if (!variant.attributeCombination) return '-';
+    return Object.entries(variant.attributeCombination)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ');
+  }
+
+  /**
+   * Gets status label for display
+   */
+  getStatusLabel(status: string): string {
+    return this.STATUS_LABELS[status as ProductStatus] || status;
   }
 }

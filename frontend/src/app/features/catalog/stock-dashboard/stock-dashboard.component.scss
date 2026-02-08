@@ -56,9 +56,27 @@
 .stock-table {
   width: 100%;
 
+  .mat-mdc-header-cell,
   th {
     font-weight: bold;
     background-color: #f5f5f5;
+    border-bottom: none;
+  }
+
+  .mat-mdc-header-row {
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .mat-mdc-row {
+    border-bottom: 1px solid #e0e0e0;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  .mat-mdc-cell {
+    border-bottom: none;
   }
 
   .stock-row {

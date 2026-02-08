@@ -27,8 +27,7 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Tipo <span class="required">*</span></mat-label>
             <mat-select
-              [value]="selectedProductType"
-              (selectionChange)="onProductTypeChange($event)"
+              formControlName="type"
               [disabled]="createdProductId !== null"
               required
               aria-label="Tipo de produto"
@@ -55,6 +54,17 @@
               Tipo de composição é obrigatório para kits
             </mat-error>
           </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Product Type Display (read-only in edit mode) -->
+      <div class="form-section type-display-section" *ngIf="isEditMode">
+        <h3>Tipo de Produto</h3>
+        <div class="type-display">
+          <span class="type-badge" [ngClass]="'type-' + selectedProductType.toLowerCase()">
+            {{ TYPE_LABELS[selectedProductType] }}
+          </span>
+          <span class="type-hint">O tipo não pode ser alterado após a criação</span>
         </div>
       </div>
 
@@ -262,6 +272,167 @@
               Desmarque para produtos de serviço ou sem necessidade de controle.
             </span>
           </div>
+        </div>
+      </div>
+
+      <!-- Existing Variants Section (VARIANT_PARENT in edit mode - read-only) -->
+      <div class="form-section existing-variants-section" *ngIf="isEditMode && selectedProductType === ProductType.VARIANT_PARENT">
+        <div class="section-header-with-action">
+          <h3>Variantes ({{ existingVariants.length }})</h3>
+        </div>
+
+        <p class="section-description">
+          As variantes deste produto são exibidas abaixo. Variantes não podem ser adicionadas ou removidas na edição.
+        </p>
+
+        <!-- Loading -->
+        <div class="loading-inline" *ngIf="loadingTypeData">
+          <div class="spinner-small"></div>
+          <span>Carregando variantes...</span>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-components-message" *ngIf="!loadingTypeData && existingVariants.length === 0">
+          <mat-icon>view_module</mat-icon>
+          <p>Nenhuma variante cadastrada</p>
+        </div>
+
+        <!-- Variants Table -->
+        <div class="variants-table-container" *ngIf="!loadingTypeData && existingVariants.length > 0">
+          <table mat-table [dataSource]="existingVariants" class="variants-table">
+            <!-- SKU Column -->
+            <ng-container matColumnDef="sku">
+              <th mat-header-cell *matHeaderCellDef>SKU</th>
+              <td mat-cell *matCellDef="let variant">{{ variant.sku }}</td>
+            </ng-container>
+
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Nome</th>
+              <td mat-cell *matCellDef="let variant">{{ variant.name }}</td>
+            </ng-container>
+
+            <!-- Attributes Column -->
+            <ng-container matColumnDef="attributes">
+              <th mat-header-cell *matHeaderCellDef>Atributos</th>
+              <td mat-cell *matCellDef="let variant">
+                <span class="attributes-text">{{ formatVariantAttributes(variant) }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Price Column -->
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef>Preço</th>
+              <td mat-cell *matCellDef="let variant">
+                {{ variant.price ? ('R$ ' + (variant.price | number:'1.2-2')) : '-' }}
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let variant">
+                <span class="variant-status" [ngClass]="'status-' + variant.status.toLowerCase()">
+                  {{ getStatusLabel(variant.status) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['sku', 'name', 'attributes', 'price', 'status']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['sku', 'name', 'attributes', 'price', 'status'];"></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Existing BOM Components Section (COMPOSITE in edit mode - editable) -->
+      <div class="form-section existing-bom-section" *ngIf="isEditMode && selectedProductType === ProductType.COMPOSITE">
+        <div class="section-header-with-action">
+          <h3>Componentes do Kit ({{ existingBomComponents.length }})</h3>
+        </div>
+
+        <p class="section-description">
+          Gerencie os componentes deste kit. Você pode adicionar, remover ou alterar as quantidades.
+        </p>
+
+        <!-- Loading -->
+        <div class="loading-inline" *ngIf="loadingTypeData">
+          <div class="spinner-small"></div>
+          <span>Carregando componentes...</span>
+        </div>
+
+        <!-- Product Search to Add -->
+        <div class="component-search" *ngIf="!loadingTypeData">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar produto para adicionar</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="productSearchQuery"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onProductSearch($event)"
+              [matAutocomplete]="editProductAuto"
+              placeholder="Digite o nome ou SKU do produto...">
+            <mat-icon matSuffix>search</mat-icon>
+            <mat-autocomplete #editProductAuto="matAutocomplete" (optionSelected)="addBomComponentInEdit($event.option.value)">
+              <mat-option *ngFor="let product of productSearchResults" [value]="product">
+                <div class="product-option">
+                  <span class="product-name">{{ product.name }}</span>
+                  <span class="product-sku">SKU: {{ product.sku }}</span>
+                  <span class="product-price">R$ {{ product.price | number:'1.2-2' }}</span>
+                </div>
+              </mat-option>
+              <mat-option *ngIf="searchingProducts" disabled>
+                <div class="searching-indicator">
+                  <span>Buscando...</span>
+                </div>
+              </mat-option>
+              <mat-option *ngIf="!searchingProducts && productSearchQuery.length >= 2 && productSearchResults.length === 0" disabled>
+                <span>Nenhum produto encontrado</span>
+              </mat-option>
+            </mat-autocomplete>
+            <mat-hint>Digite pelo menos 2 caracteres para buscar</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Existing Components List -->
+        <div class="components-list" *ngIf="!loadingTypeData && existingBomComponents.length > 0">
+          <h4>Componentes adicionados</h4>
+
+          <div class="component-card" *ngFor="let component of existingBomComponents">
+            <div class="component-info">
+              <span class="component-name">{{ component.componentName }}</span>
+              <span class="component-sku">SKU: {{ component.componentSku }}</span>
+            </div>
+
+            <div class="component-quantity">
+              <mat-form-field appearance="outline" class="quantity-field">
+                <mat-label>Qtd</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="1"
+                  step="1"
+                  [value]="component.quantityRequired"
+                  (change)="updateBomComponentInEdit(component, $any($event.target).value)">
+              </mat-form-field>
+              <span class="component-unit">{{ component.unit }}</span>
+            </div>
+
+            <button
+              mat-icon-button
+              type="button"
+              color="warn"
+              (click)="removeBomComponentInEdit(component)"
+              title="Remover componente">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-components-message" *ngIf="!loadingTypeData && existingBomComponents.length === 0">
+          <mat-icon>inventory_2</mat-icon>
+          <p>Nenhum componente adicionado. Use a busca acima para adicionar produtos ao kit.</p>
         </div>
       </div>
 

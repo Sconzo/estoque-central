@@ -49,9 +49,27 @@ mat-form-field {
   background: white;
 }
 
-.items-table th {
+.items-table th,
+.items-table .mat-mdc-header-cell {
   background: #f5f5f5;
   font-weight: 500;
+  border-bottom: none;
+}
+
+.items-table .mat-mdc-header-row {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.items-table .mat-mdc-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.items-table .mat-mdc-row:last-of-type {
+  border-bottom: none;
+}
+
+.items-table .mat-mdc-cell {
+  border-bottom: none;
 }
 
 .table-field {

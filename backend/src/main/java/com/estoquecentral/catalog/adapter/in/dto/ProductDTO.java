@@ -33,6 +33,7 @@ public class ProductDTO {
     private LocalDateTime updatedAt;
     private UUID createdBy;
     private UUID updatedBy;
+    private String categoryName;
 
     public ProductDTO() {
     }
@@ -210,5 +211,13 @@ public class ProductDTO {
 
     public void setUpdatedBy(UUID updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

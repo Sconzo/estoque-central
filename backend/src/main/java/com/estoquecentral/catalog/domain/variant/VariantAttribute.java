@@ -1,6 +1,8 @@
 package com.estoquecentral.catalog.domain.variant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -12,7 +14,7 @@ import java.util.UUID;
  * <p>Examples: Color, Size, Material, Style
  */
 @Table("variant_attributes")
-public class VariantAttribute {
+public class VariantAttribute implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -27,6 +29,9 @@ public class VariantAttribute {
     private UUID createdBy;
     private UUID updatedBy;
 
+    @Transient
+    private boolean isNew = false;
+
     public VariantAttribute() {
     }
 
@@ -40,6 +45,18 @@ public class VariantAttribute {
         this.ativo = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
+    }
+
+    // Persistable implementation
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     public void update(String displayName, AttributeType type, Integer sortOrder, UUID updatedBy) {

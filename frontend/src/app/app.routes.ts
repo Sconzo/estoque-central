@@ -52,6 +52,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/produtos/components/product-import/product-import.component').then(m => m.ProductImportComponent)
       },
       {
+        path: 'produtos/:id',
+        loadComponent: () => import('./features/produtos/components/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+      },
+      {
         path: 'produtos/:id/editar',
         loadComponent: () => import('./features/produtos/components/product-form/product-form.component').then(m => m.ProductFormComponent)
       },
