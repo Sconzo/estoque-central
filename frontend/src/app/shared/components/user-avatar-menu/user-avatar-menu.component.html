@@ -45,65 +45,11 @@
 
   <mat-divider></mat-divider>
 
-  <!-- AC3: Current company display -->
-  <div class="current-company-section" mat-menu-item [disableRipple]="true" (click)="$event.stopPropagation()">
-    <div class="section-label">
-      <mat-icon class="section-icon">business</mat-icon>
-      <span>Empresa Atual</span>
-    </div>
-    @if (isLoadingCompanies) {
-      <div class="loading-companies">
-        <mat-spinner diameter="20"></mat-spinner>
-        <span>Carregando...</span>
-      </div>
-    } @else if (currentCompany) {
-      <div class="current-company-info">
-        <mat-icon class="check-icon">check_circle</mat-icon>
-        <div class="company-details">
-          <strong>{{ currentCompany.nome }}</strong>
-          @if (currentCompany.cnpj) {
-            <small>CNPJ: {{ formatCnpj(currentCompany.cnpj) }}</small>
-          }
-          <small class="company-role">{{ currentCompany.profileName }}</small>
-        </div>
-      </div>
-    }
-  </div>
-
-  <!-- AC3: Other companies list -->
-  @if (otherCompanies.length > 0) {
-    <mat-divider></mat-divider>
-
-    <div class="other-companies-section" mat-menu-item [disableRipple]="true" (click)="$event.stopPropagation()">
-      <div class="section-label">
-        <mat-icon class="section-icon">swap_horiz</mat-icon>
-        <span>Trocar para</span>
-      </div>
-    </div>
-
-    <!-- AC4: Context switch buttons -->
-    @for (company of otherCompanies; track company.tenantId) {
-      <button
-        mat-menu-item
-        class="company-switch-item"
-        (click)="switchToCompany(company)"
-        [disabled]="switchingToTenantId !== null"
-        [class.switching]="switchingToTenantId === company.tenantId">
-        <mat-icon class="company-icon">business_center</mat-icon>
-        <div class="company-switch-info">
-          <span class="company-name">{{ company.nome }}</span>
-          @if (company.cnpj) {
-            <small class="company-cnpj">CNPJ: {{ formatCnpj(company.cnpj) }}</small>
-          }
-          <small class="company-role-small">{{ company.profileName }}</small>
-        </div>
-        <!-- AC4: Loading spinner during switch -->
-        @if (switchingToTenantId === company.tenantId) {
-          <mat-spinner diameter="20" class="switch-spinner"></mat-spinner>
-        }
-      </button>
-    }
-  }
+  <!-- Manage companies -->
+  <button mat-menu-item routerLink="/select-company" aria-label="Gerenciar empresas" class="manage-companies-item">
+    <mat-icon>business</mat-icon>
+    <span>Gerenciar Empresas</span>
+  </button>
 
   <mat-divider></mat-divider>
 
