@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoryService } from '../../services/category.service';
 import { Category, CategoryTreeNode, CategoryCreateRequest } from '../../models/category.model';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * CategoryTreeComponent - Hierarchical category tree management
@@ -64,7 +65,8 @@ export class CategoryTreeComponent implements OnInit {
 
   constructor(
     private categoryService: CategoryService,
-    private feedback: FeedbackService
+    private feedback: FeedbackService,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -208,24 +210,25 @@ export class CategoryTreeComponent implements OnInit {
   deleteCategory(category: Category, event: Event): void {
     event.stopPropagation(); // Prevent node toggle
 
-    const confirmMessage = `Tem certeza que deseja excluir a categoria "${category.name}"?\n\nEsta ação marcará a categoria como inativa (soft delete).`;
+    this.confirmDialog.confirmDanger({
+      title: 'Excluir Categoria',
+      message: `Tem certeza que deseja excluir a categoria "${category.name}"?\n\nEsta ação marcará a categoria como inativa (soft delete).`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+      this.loading = true;
 
-    this.loading = true;
-
-    this.categoryService.delete(category.id).subscribe({
-      next: () => {
-        this.loadTree();
-      },
-      error: (err) => {
-        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
-        this.feedback.showError(`Erro ao deletar categoria: ${errorMessage}`, () => this.deleteCategory(category, event));
-        this.loading = false;
-        console.error('Error deleting category:', err);
-      }
+      this.categoryService.delete(category.id).subscribe({
+        next: () => {
+          this.loadTree();
+        },
+        error: (err) => {
+          const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao deletar categoria: ${errorMessage}`, () => this.deleteCategory(category, event));
+          this.loading = false;
+          console.error('Error deleting category:', err);
+        }
+      });
     });
   }
 

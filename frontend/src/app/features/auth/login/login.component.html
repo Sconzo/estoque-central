@@ -1,16 +1,18 @@
 <div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
+  <div class="login-content">
+    <div class="brand">
+      <span class="material-icons brand-icon">inventory_2</span>
       <h1>Estoque Central</h1>
       <p>Sistema ERP Omnichannel</p>
     </div>
 
-    <div class="login-body">
-      <h2>Bem-vindo!</h2>
-      <p class="subtitle">Faça login com sua conta Google</p>
+    <div class="login-box">
+      <h2>Acesse sua conta</h2>
+      <p class="subtitle">Use sua conta Google para entrar</p>
 
       <!-- Error message -->
       <div *ngIf="errorMessage" class="error-alert">
+        <span class="material-icons">warning</span>
         {{ errorMessage }}
       </div>
 
@@ -25,11 +27,15 @@
         <div id="google-signin-button"></div>
       </div>
 
-      <div class="login-footer">
-        <p class="info-text">
-          Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade.
-        </p>
+      <div class="separator"><span>SEGURO</span></div>
+      <div class="security-note">
+        <span class="material-icons">lock</span>
+        Autenticacao protegida por Google OAuth 2.0
       </div>
     </div>
+
+    <p class="footer-text">
+      Ao fazer login, voce concorda com nossos<br>Termos de Servico e Politica de Privacidade.
+    </p>
   </div>
 </div>

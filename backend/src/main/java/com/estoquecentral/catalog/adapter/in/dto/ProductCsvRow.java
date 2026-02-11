@@ -3,14 +3,15 @@ package com.estoquecentral.catalog.adapter.in.dto;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * ProductCsvRow - Represents a single row from CSV import
+ * ProductCsvRow - Represents a single row from CSV import (SIMPLE products only)
  *
  * <p>Contains:
  * <ul>
  *   <li>Row number for error reporting</li>
- *   <li>All CSV fields (type, name, sku, price, etc.)</li>
+ *   <li>CSV fields (name, sku, price, etc.)</li>
  *   <li>Validation errors (if any)</li>
  *   <li>Valid flag indicating if row passed validation</li>
  * </ul>
@@ -19,18 +20,16 @@ public class ProductCsvRow {
     private int rowNumber;
 
     // CSV fields
-    private String type;           // SIMPLE, VARIANT_PARENT, VARIANT, COMPOSITE
     private String name;
     private String sku;
     private String barcode;
     private String description;
-    private String categoryId;
+    private String category;           // Category name from CSV
+    private UUID resolvedCategoryId;   // Resolved after lookup
     private BigDecimal price;
     private BigDecimal cost;
     private String unit;
     private Boolean controlsInventory;
-    private String status;         // ACTIVE, INACTIVE, DISCONTINUED
-    private String bomType;        // VIRTUAL, PHYSICAL (for COMPOSITE products)
 
     // Validation
     private List<String> errors;
@@ -71,14 +70,6 @@ public class ProductCsvRow {
         this.rowNumber = rowNumber;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getName() {
         return name;
     }
@@ -111,12 +102,20 @@ public class ProductCsvRow {
         this.description = description;
     }
 
-    public String getCategoryId() {
-        return categoryId;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public UUID getResolvedCategoryId() {
+        return resolvedCategoryId;
+    }
+
+    public void setResolvedCategoryId(UUID resolvedCategoryId) {
+        this.resolvedCategoryId = resolvedCategoryId;
     }
 
     public BigDecimal getPrice() {
@@ -149,22 +148,6 @@ public class ProductCsvRow {
 
     public void setControlsInventory(Boolean controlsInventory) {
         this.controlsInventory = controlsInventory;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getBomType() {
-        return bomType;
-    }
-
-    public void setBomType(String bomType) {
-        this.bomType = bomType;
     }
 
     public List<String> getErrors() {

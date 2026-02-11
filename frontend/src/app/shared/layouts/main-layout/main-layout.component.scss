@@ -1,5 +1,5 @@
 // Story UX-6: Navigation Responsiva
-// MainLayoutComponent - Responsive navigation with Material Design
+// MainLayoutComponent - Responsive navigation with Slate & Teal theme
 
 // ===========================
 // Skip Link (Accessibility)
@@ -8,7 +8,7 @@
   position: absolute;
   top: -40px;
   left: 0;
-  background: #6A1B9A; // Primary purple
+  background: #0d9488; // Primary teal
   color: white;
   padding: 8px 16px;
   text-decoration: none;
@@ -37,19 +37,33 @@ mat-sidenav-content {
 }
 
 // ===========================
-// Sidebar (Desktop & Mobile)
+// Sidebar (Desktop & Mobile) - Dark Slate
 // ===========================
 .sidenav {
   width: 260px;
-  background-color: #fafafa;
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  background-color: #1e293b;
+  border-right: none;
+  border-radius: 0 !important;
+  display: flex;
+  flex-direction: column;
+
+  // Custom scrollbar for dark sidebar
+  ::ng-deep .mat-drawer-inner-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+  }
 }
 
 .sidebar-header {
   padding: 24px 16px;
-  background-color: #6A1B9A; // Primary purple
+  background-color: #0f172a;
   color: white;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
   h2 {
     margin: 0;
@@ -59,46 +73,108 @@ mat-sidenav-content {
 }
 
 .sidebar-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
+  flex-shrink: 0;
   padding: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  background-color: #fafafa;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: #1e293b;
 
   .logout-button {
     width: 100%;
     justify-content: flex-start;
+    color: #94a3b8;
 
     mat-icon {
       margin-right: 12px;
+      color: #94a3b8;
+    }
+
+    &:hover {
+      color: #e2e8f0;
+
+      mat-icon {
+        color: #e2e8f0;
+      }
     }
   }
 }
 
 // ===========================
-// Navigation Items
+// Navigation Items - Slate & Teal
 // ===========================
 mat-nav-list {
   padding-top: 8px;
-  padding-bottom: 80px; // Space for logout button
+  padding-bottom: 8px;
+  flex: 1;
+  overflow-y: auto;
+
+  // Thin scrollbar matching dark sidebar
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 2px;
+
+    &:hover {
+      background: rgba(148, 163, 184, 0.5);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 
   .nav-item-wrapper {
     margin-bottom: 2px;
   }
 
   a.mat-mdc-list-item {
-    &.active {
-      background-color: rgba(106, 27, 154, 0.1);
-      color: #6A1B9A;
+    color: #cbd5e1 !important;
+    border-radius: 0 !important;
 
-      mat-icon {
-        color: #6A1B9A;
+    mat-icon {
+      color: #94a3b8 !important;
+    }
+
+    // Expand/collapse arrow — aligned with text, near right edge
+    .expand-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #64748b !important;
+      transition: transform 0.2s ease;
+
+      &.expanded {
+        transform: translateY(-50%) rotate(180deg);
       }
     }
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
+    &.active {
+      background-color: rgba(20, 184, 166, 0.15) !important;
+      color: #2dd4bf !important;
+      font-weight: 500;
+
+      mat-icon:not(.expand-icon) {
+        color: #2dd4bf !important;
+      }
+
+      .expand-icon {
+        color: #94a3b8 !important;
+      }
+    }
+
+    &:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.06);
+      color: #f1f5f9 !important;
     }
   }
 
@@ -106,26 +182,36 @@ mat-nav-list {
     padding-left: 56px !important;
     font-size: 14px;
     height: 40px;
+    color: #94a3b8 !important;
+    border-radius: 0 !important;
 
     &.active {
-      background-color: rgba(106, 27, 154, 0.08);
-      color: #6A1B9A;
+      background-color: rgba(20, 184, 166, 0.1) !important;
+      color: #2dd4bf !important;
+    }
+
+    &:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1 !important;
     }
   }
 }
 
 .nav-children {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 // ===========================
-// Desktop Toolbar
+// Desktop Toolbar - White
 // ===========================
 .desktop-toolbar {
   position: sticky;
   top: 0;
   z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: none;
 
   .company-name {
     position: absolute;
@@ -136,13 +222,13 @@ mat-nav-list {
     gap: 8px;
     font-size: 18px;
     font-weight: 500;
-    color: #6A1B9A !important; // Purple
+    color: #1e293b !important;
 
     .company-icon {
       font-size: 22px;
       width: 22px;
       height: 22px;
-      color: #6A1B9A !important;
+      color: #0d9488 !important;
     }
   }
 
@@ -154,7 +240,7 @@ mat-nav-list {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid #e2e8f0;
   }
 }
 
@@ -176,7 +262,7 @@ mat-nav-list {
 }
 
 // ===========================
-// Mobile Toolbar
+// Mobile Toolbar - Dark Slate
 // ===========================
 .mobile-toolbar {
   position: sticky;
@@ -207,7 +293,7 @@ mat-nav-list {
   min-height: calc(100vh - 64px);
   height: calc(100vh - 64px);
   width: 100%; // Use full available width
-  background-color: #f5f5f5;
+  background-color: #f1f5f9;
   overflow-y: auto;
   overflow-x: auto;
 
@@ -255,7 +341,7 @@ mat-nav-list {
 // Focus visible styles
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #6A1B9A;
+  outline: 2px solid #0d9488;
   outline-offset: 2px;
 }
 

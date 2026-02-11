@@ -82,6 +82,15 @@ public interface CategoryRepository extends CrudRepository<Category, UUID> {
     List<Category> searchByName(@Param("name") String name);
 
     /**
+     * Finds active categories by exact name (case-insensitive)
+     *
+     * @param name exact category name
+     * @return list of matching categories (may have duplicates across different parents)
+     */
+    @Query("SELECT * FROM categories WHERE LOWER(name) = LOWER(:name) AND ativo = true")
+    List<Category> findByNameIgnoreCase(@Param("name") String name);
+
+    /**
      * Checks if category has children
      * Used before deletion to prevent deleting parent categories
      *

@@ -16,7 +16,7 @@
         title="Total de Produtos"
         [value]="stats().totalProdutos.toString()"
         icon="inventory_2"
-        color="#6A1B9A">
+        color="#0d9488">
       </app-metric-card>
 
       <app-metric-card
@@ -24,7 +24,7 @@
         [value]="stats().estoqueTotal.toString()"
         [changePercent]="stats().alertasEstoque > 0 ? -((stats().alertasEstoque / stats().estoqueTotal) * 100) : undefined"
         icon="warehouse"
-        [color]="stats().alertasEstoque > 0 ? '#C62828' : '#F9A825'">
+        [color]="stats().alertasEstoque > 0 ? '#C62828' : '#f97316'">
       </app-metric-card>
 
       <app-metric-card
@@ -32,7 +32,7 @@
         [value]="stats().vendasMes.toString()"
         [changePercent]="12.5"
         icon="point_of_sale"
-        color="#6A1B9A">
+        color="#0d9488">
       </app-metric-card>
 
       <app-metric-card

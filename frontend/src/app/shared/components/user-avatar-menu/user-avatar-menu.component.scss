@@ -2,7 +2,7 @@
  * Story 9.3: User Avatar Menu with Company Context Switching
  * AC1: Avatar display
  * AC2: Menu content with MatMenu (UX19)
- * UX4: Deep Purple theme (#6A1B9A)
+ * UX4: Deep Purple theme (#0d9488)
  */
 
 /* AC1: Avatar button */
@@ -19,7 +19,7 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #6A1B9A; /* UX4: Deep Purple */
+  border: 2px solid #0d9488; /* UX4: Deep Purple */
 }
 
 /* AC1: User initials avatar */
@@ -58,7 +58,7 @@
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #6A1B9A;
+  border: 2px solid #0d9488;
 }
 
 .header-initials-avatar {
@@ -71,7 +71,7 @@
   color: white;
   font-weight: 600;
   font-size: 18px;
-  border: 2px solid #6A1B9A;
+  border: 2px solid #0d9488;
 }
 
 .user-details {
@@ -121,7 +121,7 @@
   font-size: 16px;
   width: 16px;
   height: 16px;
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
 }
 
 .loading-companies {
@@ -175,7 +175,7 @@
 }
 
 .company-role {
-  color: #6A1B9A !important; /* UX4: Deep Purple */
+  color: #0d9488 !important; /* UX4: Deep Purple */
   font-weight: 500 !important;
 }
 
@@ -197,11 +197,11 @@
 }
 
 .company-switch-item:hover:not([disabled]) {
-  background-color: #f3e5f5 !important; /* Light purple on hover */
+  background-color: #f0fdfa !important;
 }
 
 .company-switch-item.switching {
-  background-color: #ede7f6 !important; /* Lighter purple when switching */
+  background-color: #ccfbf1 !important;
 }
 
 .company-switch-item[disabled] {
@@ -210,7 +210,7 @@
 }
 
 .company-icon {
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
   font-size: 20px;
   width: 20px;
   height: 20px;
@@ -244,7 +244,7 @@
 
 .company-role-small {
   font-size: 12px;
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
   font-weight: 500;
   display: block;
 }
@@ -268,7 +268,7 @@
 }
 
 ::ng-deep .user-avatar-menu .mat-mdc-menu-item:hover mat-icon {
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
 }
 
 .logout-item {

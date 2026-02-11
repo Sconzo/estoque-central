@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Category, CategoryTreeNode, CategoryCreateRequest, CategoryUpdateRequest } from '../models/category.model';
 import { environment } from '../../../../environments/environment';
 
@@ -33,7 +34,26 @@ export class CategoryService {
    * @returns Observable of tree structure (root categories with nested children)
    */
   getTree(): Observable<CategoryTreeNode[]> {
-    return this.http.get<CategoryTreeNode[]>(`${this.apiUrl}/tree`);
+    return this.http.get<any[]>(`${this.apiUrl}/tree`).pipe(
+      map(nodes => this.mapToTreeNodes(nodes))
+    );
+  }
+
+  private mapToTreeNodes(nodes: any[]): CategoryTreeNode[] {
+    if (!nodes) return [];
+    return nodes.map(node => ({
+      category: {
+        id: node.id,
+        name: node.name,
+        description: node.description,
+        parentId: node.parentId,
+        ativo: node.ativo ?? true,
+        createdAt: node.createdAt ?? '',
+        updatedAt: node.updatedAt ?? '',
+      } as Category,
+      children: this.mapToTreeNodes(node.children),
+      expanded: false
+    }));
   }
 
   /**

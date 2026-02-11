@@ -3,8 +3,9 @@ package com.estoquecentral.catalog.application.importer;
 import com.estoquecentral.catalog.adapter.in.dto.ImportConfirmResponse;
 import com.estoquecentral.catalog.adapter.in.dto.ImportPreviewResponse;
 import com.estoquecentral.catalog.adapter.in.dto.ProductCsvRow;
+import com.estoquecentral.catalog.adapter.out.CategoryRepository;
 import com.estoquecentral.catalog.adapter.out.ImportLogRepository;
-import com.estoquecentral.catalog.application.ProductService;
+import com.estoquecentral.catalog.adapter.out.ProductRepository;
 import com.estoquecentral.catalog.domain.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,18 +32,21 @@ import java.util.stream.Collectors;
 public class ProductImportService {
 
     private final CsvParserService csvParser;
-    private final ProductService productService;
+    private final ProductRepository productRepository;
     private final ImportLogRepository importLogRepository;
+    private final CategoryRepository categoryRepository;
     private final ObjectMapper objectMapper;
 
     @Autowired
     public ProductImportService(CsvParserService csvParser,
-                               ProductService productService,
+                               ProductRepository productRepository,
                                ImportLogRepository importLogRepository,
+                               CategoryRepository categoryRepository,
                                ObjectMapper objectMapper) {
         this.csvParser = csvParser;
-        this.productService = productService;
+        this.productRepository = productRepository;
         this.importLogRepository = importLogRepository;
+        this.categoryRepository = categoryRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -57,9 +61,16 @@ public class ProductImportService {
     @Transactional
     public ImportPreviewResponse preview(MultipartFile file, UUID tenantId, UUID userId) throws IOException {
         String fileName = file.getOriginalFilename();
+        String csvContent = new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
 
         // Parse and validate CSV
-        List<ProductCsvRow> rows = csvParser.parseAndValidate(file);
+        List<ProductCsvRow> rows = csvParser.parseAndValidate(csvContent);
+
+        // Resolve category names to IDs
+        resolveCategoryNames(rows);
+
+        // Validate SKU uniqueness (against DB and within CSV)
+        validateUniqueness(rows, tenantId);
 
         // Create import log with PREVIEW status
         ImportLog importLog = new ImportLog(tenantId, userId, fileName, ImportStatus.PREVIEW);
@@ -68,6 +79,9 @@ public class ProductImportService {
         int errorCount = (int) rows.stream().filter(ProductCsvRow::hasErrors).count();
         importLog.setSuccessRows(validCount);
         importLog.setErrorRows(errorCount);
+
+        // Store CSV content for the confirm phase
+        importLog.setFileContent(csvContent);
 
         // Store error details as JSONB
         List<Map<String, Object>> errorDetails = rows.stream()
@@ -112,26 +126,44 @@ public class ProductImportService {
             throw new IllegalStateException("Import already processed. Status: " + importLog.getStatus());
         }
 
-        // Update status to PROCESSING
-        importLog.setStatus(ImportStatus.PROCESSING);
-        importLogRepository.save(importLog);
+        // Validate file content exists
+        if (importLog.getFileContent() == null) {
+            throw new IllegalStateException("CSV content not found for import: " + importLogId);
+        }
 
-        // Note: In a real implementation, we would need to re-parse the CSV file here
-        // or store the parsed data temporarily. For now, we'll just mark as COMPLETED.
-        // The actual product creation would happen here by re-parsing the file.
-
-        // TODO: Store file temporarily or re-parse from original upload
-        // For now, just mark as COMPLETED with 0 rows processed
         int successCount = 0;
         int errorCount = 0;
 
-        // Update import log to COMPLETED
+        // Re-parse CSV from stored content
+        List<ProductCsvRow> rows;
+        try {
+            rows = csvParser.parseAndValidate(importLog.getFileContent());
+        } catch (IOException e) {
+            throw new IllegalStateException("Falha ao re-processar CSV armazenado: " + e.getMessage(), e);
+        }
+
+        resolveCategoryNames(rows);
+        validateUniqueness(rows, tenantId);
+
+        // Create products directly (avoid ProductService @Transactional proxy issues)
+        for (ProductCsvRow row : rows) {
+            if (row.isValid()) {
+                Product product = buildProduct(row, tenantId, userId);
+                productRepository.save(product);
+                successCount++;
+            } else {
+                errorCount++;
+            }
+        }
+
+        // Update import log to COMPLETED and clear stored CSV
         importLog.setStatus(ImportStatus.COMPLETED);
         importLog.setSuccessRows(successCount);
         importLog.setErrorRows(errorCount);
+        importLog.setFileContent(null);
         importLogRepository.save(importLog);
 
-        String message = String.format("Import concluído: %d produtos criados, %d erros",
+        String message = String.format("Importação concluída: %d produtos criados, %d erros",
                 successCount, errorCount);
 
         return new ImportConfirmResponse(
@@ -145,56 +177,118 @@ public class ProductImportService {
     }
 
     /**
-     * Helper: Creates a product from CSV row
+     * Builds a Product entity from CSV row (without going through ProductService proxy)
      */
-    private Product createProductFromRow(ProductCsvRow row, UUID tenantId, UUID userId) {
-        ProductType type = ProductType.valueOf(row.getType());
-        BomType bomType = row.getBomType() != null ? BomType.valueOf(row.getBomType()) : null;
-
-        return productService.create(
+    private Product buildProduct(ProductCsvRow row, UUID tenantId, UUID userId) {
+        Product product = new Product(
                 tenantId,
-                type,
-                bomType,
+                ProductType.SIMPLE,
                 row.getName(),
                 row.getSku(),
                 row.getBarcode(),
                 row.getDescription(),
-                UUID.fromString(row.getCategoryId()),
+                row.getResolvedCategoryId(),
                 row.getPrice(),
                 row.getCost(),
                 row.getUnit(),
                 row.getControlsInventory(),
-                userId
+                ProductStatus.ACTIVE
         );
+        product.setCreatedBy(userId);
+        return product;
     }
 
     /**
-     * Generates CSV template for a specific product type
+     * Validates SKU and barcode uniqueness against DB and within the CSV itself.
+     */
+    private void validateUniqueness(List<ProductCsvRow> rows, UUID tenantId) {
+        // Check for duplicate SKUs within CSV
+        Map<String, List<ProductCsvRow>> skuGroups = rows.stream()
+                .filter(r -> r.getSku() != null)
+                .collect(Collectors.groupingBy(r -> r.getSku().toLowerCase()));
+
+        for (Map.Entry<String, List<ProductCsvRow>> entry : skuGroups.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                entry.getValue().forEach(row ->
+                    row.addError("SKU duplicado no CSV: " + row.getSku())
+                );
+            }
+        }
+
+        // Check for duplicate barcodes within CSV
+        Map<String, List<ProductCsvRow>> barcodeGroups = rows.stream()
+                .filter(r -> r.getBarcode() != null && !r.getBarcode().isBlank())
+                .collect(Collectors.groupingBy(r -> r.getBarcode().toLowerCase()));
+
+        for (Map.Entry<String, List<ProductCsvRow>> entry : barcodeGroups.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                entry.getValue().forEach(row ->
+                    row.addError("Código de barras duplicado no CSV: " + row.getBarcode())
+                );
+            }
+        }
+
+        // Check against existing products in DB
+        for (ProductCsvRow row : rows) {
+            if (row.getSku() != null && !row.hasErrors()) {
+                if (productRepository.findByTenantIdAndSku(tenantId, row.getSku()).isPresent()) {
+                    row.addError("SKU já existe no sistema: " + row.getSku());
+                }
+            }
+            if (row.getBarcode() != null && !row.getBarcode().isBlank() && !row.hasErrors()) {
+                if (productRepository.findByTenantIdAndBarcode(tenantId, row.getBarcode()).isPresent()) {
+                    row.addError("Código de barras já existe no sistema: " + row.getBarcode());
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolves category names to UUIDs by looking up in the database.
+     * Adds validation errors if category not found or ambiguous.
+     */
+    private void resolveCategoryNames(List<ProductCsvRow> rows) {
+        // Collect unique category names
+        Set<String> categoryNames = rows.stream()
+                .map(ProductCsvRow::getCategory)
+                .filter(name -> name != null && !name.isBlank())
+                .collect(Collectors.toSet());
+
+        // Resolve each name once
+        Map<String, List<Category>> resolvedMap = new HashMap<>();
+        for (String name : categoryNames) {
+            resolvedMap.put(name.toLowerCase(), categoryRepository.findByNameIgnoreCase(name));
+        }
+
+        // Apply resolution to each row
+        for (ProductCsvRow row : rows) {
+            String categoryName = row.getCategory();
+            if (categoryName == null || categoryName.isBlank()) {
+                continue; // Already flagged by basic validation
+            }
+
+            List<Category> matches = resolvedMap.getOrDefault(categoryName.toLowerCase(), List.of());
+            if (matches.isEmpty()) {
+                row.addError("Categoria não encontrada: " + categoryName);
+            } else if (matches.size() > 1) {
+                row.addError("Múltiplas categorias com o nome '" + categoryName + "'. Verifique as categorias cadastradas.");
+            } else {
+                row.setResolvedCategoryId(matches.get(0).getId());
+            }
+        }
+    }
+
+    /**
+     * Generates CSV template with example rows
      *
-     * @param productType product type (SIMPLE, COMPOSITE, etc.)
      * @return CSV template string
      */
-    public String generateTemplate(ProductType productType) {
+    public String generateTemplate() {
         StringBuilder csv = new StringBuilder();
 
-        // Header
-        csv.append("type,name,sku,barcode,description,categoryId,price,cost,unit,controlsInventory,status,bomType\n");
-
-        // Example rows based on type
-        switch (productType) {
-            case SIMPLE:
-                csv.append("SIMPLE,Produto Exemplo,SKU001,7891234567890,Descrição do produto,UUID_CATEGORIA_AQUI,99.90,50.00,UN,true,ACTIVE,\n");
-                break;
-            case COMPOSITE:
-                csv.append("COMPOSITE,Kit Exemplo,KIT001,,Descrição do kit,UUID_CATEGORIA_AQUI,199.90,100.00,UN,false,ACTIVE,VIRTUAL\n");
-                break;
-            case VARIANT_PARENT:
-                csv.append("VARIANT_PARENT,Produto com Variantes,PROD001,,Produto base,UUID_CATEGORIA_AQUI,0,0,UN,false,ACTIVE,\n");
-                break;
-            case VARIANT:
-                csv.append("VARIANT,Variante Exemplo,VAR001,7891234567890,Cor: Azul | Tamanho: M,UUID_CATEGORIA_AQUI,99.90,50.00,UN,true,ACTIVE,\n");
-                break;
-        }
+        csv.append("name,sku,barcode,description,category,price,cost,unit,controlsInventory\n");
+        csv.append("Notebook Dell Inspiron,NOTE-001,7891234567890,Notebook 15 polegadas 8GB RAM,Eletrônicos,3499.90,2500.00,UN,true\n");
+        csv.append("Mouse Logitech MX,MOUSE-001,7891234567891,Mouse sem fio ergonômico,Periféricos,299.90,150.00,UN,true\n");
 
         return csv.toString();
     }

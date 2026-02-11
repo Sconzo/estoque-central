@@ -5,7 +5,6 @@ import com.estoquecentral.catalog.adapter.in.dto.ImportPreviewResponse;
 import com.estoquecentral.catalog.adapter.out.ImportLogRepository;
 import com.estoquecentral.catalog.application.importer.ProductImportService;
 import com.estoquecentral.catalog.domain.ImportLog;
-import com.estoquecentral.catalog.domain.ProductType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,21 +89,20 @@ public class ProductImportController {
     }
 
     /**
-     * Download CSV template for specific product type
+     * Download CSV template
      *
-     * GET /api/products/import/template?type={type}
+     * GET /api/products/import/template
      */
     @GetMapping("/import/template")
     @Operation(summary = "Download CSV template",
-               description = "Returns CSV template with example data for specified product type")
-    public ResponseEntity<String> downloadTemplate(
-            @RequestParam(value = "type", defaultValue = "SIMPLE") ProductType type) {
+               description = "Returns CSV template with example data for product import")
+    public ResponseEntity<String> downloadTemplate() {
 
-        String csvTemplate = importService.generateTemplate(type);
+        String csvTemplate = importService.generateTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv"));
-        headers.setContentDispositionFormData("attachment", "product_import_template_" + type + ".csv");
+        headers.setContentDispositionFormData("attachment", "product_import_template.csv");
 
         return new ResponseEntity<>(csvTemplate, headers, HttpStatus.OK);
     }

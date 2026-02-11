@@ -1,6 +1,8 @@
 package com.estoquecentral.sales.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -14,10 +16,13 @@ import java.util.UUID;
  * NFR14: CPF, CNPJ, and Email are encrypted at rest using AES-256
  */
 @Table("customers")
-public class Customer {
+public class Customer implements Persistable<UUID> {
 
     @Id
     private UUID id;
+
+    @Transient
+    private boolean isNew = false;
     private UUID tenantId;
     private CustomerType customerType;
     private String firstName;
@@ -75,6 +80,12 @@ public class Customer {
     public boolean isBusiness() {
         return customerType == CustomerType.BUSINESS;
     }
+
+    // Persistable
+    @Override
+    public boolean isNew() { return isNew; }
+
+    public void markAsNew() { this.isNew = true; }
 
     // Getters and Setters
     public UUID getId() { return id; }

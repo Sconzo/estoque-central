@@ -3,14 +3,14 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0f172a;
   padding: 20px;
 }
 
 .forbidden-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   max-width: 500px;
   width: 100%;
   padding: 60px 40px;
@@ -18,7 +18,7 @@
 }
 
 .icon {
-  color: #e74c3c;
+  color: #dc2626;
   margin-bottom: 20px;
 
   svg {
@@ -30,27 +30,27 @@
 h1 {
   font-size: 72px;
   font-weight: 700;
-  color: #e74c3c;
+  color: #dc2626;
   margin: 0 0 16px 0;
 }
 
 h2 {
   font-size: 28px;
   font-weight: 600;
-  color: #333;
+  color: #1e293b;
   margin: 0 0 16px 0;
 }
 
 p {
   font-size: 16px;
-  color: #666;
+  color: #64748b;
   margin: 0 0 12px 0;
   line-height: 1.6;
 }
 
 .detail {
   font-size: 14px;
-  color: #999;
+  color: #94a3b8;
 }
 
 .btn-primary {
@@ -59,15 +59,16 @@ p {
   font-size: 16px;
   font-weight: 500;
   color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0d9488;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
+    background: #0f766e;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
   }
 
   &:active {

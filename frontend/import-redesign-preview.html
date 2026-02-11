@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Importar Produtos - Preview do Redesign</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', sans-serif; background: #e0e0e0; color: #333; }
+
+    .page-header {
+      background: #0f172a;
+      color: white;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .page-header h1 { font-size: 24px; margin-bottom: 6px; }
+    .page-header p { color: #94a3b8; font-size: 13px; }
+
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #0d9488;
+      margin: 40px 0 8px;
+    }
+    .section-desc {
+      text-align: center;
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    /* ============================================
+       SIMULATED APP SHELL
+       ============================================ */
+    .app-shell {
+      max-width: 1100px;
+      margin: 0 auto 48px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+
+    /* Simulated toolbar */
+    .sim-toolbar {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 24px;
+      font-size: 14px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sim-toolbar .material-icons { font-size: 18px; color: #94a3b8; }
+
+    /* Content area */
+    .content-area {
+      padding: 24px;
+    }
+
+    /* ============================================
+       IMPORT PAGE STYLES
+       ============================================ */
+    .import-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .header h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0;
+    }
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn .material-icons { font-size: 18px; }
+    .btn-primary {
+      background: #0d9488;
+      color: white;
+    }
+    .btn-primary:hover { background: #0f766e; }
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .btn-outline {
+      background: transparent;
+      color: #0d9488;
+      border: 1px solid #0d9488;
+    }
+    .btn-outline:hover { background: #f0fdfa; }
+    .btn-outline-gray {
+      background: transparent;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-outline-gray:hover { background: #f8fafc; }
+    .btn-success {
+      background: #16a34a;
+      color: white;
+    }
+    .btn-success:hover { background: #15803d; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+
+    /* Step indicator */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .step.active {
+      color: #0d9488;
+      font-weight: 500;
+    }
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: #94a3b8;
+    }
+    .step.active .step-number {
+      background: #0d9488;
+      color: white;
+    }
+    .step.done .step-number {
+      background: #16a34a;
+      color: white;
+    }
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background: #e2e8f0;
+    }
+    .step.done + .step-line,
+    .step.active + .step-line {
+      /* Colored via adjacent done */
+    }
+
+    /* Form sections (cards) */
+    .form-section {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .form-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-section h3 .material-icons {
+      font-size: 20px;
+      color: #0d9488;
+    }
+
+    /* Template buttons */
+    .template-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .template-hint {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafbfc;
+    }
+    .upload-area:hover {
+      border-color: #0d9488;
+      background: #f0fdfa;
+    }
+    .upload-area .material-icons {
+      font-size: 48px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .upload-area:hover .material-icons {
+      color: #0d9488;
+    }
+    .upload-area p {
+      font-size: 15px;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .upload-area small {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* File info chip */
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0fdfa;
+      border: 1px solid #ccfbf1;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 16px;
+    }
+    .file-info .material-icons { color: #0d9488; font-size: 22px; }
+    .file-info-text {
+      flex: 1;
+    }
+    .file-info-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0f172a;
+    }
+    .file-info-size {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .file-info .remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+    }
+    .file-info .remove-btn:hover { color: #ef4444; background: #fef2f2; }
+
+    /* Progress bar */
+    .progress-bar-container {
+      margin-top: 16px;
+    }
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #0d9488;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .progress-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    /* Actions */
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* ============================================
+       ETAPA 2 - PREVIEW
+       ============================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card-default {
+      background: white;
+      border: 1px solid #e5e7eb;
+    }
+    .stat-card-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .stat-card-danger {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .stat-card-info {
+      background: #f0fdfa;
+      border: 1px solid #ccfbf1;
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    .stat-card-default .stat-value { color: #0f172a; }
+    .stat-card-success .stat-value { color: #16a34a; }
+    .stat-card-danger .stat-value { color: #dc2626; }
+    .stat-card-info .stat-value { color: #0d9488; }
+    .stat-filename {
+      font-size: 13px;
+      color: #0d9488;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    /* Preview table */
+    .table-container {
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .preview-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .preview-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .preview-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .preview-table tr:hover td {
+      background: #f8fafc;
+    }
+    .row-valid { background: #f0fdf4; }
+    .row-invalid { background: #fef2f2; }
+    .row-invalid:hover td { background: #fef2f2 !important; }
+    .row-valid:hover td { background: #f0fdf4 !important; }
+
+    .status-icon { font-size: 18px; }
+    .status-valid { color: #16a34a; }
+    .status-invalid { color: #dc2626; }
+
+    .error-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .error-list li {
+      color: #dc2626;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .error-list li + li { margin-top: 2px; }
+
+    /* Alert banner */
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .alert-banner .material-icons { font-size: 20px; }
+    .alert-info {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      color: #0f766e;
+    }
+    .alert-warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    /* ============================================
+       ETAPA 3 - RESULTADO
+       ============================================ */
+    .result-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .result-icon {
+      font-size: 64px;
+      color: #16a34a;
+      margin-bottom: 16px;
+    }
+    .result-card h3 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .result-card p {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 24px;
+    }
+    .result-stat {
+      text-align: center;
+    }
+    .result-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      display: block;
+    }
+    .result-stat-label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .result-redirect {
+      font-size: 13px;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    /* Scrollbar for table */
+    .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
+    .table-container::-webkit-scrollbar-track { background: transparent; }
+    .table-container::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.4);
+      border-radius: 2px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .template-buttons { flex-direction: column; }
+      .form-actions { flex-direction: column; }
+      .form-actions .btn { width: 100%; justify-content: center; }
+      .result-stats { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Importar Produtos - Preview do Redesign</h1>
+  <p>3 estados da tela: Upload, Preview e Resultado</p>
+</div>
+
+<!-- ================================================================
+     ETAPA 1: UPLOAD
+     ================================================================ -->
+<div class="section-label">Etapa 1 - Upload do Arquivo</div>
+<div class="section-desc">Tela inicial onde o usuario seleciona o CSV</div>
+
+<div class="app-shell">
+  <div class="sim-toolbar">
+    <span class="material-icons">chevron_right</span>
+    Produtos <span class="material-icons">chevron_right</span> Importar Produtos
+  </div>
+  <div class="content-area">
+    <div class="import-container">
+
+      <!-- Header -->
+      <div class="header">
+        <h2>Importar Produtos</h2>
+        <div class="header-actions">
+          <button class="btn btn-outline-gray btn-sm">
+            <span class="material-icons">arrow_back</span>
+            Voltar
+          </button>
+        </div>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step active">
+          <span class="step-number">1</span>
+          Upload
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-number">2</span>
+          Revisar
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-number">3</span>
+          Concluir
+        </div>
+      </div>
+
+      <!-- Templates section -->
+      <div class="form-section">
+        <h3>
+          <span class="material-icons">description</span>
+          Templates CSV
+        </h3>
+        <div class="template-buttons">
+          <button class="btn btn-outline btn-sm">
+            <span class="material-icons">download</span>
+            Produtos Simples
+          </button>
+          <button class="btn btn-outline btn-sm">
+            <span class="material-icons">download</span>
+            Kits / Compostos
+          </button>
+          <button class="btn btn-outline btn-sm">
+            <span class="material-icons">download</span>
+            Com Variantes
+          </button>
+        </div>
+        <p class="template-hint">Baixe um template para ver o formato esperado do CSV</p>
+      </div>
+
+      <!-- Upload section -->
+      <div class="form-section">
+        <h3>
+          <span class="material-icons">upload_file</span>
+          Selecione o Arquivo
+        </h3>
+
+        <div class="upload-area">
+          <span class="material-icons">cloud_upload</span>
+          <p>Clique para selecionar ou arraste o arquivo CSV</p>
+          <small>Formato aceito: .csv</small>
+        </div>
+
+        <!-- File selected state -->
+        <div class="file-info">
+          <span class="material-icons">insert_drive_file</span>
+          <div class="file-info-text">
+            <div class="file-info-name">produtos_lote_janeiro.csv</div>
+            <div class="file-info-size">24.5 KB</div>
+          </div>
+          <button class="remove-btn" title="Remover arquivo">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <!-- Progress (shown during upload) -->
+        <div class="progress-bar-container">
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 65%;"></div>
+          </div>
+          <div class="progress-label">Processando... 65%</div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary">
+            <span class="material-icons">play_arrow</span>
+            Processar e Visualizar
+          </button>
+          <button class="btn btn-outline-gray">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================================
+     ETAPA 2: PREVIEW
+     ================================================================ -->
+<div class="section-label">Etapa 2 - Preview dos Dados</div>
+<div class="section-desc">Apos processar o CSV, mostra resumo e tabela para revisao</div>
+
+<div class="app-shell">
+  <div class="sim-toolbar">
+    <span class="material-icons">chevron_right</span>
+    Produtos <span class="material-icons">chevron_right</span> Importar Produtos
+  </div>
+  <div class="content-area">
+    <div class="import-container">
+
+      <div class="header">
+        <h2>Importar Produtos</h2>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step done">
+          <span class="step-number"><span class="material-icons" style="font-size:16px;">check</span></span>
+          Upload
+        </div>
+        <div class="step-line" style="background:#16a34a;"></div>
+        <div class="step active">
+          <span class="step-number">2</span>
+          Revisar
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <span class="step-number">3</span>
+          Concluir
+        </div>
+      </div>
+
+      <!-- Stats grid -->
+      <div class="stats-grid">
+        <div class="stat-card stat-card-default">
+          <div class="stat-label">Total de Linhas</div>
+          <div class="stat-value">47</div>
+        </div>
+        <div class="stat-card stat-card-success">
+          <div class="stat-label">Linhas Validas</div>
+          <div class="stat-value">42</div>
+        </div>
+        <div class="stat-card stat-card-danger">
+          <div class="stat-label">Com Erros</div>
+          <div class="stat-value">5</div>
+        </div>
+        <div class="stat-card stat-card-info">
+          <div class="stat-label">Arquivo</div>
+          <div class="stat-filename">produtos_lote_janeiro.csv</div>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      <div class="form-section" style="padding: 0; overflow: hidden;">
+        <div style="padding: 20px 24px 0;">
+          <h3 style="margin-bottom: 0;">
+            <span class="material-icons">table_chart</span>
+            Previa dos Dados
+          </h3>
+        </div>
+        <div class="table-container" style="border: none; border-radius: 0; border-top: 1px solid #e5e7eb; margin-top: 16px;">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th style="width:50px;">Status</th>
+                <th>Tipo</th>
+                <th>Nome</th>
+                <th>SKU</th>
+                <th>Categoria</th>
+                <th>Preco</th>
+                <th>Erros</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row-valid">
+                <td>1</td>
+                <td><span class="material-icons status-icon status-valid">check_circle</span></td>
+                <td>SIMPLE</td>
+                <td>Camiseta Basica P</td>
+                <td>CAM-BAS-P</td>
+                <td>Vestuario</td>
+                <td>49,90</td>
+                <td style="color:#94a3b8;">-</td>
+              </tr>
+              <tr class="row-valid">
+                <td>2</td>
+                <td><span class="material-icons status-icon status-valid">check_circle</span></td>
+                <td>SIMPLE</td>
+                <td>Camiseta Basica M</td>
+                <td>CAM-BAS-M</td>
+                <td>Vestuario</td>
+                <td>49,90</td>
+                <td style="color:#94a3b8;">-</td>
+              </tr>
+              <tr class="row-valid">
+                <td>3</td>
+                <td><span class="material-icons status-icon status-valid">check_circle</span></td>
+                <td>COMPOSITE</td>
+                <td>Kit Escritorio</td>
+                <td>KIT-ESC-01</td>
+                <td>Kits</td>
+                <td>129,90</td>
+                <td style="color:#94a3b8;">-</td>
+              </tr>
+              <tr class="row-invalid">
+                <td>4</td>
+                <td><span class="material-icons status-icon status-invalid">cancel</span></td>
+                <td>SIMPLE</td>
+                <td style="color:#dc2626;">-</td>
+                <td>PRD-004</td>
+                <td>Acessorios</td>
+                <td>29,90</td>
+                <td>
+                  <ul class="error-list">
+                    <li>Nome e obrigatorio</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr class="row-invalid">
+                <td>5</td>
+                <td><span class="material-icons status-icon status-invalid">cancel</span></td>
+                <td>SIMPLE</td>
+                <td>Mouse Sem Fio</td>
+                <td style="color:#dc2626;">-</td>
+                <td>-</td>
+                <td>-1,00</td>
+                <td>
+                  <ul class="error-list">
+                    <li>SKU e obrigatorio</li>
+                    <li>Preco deve ser positivo</li>
+                  </ul>
+                </td>
+              </tr>
+              <tr class="row-valid">
+                <td>6</td>
+                <td><span class="material-icons status-icon status-valid">check_circle</span></td>
+                <td>SIMPLE</td>
+                <td>Caderno 200fls</td>
+                <td>CAD-200</td>
+                <td>Papelaria</td>
+                <td>18,90</td>
+                <td style="color:#94a3b8;">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-banner alert-info">
+        <span class="material-icons">info</span>
+        <span><strong>42 linhas validas</strong> serao importadas. 5 linhas com erros serao ignoradas.</span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-success">
+          <span class="material-icons">check</span>
+          Confirmar Importacao (42 produtos)
+        </button>
+        <button class="btn btn-outline-gray">
+          <span class="material-icons">arrow_back</span>
+          Cancelar e Voltar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================================================
+     ETAPA 3: RESULTADO
+     ================================================================ -->
+<div class="section-label">Etapa 3 - Resultado</div>
+<div class="section-desc">Apos confirmar, mostra resumo da importacao</div>
+
+<div class="app-shell">
+  <div class="sim-toolbar">
+    <span class="material-icons">chevron_right</span>
+    Produtos <span class="material-icons">chevron_right</span> Importar Produtos
+  </div>
+  <div class="content-area">
+    <div class="import-container">
+
+      <div class="header">
+        <h2>Importar Produtos</h2>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step done">
+          <span class="step-number"><span class="material-icons" style="font-size:16px;">check</span></span>
+          Upload
+        </div>
+        <div class="step-line" style="background:#16a34a;"></div>
+        <div class="step done">
+          <span class="step-number"><span class="material-icons" style="font-size:16px;">check</span></span>
+          Revisar
+        </div>
+        <div class="step-line" style="background:#16a34a;"></div>
+        <div class="step done">
+          <span class="step-number"><span class="material-icons" style="font-size:16px;">check</span></span>
+          Concluir
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-card">
+        <span class="material-icons result-icon">check_circle</span>
+        <h3>Importacao Concluida!</h3>
+        <p>Seus produtos foram importados com sucesso.</p>
+
+        <div class="result-stats">
+          <div class="result-stat">
+            <span class="result-stat-value" style="color:#0f172a;">47</span>
+            <span class="result-stat-label">Total</span>
+          </div>
+          <div class="result-stat">
+            <span class="result-stat-value" style="color:#16a34a;">42</span>
+            <span class="result-stat-label">Importados</span>
+          </div>
+          <div class="result-stat">
+            <span class="result-stat-value" style="color:#dc2626;">5</span>
+            <span class="result-stat-label">Erros</span>
+          </div>
+        </div>
+
+        <p class="result-redirect">Redirecionando para lista de produtos...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="height: 60px;"></div>
+
+</body>
+</html>

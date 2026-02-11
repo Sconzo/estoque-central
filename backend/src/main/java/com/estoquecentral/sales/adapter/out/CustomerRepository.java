@@ -54,18 +54,22 @@ public interface CustomerRepository extends
     long countByTenantIdAndAtivo(@Param("tenantId") UUID tenantId, @Param("ativo") Boolean ativo);
 
     /**
-     * Finds customers by tenant ID (all active customers by default).
+     * Finds all customers by tenant ID (no ativo filter).
      *
      * @param tenantId the tenant ID
-     * @param pageable pagination parameters
-     * @return Page of active customers
+     * @param limit page size
+     * @param offset page offset
+     * @return list of all customers
      */
-    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId AND ativo = true ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM customers WHERE tenant_id = :tenantId ORDER BY created_at DESC LIMIT :limit OFFSET :offset")
     java.util.List<Customer> findByTenantIdPaginated(
         @Param("tenantId") UUID tenantId,
         @Param("limit") int limit,
         @Param("offset") long offset
     );
+
+    @Query("SELECT COUNT(*) FROM customers WHERE tenant_id = :tenantId")
+    long countByTenantId(@Param("tenantId") UUID tenantId);
 
     /**
      * Finds customer by tenant ID and CPF (encrypted field).

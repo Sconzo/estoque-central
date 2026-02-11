@@ -16,6 +16,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SalesOrderService, SalesOrderResponse, SalesOrderStatus } from '../services/sales-order.service';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * SalesOrderListComponent - List and manage B2B sales orders
@@ -50,6 +51,7 @@ export class SalesOrderListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
 
   filterForm!: FormGroup;
   salesOrders = signal<SalesOrderResponse[]>([]);
@@ -178,7 +180,12 @@ export class SalesOrderListComponent implements OnInit {
       return;
     }
 
-    if (confirm(`Confirmar pedido ${order.orderNumber}? Esta ação validará o estoque disponível.`)) {
+    this.confirmDialog.confirmInfo({
+      title: 'Confirmar Pedido',
+      message: `Confirmar pedido ${order.orderNumber}? Esta ação validará o estoque disponível.`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.salesOrderService.confirmSalesOrder(order.id).subscribe({
         next: () => {
           this.snackBar.open('Pedido confirmado com sucesso!', 'Fechar', { duration: 3000 });
@@ -193,7 +200,7 @@ export class SalesOrderListComponent implements OnInit {
           }
         }
       });
-    }
+    });
   }
 
   cancelOrder(order: SalesOrderResponse): void {
@@ -202,7 +209,12 @@ export class SalesOrderListComponent implements OnInit {
       return;
     }
 
-    if (confirm(`Cancelar pedido ${order.orderNumber}?`)) {
+    this.confirmDialog.confirmDanger({
+      title: 'Cancelar Pedido',
+      message: `Cancelar pedido ${order.orderNumber}?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.salesOrderService.cancelSalesOrder(order.id).subscribe({
         next: () => {
           this.snackBar.open('Pedido cancelado com sucesso!', 'Fechar', { duration: 3000 });
@@ -213,7 +225,7 @@ export class SalesOrderListComponent implements OnInit {
           this.snackBar.open('Erro ao cancelar pedido', 'Fechar', { duration: 3000 });
         }
       });
-    }
+    });
   }
 
   createNewOrder(): void {

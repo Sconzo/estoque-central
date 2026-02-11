@@ -72,5 +72,5 @@ export class MetricCardComponent {
   @Input() value!: string;
   @Input() changePercent?: number;
   @Input() icon: string = 'info';
-  @Input() color: string = '#6A1B9A';
+  @Input() color: string = '#0d9488';
 }

@@ -64,7 +64,11 @@
       "Bash(timeout 45 bash:*)",
       "Bash(docker restart:*)",
       "Bash(cmd.exe /c \"mvnw.cmd compile -q\")",
-      "Bash(cmd.exe /c \"mvnw.cmd compile\")"
+      "Bash(cmd.exe /c \"mvnw.cmd compile\")",
+      "Bash(mvn compile:*)",
+      "Bash(mvnw.cmd compile:*)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\rspol\\\\dev\\\\estoque-central\\\\backend && mvn compile -q\")",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\rspol\\\\dev\\\\estoque-central\\\\backend && mvn compile -q 2>&1\")"
     ],
     "deny": [],
     "ask": []

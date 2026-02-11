@@ -96,12 +96,12 @@ export class UserAvatarMenuComponent implements OnInit, OnDestroy {
   getAvatarColor(): string {
     const user = this.currentUser();
     if (!user || !user.nome) {
-      return '#6A1B9A'; // Default Deep Purple
+      return '#0d9488'; // Default Teal
     }
 
     // Generate color from user name
     const colors = [
-      '#6A1B9A', // Deep Purple
+      '#0d9488', // Teal
       '#1976D2', // Blue
       '#388E3C', // Green
       '#D32F2F', // Red

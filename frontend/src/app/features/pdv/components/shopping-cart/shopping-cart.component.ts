@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { Cart, CartItem } from '../../models/pdv.model';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * ShoppingCartComponent - Display and manage cart items
@@ -199,7 +200,10 @@ import { Cart, CartItem } from '../../models/pdv.model';
 export class ShoppingCartComponent implements OnInit {
   cart: Cart = { items: [], subtotal: 0, discount: 0, total: 0 };
 
-  constructor(private cartService: CartService) {}
+  constructor(
+    private cartService: CartService,
+    private confirmDialog: ConfirmDialogService
+  ) {}
 
   ngOnInit(): void {
     this.cartService.cart$.subscribe(cart => {
@@ -223,8 +227,13 @@ export class ShoppingCartComponent implements OnInit {
   }
 
   removeItem(item: CartItem): void {
-    if (confirm(`Remover ${item.product_name} do carrinho?`)) {
+    this.confirmDialog.confirm({
+      title: 'Remover Item',
+      message: `Remover ${item.product_name} do carrinho?`,
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
       this.cartService.removeItem(item.product_id);
-    }
+    });
   }
 }

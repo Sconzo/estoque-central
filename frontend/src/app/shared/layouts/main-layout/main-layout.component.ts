@@ -55,6 +55,9 @@ export class MainLayoutComponent implements OnInit {
   // Responsive detection
   isHandset$!: Observable<boolean>;
 
+  // Tracks which parent menus are expanded
+  expandedMenus = new Set<string>();
+
   // Navigation menu items
   menuItems = [
     {
@@ -145,6 +148,9 @@ export class MainLayoutComponent implements OnInit {
 
     // Load current company
     this.loadCurrentCompany();
+
+    // Auto-expand the menu that contains the current active route
+    this.expandActiveMenu();
   }
 
   /**
@@ -170,6 +176,36 @@ export class MainLayoutComponent implements OnInit {
       });
     } else {
       console.log('🏢 No tenantId found in localStorage');
+    }
+  }
+
+  /**
+   * Toggle expand/collapse for parent menus with children
+   */
+  toggleMenu(route: string): void {
+    if (this.expandedMenus.has(route)) {
+      this.expandedMenus.delete(route);
+    } else {
+      this.expandedMenus.clear();
+      this.expandedMenus.add(route);
+    }
+  }
+
+  /**
+   * Check if a parent menu is expanded
+   */
+  isMenuExpanded(route: string): boolean {
+    return this.expandedMenus.has(route);
+  }
+
+  /**
+   * Auto-expand the parent menu whose child matches the current route
+   */
+  private expandActiveMenu(): void {
+    for (const item of this.menuItems) {
+      if (item.children && this.isRouteActive(item.route)) {
+        this.expandedMenus.add(item.route);
+      }
     }
   }
 

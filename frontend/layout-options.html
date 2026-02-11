@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estoque Central - Opcoes de Layout e Cores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+      background: #1a1a2e;
+      color: white;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .page-header h1 { font-size: 28px; margin-bottom: 8px; }
+    .page-header p { color: #aaa; font-size: 14px; }
+
+    /* ===== OPTION SECTION ===== */
+    .option-section {
+      padding: 48px 24px;
+      border-bottom: 4px solid #ccc;
+    }
+    .option-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .option-subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+    .screen-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #999;
+      margin: 32px 0 12px;
+    }
+    .screen-label:first-of-type { margin-top: 0; }
+
+    /* ===== SHARED FRAME ===== */
+    .frame {
+      max-width: 1100px;
+      margin: 0 auto 24px;
+      border: 1px solid #ccc;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .app-shell {
+      display: flex;
+      height: 520px;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 20px 16px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .sidebar-nav { flex: 1; padding: 0 8px; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 6px;
+      margin-bottom: 2px;
+    }
+    .nav-item .material-icons { font-size: 20px; }
+    .nav-child {
+      padding: 8px 12px 8px 48px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 6px;
+      margin-bottom: 1px;
+    }
+    .sidebar-footer {
+      padding: 12px 16px;
+      font-size: 12px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-footer .material-icons { font-size: 18px; }
+
+    /* ===== MAIN AREA ===== */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .toolbar {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .toolbar .material-icons { font-size: 20px; }
+    .toolbar-spacer { flex: 1; }
+    .toolbar .company-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    /* ===== CONTENT PIECES ===== */
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .page-title-row h2 { font-size: 20px; font-weight: 600; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn .material-icons { font-size: 18px; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #ccc;
+    }
+
+    /* Filters bar */
+    .filters-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .filter-field {
+      padding: 8px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      color: #666;
+      min-width: 160px;
+    }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .data-table td {
+      padding: 10px 12px;
+      vertical-align: middle;
+    }
+    .data-table tbody tr { transition: background 0.1s; cursor: pointer; }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .action-icons { display: flex; gap: 4px; }
+    .action-icons .material-icons { font-size: 18px; cursor: pointer; opacity: 0.6; }
+    .action-icons .material-icons:hover { opacity: 1; }
+
+    /* Category tree */
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+    .tree-item .material-icons { font-size: 18px; }
+    .tree-child { padding-left: 36px; }
+    .tree-actions { margin-left: auto; display: flex; gap: 2px; }
+    .tree-actions .material-icons { font-size: 16px; opacity: 0.5; }
+
+    /* Form */
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 16px 0 10px;
+      padding-bottom: 6px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-label { font-size: 11px; font-weight: 500; color: #666; }
+    .form-input {
+      padding: 9px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+      padding-top: 12px;
+    }
+
+    /* Select company */
+    .company-select-screen {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 32px;
+    }
+    .company-select-screen h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+    .company-select-screen .sub { font-size: 13px; color: #888; margin-bottom: 28px; }
+    .company-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .company-card {
+      padding: 20px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .company-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .company-card-cnpj { font-size: 12px; opacity: 0.6; margin-bottom: 10px; }
+    .company-card-role { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+    .company-card-role .material-icons { font-size: 16px; }
+
+    /* ================================================================
+       THEME A: ATUAL (Deep Purple + Gold)
+       ================================================================ */
+    .theme-a { background: #f5f5f5; }
+    .theme-a .sidebar { background: #fafafa; border-right: 1px solid #e0e0e0; }
+    .theme-a .sidebar-brand { background: #6A1B9A; color: white; }
+    .theme-a .nav-item { color: #555; }
+    .theme-a .nav-item:hover { background: rgba(106,27,154,0.06); }
+    .theme-a .nav-item.active { background: rgba(106,27,154,0.1); color: #6A1B9A; }
+    .theme-a .nav-item.active .material-icons { color: #6A1B9A; }
+    .theme-a .nav-child:hover { background: rgba(106,27,154,0.05); }
+    .theme-a .nav-child.active { background: rgba(106,27,154,0.08); color: #6A1B9A; }
+    .theme-a .sidebar-footer { color: #888; }
+    .theme-a .toolbar { background: #6A1B9A; color: white; }
+    .theme-a .avatar { background: rgba(255,255,255,0.2); color: white; }
+    .theme-a .content-area { background: #f5f5f5; }
+    .theme-a .btn-primary { background: #6A1B9A; color: white; }
+    .theme-a .btn-primary:hover { background: #5c1690; }
+    .theme-a .btn-outline { color: #6A1B9A; border-color: #6A1B9A; }
+    .theme-a .data-table th { background: #f0f0f0; color: #555; border-bottom: 2px solid #ddd; }
+    .theme-a .data-table td { border-bottom: 1px solid #eee; }
+    .theme-a .data-table tbody tr:hover { background: #f9f5fd; }
+    .theme-a .badge-active { background: #e8f5e9; color: #2e7d32; }
+    .theme-a .badge-inactive { background: #fce4ec; color: #c62828; }
+    .theme-a .tree-item:hover { background: #f3e8ff; }
+    .theme-a .form-section-title { color: #6A1B9A; border-bottom: 1px solid #e0d4f0; }
+    .theme-a .form-input:focus { outline: 2px solid #6A1B9A; border-color: #6A1B9A; }
+    .theme-a .company-select-bg { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    .theme-a .company-select-screen h1 { color: #6A1B9A; }
+    .theme-a .company-card { background: white; border: 2px solid #eee; }
+    .theme-a .company-card:hover { border-color: #6A1B9A; box-shadow: 0 4px 16px rgba(106,27,154,0.15); }
+    .theme-a .company-card-role .material-icons { color: #6A1B9A; }
+
+    /* ================================================================
+       THEME B: Slate & Teal (Moderno / Neutro)
+       ================================================================ */
+    .theme-b { background: #f8f9fa; }
+    .theme-b .sidebar { background: #1e293b; color: #94a3b8; }
+    .theme-b .sidebar-brand { background: #0f172a; color: #f1f5f9; }
+    .theme-b .nav-item { color: #94a3b8; }
+    .theme-b .nav-item:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+    .theme-b .nav-item.active { background: rgba(20,184,166,0.15); color: #2dd4bf; }
+    .theme-b .nav-item.active .material-icons { color: #2dd4bf; }
+    .theme-b .nav-child { color: #64748b; }
+    .theme-b .nav-child:hover { background: rgba(255,255,255,0.04); color: #cbd5e1; }
+    .theme-b .nav-child.active { color: #2dd4bf; }
+    .theme-b .sidebar-footer { color: #475569; border-top-color: rgba(255,255,255,0.06); }
+    .theme-b .toolbar { background: white; color: #1e293b; border-bottom: 1px solid #e2e8f0; }
+    .theme-b .avatar { background: #0d9488; color: white; }
+    .theme-b .content-area { background: #f1f5f9; }
+    .theme-b .btn-primary { background: #0d9488; color: white; }
+    .theme-b .btn-primary:hover { background: #0f766e; }
+    .theme-b .btn-outline { color: #0d9488; border-color: #0d9488; }
+    .theme-b .data-table th { background: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    .theme-b .data-table td { border-bottom: 1px solid #f1f5f9; }
+    .theme-b .data-table tbody tr:hover { background: #f0fdfa; }
+    .theme-b .badge-active { background: #ccfbf1; color: #0f766e; }
+    .theme-b .badge-inactive { background: #fee2e2; color: #dc2626; }
+    .theme-b .tree-item:hover { background: #f0fdfa; }
+    .theme-b .form-section-title { color: #0f172a; border-bottom: 1px solid #e2e8f0; }
+    .theme-b .form-input:focus { outline: 2px solid #0d9488; border-color: #0d9488; }
+    .theme-b .company-select-bg { background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); }
+    .theme-b .company-select-screen h1 { color: #0f172a; }
+    .theme-b .company-card { background: white; border: 2px solid #e2e8f0; }
+    .theme-b .company-card:hover { border-color: #0d9488; box-shadow: 0 4px 16px rgba(13,148,136,0.12); }
+    .theme-b .company-card-role .material-icons { color: #0d9488; }
+    .theme-b .page-title-row h2 { color: #0f172a; }
+
+    /* ================================================================
+       THEME C: Indigo & Warm (Corporativo / Limpo)
+       ================================================================ */
+    .theme-c { background: #fafafa; }
+    .theme-c .sidebar { background: white; border-right: 1px solid #e5e7eb; }
+    .theme-c .sidebar-brand { background: white; color: #1e3a5f; border-bottom: 1px solid #e5e7eb; }
+    .theme-c .nav-item { color: #6b7280; }
+    .theme-c .nav-item:hover { background: #f3f4f6; color: #374151; }
+    .theme-c .nav-item.active { background: #eef2ff; color: #4338ca; }
+    .theme-c .nav-item.active .material-icons { color: #4338ca; }
+    .theme-c .nav-child { color: #9ca3af; }
+    .theme-c .nav-child:hover { background: #f9fafb; color: #6b7280; }
+    .theme-c .nav-child.active { color: #4338ca; background: #eef2ff; }
+    .theme-c .sidebar-footer { color: #9ca3af; }
+    .theme-c .toolbar { background: #1e3a5f; color: white; }
+    .theme-c .avatar { background: #e0784c; color: white; }
+    .theme-c .content-area { background: #f9fafb; }
+    .theme-c .btn-primary { background: #4338ca; color: white; }
+    .theme-c .btn-primary:hover { background: #3730a3; }
+    .theme-c .btn-outline { color: #4338ca; border-color: #4338ca; }
+    .theme-c .data-table th { background: white; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+    .theme-c .data-table td { border-bottom: 1px solid #f3f4f6; }
+    .theme-c .data-table tbody tr:hover { background: #f5f3ff; }
+    .theme-c .badge-active { background: #dcfce7; color: #16a34a; }
+    .theme-c .badge-inactive { background: #fef2f2; color: #dc2626; }
+    .theme-c .tree-item:hover { background: #eef2ff; }
+    .theme-c .form-section-title { color: #1e3a5f; border-bottom: 1px solid #e5e7eb; }
+    .theme-c .form-input:focus { outline: 2px solid #4338ca; border-color: #4338ca; }
+    .theme-c .company-select-bg { background: linear-gradient(135deg, #f9fafb 0%, #eef2ff 100%); }
+    .theme-c .company-select-screen h1 { color: #1e3a5f; }
+    .theme-c .company-card { background: white; border: 2px solid #e5e7eb; }
+    .theme-c .company-card:hover { border-color: #4338ca; box-shadow: 0 4px 16px rgba(67,56,202,0.1); }
+    .theme-c .company-card-role .material-icons { color: #4338ca; }
+    .theme-c .page-title-row h2 { color: #1e3a5f; }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Estoque Central - Opcoes de Tema</h1>
+  <p>Compare 3 paletas de cores com as telas reais do sistema. Diga A, B ou C.</p>
+</div>
+
+<!-- ================================================================
+     THEME A: ATUAL (Deep Purple + Gold)
+     ================================================================ -->
+<div class="option-section theme-a">
+  <div class="option-title">Opcao A <span style="font-size:13px;font-weight:400;color:#888;">- ATUAL (Deep Purple + Gold)</span></div>
+  <div class="option-subtitle">Primary: #6A1B9A &nbsp;|&nbsp; Sidebar: claro &nbsp;|&nbsp; Toolbar: roxo &nbsp;|&nbsp; Accent: gold</div>
+
+  <!-- PRODUCT LIST -->
+  <div class="screen-label">Listagem de Produtos</div>
+  <div class="frame">
+    <div class="app-shell">
+      <div class="sidebar">
+        <div class="sidebar-brand">Estoque Central</div>
+        <div class="sidebar-nav">
+          <div class="nav-item"><span class="material-icons">dashboard</span> Dashboard</div>
+          <div class="nav-item active"><span class="material-icons">inventory_2</span> Produtos</div>
+          <div class="nav-child active">Lista de Produtos</div>
+          <div class="nav-child">Categorias</div>
+          <div class="nav-child">Importar CSV</div>
+          <div class="nav-item"><span class="material-icons">warehouse</span> Estoque</div>
+          <div class="nav-item"><span class="material-icons">people</span> Clientes</div>
+          <div class="nav-item"><span class="material-icons">point_of_sale</span> Vendas</div>
+          <div class="nav-item"><span class="material-icons">sync_alt</span> Integracoes</div>
+          <div class="nav-item"><span class="material-icons">admin_panel_settings</span> Usuarios</div>
+        </div>
+        <div class="sidebar-footer"><span class="material-icons">logout</span> Sair</div>
+      </div>
+      <div class="main-area">
+        <div class="toolbar">
+          <div class="company-badge"><span class="material-icons">business</span> Loja Centro LTDA</div>
+          <span class="toolbar-spacer"></span>
+          <div class="avatar">RS</div>
+        </div>
+        <div class="content-area">
+          <div class="page-title-row">
+            <h2>Produtos</h2>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm"><span class="material-icons">upload_file</span> Importar</button>
+              <button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Novo Produto</button>
+            </div>
+          </div>
+          <div class="filters-bar">
+            <input class="filter-field" placeholder="Buscar por nome, SKU..." style="flex:1">
+            <select class="filter-field"><option>Todas categorias</option></select>
+            <select class="filter-field"><option>Todos status</option></select>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>SKU</th><th>Nome</th><th>Categoria</th><th>Preco</th><th>Status</th><th>Acoes</th></tr></thead>
+            <tbody>
+              <tr><td><strong>PROD-001</strong></td><td><strong>Camiseta Polo</strong><br><small style="color:#999">Algodao premium</small></td><td>Vestuario</td><td>R$ 89,90</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#6A1B9A">edit</span><span class="material-icons" style="color:#c62828">delete</span></td></tr>
+              <tr><td><strong>PROD-002</strong></td><td><strong>Notebook Dell</strong><br><small style="color:#999">15 polegadas i7</small></td><td>Eletronicos</td><td>R$ 4.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#6A1B9A">edit</span><span class="material-icons" style="color:#c62828">delete</span></td></tr>
+              <tr><td><strong>PROD-003</strong></td><td><strong>Mouse Sem Fio</strong></td><td>Eletronicos</td><td>R$ 79,90</td><td><span class="badge badge-inactive">Inativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#6A1B9A">edit</span><span class="material-icons" style="color:#c62828">delete</span></td></tr>
+              <tr><td><strong>PROD-004</strong></td><td><strong>Cadeira Gamer</strong></td><td>Moveis</td><td>R$ 1.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#6A1B9A">edit</span><span class="material-icons" style="color:#c62828">delete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY TREE + PRODUCT FORM side by side -->
+  <div style="display:flex;gap:24px;max-width:1100px;margin:0 auto;">
+    <!-- Category tree -->
+    <div style="flex:1;">
+      <div class="screen-label">Arvore de Categorias</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <div class="page-title-row"><h2>Categorias</h2><button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Nova Raiz</button></div>
+          <div class="tree-item"><span class="material-icons">expand_more</span><span class="material-icons" style="color:#F9A825">folder</span> <strong>Eletronicos</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#F9A825;font-size:16px">folder</span> Notebooks<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#F9A825;font-size:16px">folder</span> Perifericos<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#F9A825">folder</span> <strong>Vestuario</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#F9A825">folder</span> <strong>Moveis</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Product form -->
+    <div style="flex:1;">
+      <div class="screen-label">Formulario de Produto</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <h2 style="font-size:18px;margin-bottom:12px;">Novo Produto</h2>
+          <div class="form-section-title">Informacoes Basicas</div>
+          <div class="form-grid">
+            <div class="form-group full"><span class="form-label">Nome *</span><input class="form-input" value="Notebook Dell Inspiron 15"></div>
+            <div class="form-group"><span class="form-label">SKU *</span><input class="form-input" value="NOTE-DELL-I15"></div>
+            <div class="form-group"><span class="form-label">Codigo de Barras</span><input class="form-input" value="7891234567890"></div>
+          </div>
+          <div class="form-section-title">Precos</div>
+          <div class="form-grid">
+            <div class="form-group"><span class="form-label">Preco de Venda *</span><input class="form-input" value="R$ 4.299,00"></div>
+            <div class="form-group"><span class="form-label">Custo</span><input class="form-input" value="R$ 3.200,00"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline btn-sm">Cancelar</button>
+            <button class="btn btn-primary btn-sm"><span class="material-icons">save</span> Criar Produto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELECT COMPANY -->
+  <div class="screen-label" style="margin-top:32px;">Selecao de Empresa</div>
+  <div class="frame">
+    <div class="company-select-bg" style="min-height:340px;display:flex;align-items:center;justify-content:center;">
+      <div class="company-select-screen">
+        <h1>Selecione uma Empresa</h1>
+        <p class="sub">Voce tem acesso a 2 empresas</p>
+        <div class="company-cards">
+          <div class="company-card">
+            <div class="company-card-name">Loja Centro LTDA</div>
+            <div class="company-card-cnpj">CNPJ: 12.345.678/0001-99</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Administrador</div>
+          </div>
+          <div class="company-card">
+            <div class="company-card-name">Distribuidora Norte ME</div>
+            <div class="company-card-cnpj">CNPJ: 98.765.432/0001-11</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Operador</div>
+          </div>
+        </div>
+        <button class="btn btn-primary"><span class="material-icons">add_business</span> Criar Nova Empresa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     THEME B: Slate & Teal
+     ================================================================ -->
+<div class="option-section theme-b">
+  <div class="option-title">Opcao B <span style="font-size:13px;font-weight:400;color:#888;">- Slate & Teal (Sidebar escura)</span></div>
+  <div class="option-subtitle">Primary: #0d9488 (Teal) &nbsp;|&nbsp; Sidebar: dark slate &nbsp;|&nbsp; Toolbar: branco &nbsp;|&nbsp; Fundo: cinza frio</div>
+
+  <div class="screen-label">Listagem de Produtos</div>
+  <div class="frame">
+    <div class="app-shell">
+      <div class="sidebar">
+        <div class="sidebar-brand">Estoque Central</div>
+        <div class="sidebar-nav">
+          <div class="nav-item"><span class="material-icons">dashboard</span> Dashboard</div>
+          <div class="nav-item active"><span class="material-icons">inventory_2</span> Produtos</div>
+          <div class="nav-child active">Lista de Produtos</div>
+          <div class="nav-child">Categorias</div>
+          <div class="nav-child">Importar CSV</div>
+          <div class="nav-item"><span class="material-icons">warehouse</span> Estoque</div>
+          <div class="nav-item"><span class="material-icons">people</span> Clientes</div>
+          <div class="nav-item"><span class="material-icons">point_of_sale</span> Vendas</div>
+          <div class="nav-item"><span class="material-icons">sync_alt</span> Integracoes</div>
+          <div class="nav-item"><span class="material-icons">admin_panel_settings</span> Usuarios</div>
+        </div>
+        <div class="sidebar-footer"><span class="material-icons">logout</span> Sair</div>
+      </div>
+      <div class="main-area">
+        <div class="toolbar">
+          <div class="company-badge"><span class="material-icons" style="color:#0d9488">business</span> Loja Centro LTDA</div>
+          <span class="toolbar-spacer"></span>
+          <div class="avatar">RS</div>
+        </div>
+        <div class="content-area">
+          <div class="page-title-row">
+            <h2>Produtos</h2>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm"><span class="material-icons">upload_file</span> Importar</button>
+              <button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Novo Produto</button>
+            </div>
+          </div>
+          <div class="filters-bar">
+            <input class="filter-field" placeholder="Buscar por nome, SKU..." style="flex:1">
+            <select class="filter-field"><option>Todas categorias</option></select>
+            <select class="filter-field"><option>Todos status</option></select>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>SKU</th><th>Nome</th><th>Categoria</th><th>Preco</th><th>Status</th><th>Acoes</th></tr></thead>
+            <tbody>
+              <tr><td><strong>PROD-001</strong></td><td><strong>Camiseta Polo</strong><br><small style="color:#999">Algodao premium</small></td><td>Vestuario</td><td>R$ 89,90</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#0d9488">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-002</strong></td><td><strong>Notebook Dell</strong><br><small style="color:#999">15 polegadas i7</small></td><td>Eletronicos</td><td>R$ 4.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#0d9488">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-003</strong></td><td><strong>Mouse Sem Fio</strong></td><td>Eletronicos</td><td>R$ 79,90</td><td><span class="badge badge-inactive">Inativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#0d9488">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-004</strong></td><td><strong>Cadeira Gamer</strong></td><td>Moveis</td><td>R$ 1.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#0d9488">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;max-width:1100px;margin:0 auto;">
+    <div style="flex:1;">
+      <div class="screen-label">Arvore de Categorias</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <div class="page-title-row"><h2>Categorias</h2><button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Nova Raiz</button></div>
+          <div class="tree-item"><span class="material-icons">expand_more</span><span class="material-icons" style="color:#0d9488">folder</span> <strong>Eletronicos</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#0d9488;font-size:16px">folder</span> Notebooks<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#0d9488;font-size:16px">folder</span> Perifericos<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#0d9488">folder</span> <strong>Vestuario</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#0d9488">folder</span> <strong>Moveis</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;">
+      <div class="screen-label">Formulario de Produto</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <h2 style="font-size:18px;margin-bottom:12px;">Novo Produto</h2>
+          <div class="form-section-title">Informacoes Basicas</div>
+          <div class="form-grid">
+            <div class="form-group full"><span class="form-label">Nome *</span><input class="form-input" value="Notebook Dell Inspiron 15"></div>
+            <div class="form-group"><span class="form-label">SKU *</span><input class="form-input" value="NOTE-DELL-I15"></div>
+            <div class="form-group"><span class="form-label">Codigo de Barras</span><input class="form-input" value="7891234567890"></div>
+          </div>
+          <div class="form-section-title">Precos</div>
+          <div class="form-grid">
+            <div class="form-group"><span class="form-label">Preco de Venda *</span><input class="form-input" value="R$ 4.299,00"></div>
+            <div class="form-group"><span class="form-label">Custo</span><input class="form-input" value="R$ 3.200,00"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline btn-sm">Cancelar</button>
+            <button class="btn btn-primary btn-sm"><span class="material-icons">save</span> Criar Produto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-label" style="margin-top:32px;">Selecao de Empresa</div>
+  <div class="frame">
+    <div class="company-select-bg" style="min-height:340px;display:flex;align-items:center;justify-content:center;">
+      <div class="company-select-screen">
+        <h1>Selecione uma Empresa</h1>
+        <p class="sub">Voce tem acesso a 2 empresas</p>
+        <div class="company-cards">
+          <div class="company-card">
+            <div class="company-card-name">Loja Centro LTDA</div>
+            <div class="company-card-cnpj">CNPJ: 12.345.678/0001-99</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Administrador</div>
+          </div>
+          <div class="company-card">
+            <div class="company-card-name">Distribuidora Norte ME</div>
+            <div class="company-card-cnpj">CNPJ: 98.765.432/0001-11</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Operador</div>
+          </div>
+        </div>
+        <button class="btn btn-primary"><span class="material-icons">add_business</span> Criar Nova Empresa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     THEME C: Indigo & Warm
+     ================================================================ -->
+<div class="option-section theme-c">
+  <div class="option-title">Opcao C <span style="font-size:13px;font-weight:400;color:#888;">- Indigo & Warm (Corporativo limpo)</span></div>
+  <div class="option-subtitle">Primary: #4338CA (Indigo) &nbsp;|&nbsp; Sidebar: branca &nbsp;|&nbsp; Toolbar: azul escuro &nbsp;|&nbsp; Accent: coral #e0784c</div>
+
+  <div class="screen-label">Listagem de Produtos</div>
+  <div class="frame">
+    <div class="app-shell">
+      <div class="sidebar">
+        <div class="sidebar-brand"><span class="material-icons" style="font-size:20px;margin-right:8px;color:#4338ca">inventory_2</span> Estoque Central</div>
+        <div class="sidebar-nav">
+          <div class="nav-item"><span class="material-icons">dashboard</span> Dashboard</div>
+          <div class="nav-item active"><span class="material-icons">inventory_2</span> Produtos</div>
+          <div class="nav-child active">Lista de Produtos</div>
+          <div class="nav-child">Categorias</div>
+          <div class="nav-child">Importar CSV</div>
+          <div class="nav-item"><span class="material-icons">warehouse</span> Estoque</div>
+          <div class="nav-item"><span class="material-icons">people</span> Clientes</div>
+          <div class="nav-item"><span class="material-icons">point_of_sale</span> Vendas</div>
+          <div class="nav-item"><span class="material-icons">sync_alt</span> Integracoes</div>
+          <div class="nav-item"><span class="material-icons">admin_panel_settings</span> Usuarios</div>
+        </div>
+        <div class="sidebar-footer"><span class="material-icons">logout</span> Sair</div>
+      </div>
+      <div class="main-area">
+        <div class="toolbar">
+          <div class="company-badge"><span class="material-icons" style="font-size:18px">business</span> Loja Centro LTDA</div>
+          <span class="toolbar-spacer"></span>
+          <div class="avatar">RS</div>
+        </div>
+        <div class="content-area">
+          <div class="page-title-row">
+            <h2>Produtos</h2>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm"><span class="material-icons">upload_file</span> Importar</button>
+              <button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Novo Produto</button>
+            </div>
+          </div>
+          <div class="filters-bar">
+            <input class="filter-field" placeholder="Buscar por nome, SKU..." style="flex:1">
+            <select class="filter-field"><option>Todas categorias</option></select>
+            <select class="filter-field"><option>Todos status</option></select>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>SKU</th><th>Nome</th><th>Categoria</th><th>Preco</th><th>Status</th><th>Acoes</th></tr></thead>
+            <tbody>
+              <tr><td><strong>PROD-001</strong></td><td><strong>Camiseta Polo</strong><br><small style="color:#999">Algodao premium</small></td><td>Vestuario</td><td>R$ 89,90</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#4338ca">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-002</strong></td><td><strong>Notebook Dell</strong><br><small style="color:#999">15 polegadas i7</small></td><td>Eletronicos</td><td>R$ 4.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#4338ca">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-003</strong></td><td><strong>Mouse Sem Fio</strong></td><td>Eletronicos</td><td>R$ 79,90</td><td><span class="badge badge-inactive">Inativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#4338ca">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+              <tr><td><strong>PROD-004</strong></td><td><strong>Cadeira Gamer</strong></td><td>Moveis</td><td>R$ 1.299,00</td><td><span class="badge badge-active">Ativo</span></td><td class="action-icons"><span class="material-icons">visibility</span><span class="material-icons" style="color:#4338ca">edit</span><span class="material-icons" style="color:#dc2626">delete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;max-width:1100px;margin:0 auto;">
+    <div style="flex:1;">
+      <div class="screen-label">Arvore de Categorias</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <div class="page-title-row"><h2>Categorias</h2><button class="btn btn-primary btn-sm"><span class="material-icons">add</span> Nova Raiz</button></div>
+          <div class="tree-item"><span class="material-icons">expand_more</span><span class="material-icons" style="color:#4338ca">folder</span> <strong>Eletronicos</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#4338ca;font-size:16px">folder</span> Notebooks<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item tree-child"><span class="material-icons" style="font-size:16px">chevron_right</span><span class="material-icons" style="color:#4338ca;font-size:16px">folder</span> Perifericos<div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#4338ca">folder</span> <strong>Vestuario</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+          <div class="tree-item"><span class="material-icons">chevron_right</span><span class="material-icons" style="color:#4338ca">folder</span> <strong>Moveis</strong><div class="tree-actions"><span class="material-icons">add_circle_outline</span><span class="material-icons">edit</span><span class="material-icons">delete</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;">
+      <div class="screen-label">Formulario de Produto</div>
+      <div class="frame" style="margin-bottom:0">
+        <div style="padding:20px;background:white;min-height:300px;">
+          <h2 style="font-size:18px;margin-bottom:12px;color:#1e3a5f;">Novo Produto</h2>
+          <div class="form-section-title">Informacoes Basicas</div>
+          <div class="form-grid">
+            <div class="form-group full"><span class="form-label">Nome *</span><input class="form-input" value="Notebook Dell Inspiron 15"></div>
+            <div class="form-group"><span class="form-label">SKU *</span><input class="form-input" value="NOTE-DELL-I15"></div>
+            <div class="form-group"><span class="form-label">Codigo de Barras</span><input class="form-input" value="7891234567890"></div>
+          </div>
+          <div class="form-section-title">Precos</div>
+          <div class="form-grid">
+            <div class="form-group"><span class="form-label">Preco de Venda *</span><input class="form-input" value="R$ 4.299,00"></div>
+            <div class="form-group"><span class="form-label">Custo</span><input class="form-input" value="R$ 3.200,00"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline btn-sm">Cancelar</button>
+            <button class="btn btn-primary btn-sm"><span class="material-icons">save</span> Criar Produto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-label" style="margin-top:32px;">Selecao de Empresa</div>
+  <div class="frame">
+    <div class="company-select-bg" style="min-height:340px;display:flex;align-items:center;justify-content:center;">
+      <div class="company-select-screen">
+        <h1>Selecione uma Empresa</h1>
+        <p class="sub">Voce tem acesso a 2 empresas</p>
+        <div class="company-cards">
+          <div class="company-card">
+            <div class="company-card-name">Loja Centro LTDA</div>
+            <div class="company-card-cnpj">CNPJ: 12.345.678/0001-99</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Administrador</div>
+          </div>
+          <div class="company-card">
+            <div class="company-card-name">Distribuidora Norte ME</div>
+            <div class="company-card-cnpj">CNPJ: 98.765.432/0001-11</div>
+            <div class="company-card-role"><span class="material-icons">badge</span> Operador</div>
+          </div>
+        </div>
+        <button class="btn btn-primary"><span class="material-icons">add_business</span> Criar Nova Empresa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

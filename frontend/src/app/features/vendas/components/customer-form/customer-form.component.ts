@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { CustomerService } from '../../services/customer.service';
 import { CustomerType, CustomerRequest } from '../../models/customer.model';
 
@@ -25,8 +26,10 @@ import { CustomerType, CustomerRequest } from '../../models/customer.model';
     MatInputModule,
     MatRadioModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    NgxMaskDirective
   ],
+  providers: [provideNgxMask()],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.scss']
 })
@@ -136,7 +139,11 @@ export class CustomerFormComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    const customerData: CustomerRequest = this.customerForm.value;
+    // Convert empty strings to null (backend expects null for optional fields like LocalDate)
+    const raw = this.customerForm.value;
+    const customerData = Object.fromEntries(
+      Object.entries(raw).map(([key, value]) => [key, value === '' ? null : value])
+    ) as unknown as CustomerRequest;
 
     const request = this.isEditMode && this.customerId
       ? this.customerService.update(this.customerId, customerData)
@@ -144,7 +151,7 @@ export class CustomerFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/customers']);
+        this.router.navigate(['/clientes']);
       },
       error: (err) => {
         console.error('Error saving customer:', err);
@@ -155,6 +162,6 @@ export class CustomerFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/customers']);
+    this.router.navigate(['/clientes']);
   }
 }

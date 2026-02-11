@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - 3 Opcoes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', sans-serif; background: #f1f5f9; }
+
+    .option-selector {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #1e293b; padding: 12px 32px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .option-selector span { color: #94a3b8; font-size: 14px; font-weight: 500; }
+    .option-selector button {
+      padding: 8px 24px; border: 2px solid #334155; border-radius: 6px;
+      background: transparent; color: #cbd5e1; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .option-selector button:hover { border-color: #0d9488; color: #2dd4bf; }
+    .option-selector button.active { background: #0d9488; border-color: #0d9488; color: white; }
+
+    .option { display: none; min-height: 100vh; padding-top: 56px; }
+    .option.visible { display: flex; }
+
+    /* ========== Google Button Mock ========== */
+    .google-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 12px 24px; border: 1px solid #dadce0; border-radius: 4px;
+      background: white; cursor: pointer; transition: box-shadow 0.2s;
+      font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 500; color: #3c4043;
+    }
+    .google-btn:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .google-btn svg { width: 20px; height: 20px; }
+
+    /* =============================================
+       OPCAO A - Split Screen (imagem + form)
+       ============================================= */
+    .option-a {
+      justify-content: center; align-items: center;
+      background: #0f172a;
+    }
+    .option-a .split-card {
+      display: flex; max-width: 860px; width: 100%;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .option-a .left-panel {
+      flex: 1; background: linear-gradient(160deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
+      padding: 48px 40px; display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .option-a .left-panel::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .option-a .left-panel::after {
+      content: ''; position: absolute; bottom: -40px; left: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .option-a .left-panel .brand-icon {
+      font-size: 48px; color: rgba(255,255,255,0.9); margin-bottom: 24px;
+    }
+    .option-a .left-panel h1 {
+      font-size: 32px; font-weight: 700; color: white; margin-bottom: 12px;
+    }
+    .option-a .left-panel p {
+      font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.6;
+    }
+    .option-a .left-panel .features {
+      margin-top: 32px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .option-a .left-panel .feature-item {
+      display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,0.85); font-size: 14px;
+    }
+    .option-a .left-panel .feature-item .material-icons { font-size: 20px; color: #99f6e4; }
+    .option-a .right-panel {
+      flex: 1; background: white; padding: 48px 40px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .option-a .right-panel h2 {
+      font-size: 24px; font-weight: 600; color: #1e293b; margin-bottom: 8px;
+    }
+    .option-a .right-panel .subtitle {
+      font-size: 14px; color: #64748b; margin-bottom: 40px;
+    }
+    .option-a .right-panel .google-btn { width: 100%; justify-content: center; padding: 14px 24px; }
+    .option-a .right-panel .divider {
+      display: flex; align-items: center; gap: 16px; margin: 28px 0;
+      color: #94a3b8; font-size: 12px;
+    }
+    .option-a .right-panel .divider::before,
+    .option-a .right-panel .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e2e8f0;
+    }
+    .option-a .right-panel .info-text {
+      font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.5;
+    }
+
+    /* =============================================
+       OPCAO B - Card centralizado com header escuro
+       ============================================= */
+    .option-b {
+      justify-content: center; align-items: center;
+      background: #0f172a;
+    }
+    .option-b .login-card {
+      max-width: 420px; width: 100%; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .option-b .card-header {
+      background: #1e293b; padding: 40px 32px; text-align: center;
+      border-bottom: 3px solid #0d9488;
+    }
+    .option-b .card-header .logo-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #0d9488, #14b8a6);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .option-b .card-header .logo-circle .material-icons { font-size: 32px; color: white; }
+    .option-b .card-header h1 {
+      font-size: 24px; font-weight: 700; color: white; margin-bottom: 4px;
+    }
+    .option-b .card-header p { font-size: 13px; color: #64748b; }
+    .option-b .card-body {
+      background: white; padding: 40px 32px; text-align: center;
+    }
+    .option-b .card-body h2 {
+      font-size: 20px; font-weight: 600; color: #1e293b; margin-bottom: 6px;
+    }
+    .option-b .card-body .subtitle {
+      font-size: 14px; color: #64748b; margin-bottom: 32px;
+    }
+    .option-b .card-body .google-btn { width: 100%; justify-content: center; padding: 14px 24px; }
+    .option-b .card-body .footer {
+      margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0;
+    }
+    .option-b .card-body .footer p {
+      font-size: 12px; color: #94a3b8; line-height: 1.5;
+    }
+
+    /* =============================================
+       OPCAO C - Fullscreen escuro minimalista
+       ============================================= */
+    .option-c {
+      justify-content: center; align-items: center;
+      background: #0f172a;
+      flex-direction: column;
+    }
+    .option-c .login-content {
+      text-align: center; max-width: 380px; width: 100%; padding: 20px;
+    }
+    .option-c .brand {
+      margin-bottom: 48px;
+    }
+    .option-c .brand .material-icons {
+      font-size: 56px; color: #2dd4bf; margin-bottom: 16px;
+    }
+    .option-c .brand h1 {
+      font-size: 36px; font-weight: 700; color: white; margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .option-c .brand p {
+      font-size: 15px; color: #64748b;
+    }
+    .option-c .login-box {
+      background: #1e293b; border-radius: 16px;
+      padding: 40px 32px;
+      border: 1px solid #334155;
+    }
+    .option-c .login-box h2 {
+      font-size: 18px; font-weight: 500; color: #e2e8f0; margin-bottom: 8px;
+    }
+    .option-c .login-box .subtitle {
+      font-size: 13px; color: #64748b; margin-bottom: 28px;
+    }
+    .option-c .login-box .google-btn {
+      width: 100%; justify-content: center; padding: 14px 24px;
+      background: white; border-color: #475569;
+    }
+    .option-c .login-box .separator {
+      margin: 24px 0; display: flex; align-items: center; gap: 12px;
+    }
+    .option-c .login-box .separator::before,
+    .option-c .login-box .separator::after {
+      content: ''; flex: 1; height: 1px; background: #334155;
+    }
+    .option-c .login-box .separator span { font-size: 11px; color: #475569; }
+    .option-c .login-box .security-note {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 12px; color: #475569;
+    }
+    .option-c .login-box .security-note .material-icons { font-size: 16px; }
+    .option-c .footer-text {
+      margin-top: 32px; font-size: 12px; color: #475569; line-height: 1.5;
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .option-a .split-card { flex-direction: column; max-width: 420px; }
+      .option-a .left-panel { padding: 32px 24px; }
+      .option-a .left-panel .features { display: none; }
+      .option-a .right-panel { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Selector -->
+  <div class="option-selector">
+    <span>Escolha:</span>
+    <button class="active" onclick="show('a')">Opcao A - Split</button>
+    <button onclick="show('b')">Opcao B - Card</button>
+    <button onclick="show('c')">Opcao C - Minimal</button>
+  </div>
+
+  <!-- ====== OPCAO A - Split Screen ====== -->
+  <div class="option option-a visible" id="option-a">
+    <div class="split-card">
+      <div class="left-panel">
+        <span class="material-icons brand-icon">inventory_2</span>
+        <h1>Estoque Central</h1>
+        <p>Plataforma ERP omnichannel para gestao completa do seu negocio.</p>
+        <div class="features">
+          <div class="feature-item">
+            <span class="material-icons">check_circle</span>
+            Gestao de produtos e estoque
+          </div>
+          <div class="feature-item">
+            <span class="material-icons">check_circle</span>
+            Vendas e clientes integrados
+          </div>
+          <div class="feature-item">
+            <span class="material-icons">check_circle</span>
+            Integracao com marketplaces
+          </div>
+          <div class="feature-item">
+            <span class="material-icons">check_circle</span>
+            Multi-empresa e multi-usuario
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <h2>Bem-vindo!</h2>
+        <p class="subtitle">Faca login para acessar sua conta</p>
+        <button class="google-btn">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Entrar com Google
+        </button>
+        <div class="divider">ou</div>
+        <p class="info-text">
+          Ao fazer login, voce concorda com nossos<br>Termos de Servico e Politica de Privacidade.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== OPCAO B - Card centralizado ====== -->
+  <div class="option option-b" id="option-b">
+    <div class="login-card">
+      <div class="card-header">
+        <div class="logo-circle">
+          <span class="material-icons">inventory_2</span>
+        </div>
+        <h1>Estoque Central</h1>
+        <p>Sistema ERP Omnichannel</p>
+      </div>
+      <div class="card-body">
+        <h2>Bem-vindo!</h2>
+        <p class="subtitle">Faca login com sua conta Google</p>
+        <button class="google-btn">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Entrar com Google
+        </button>
+        <div class="footer">
+          <p>Ao fazer login, voce concorda com nossos Termos de Servico e Politica de Privacidade.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== OPCAO C - Fullscreen minimalista ====== -->
+  <div class="option option-c" id="option-c">
+    <div class="login-content">
+      <div class="brand">
+        <span class="material-icons">inventory_2</span>
+        <h1>Estoque Central</h1>
+        <p>Sistema ERP Omnichannel</p>
+      </div>
+      <div class="login-box">
+        <h2>Acesse sua conta</h2>
+        <p class="subtitle">Use sua conta Google para entrar</p>
+        <button class="google-btn">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Entrar com Google
+        </button>
+        <div class="separator"><span>SEGURO</span></div>
+        <div class="security-note">
+          <span class="material-icons">lock</span>
+          Autenticacao protegida por Google OAuth 2.0
+        </div>
+      </div>
+      <p class="footer-text">
+        Ao fazer login, voce concorda com nossos<br>Termos de Servico e Politica de Privacidade.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function show(option) {
+      document.querySelectorAll('.option').forEach(el => el.classList.remove('visible'));
+      document.getElementById('option-' + option).classList.add('visible');
+      document.querySelectorAll('.option-selector button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

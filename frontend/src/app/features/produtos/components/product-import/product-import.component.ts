@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ImportService } from '../../services/import.service';
 import {
   ImportPreviewResponse,
@@ -10,7 +15,6 @@ import {
   IMPORT_STATUS_LABELS,
   IMPORT_STATUS_COLORS
 } from '../../models/import.model';
-import { ProductType } from '../../models/product.model';
 
 /**
  * ProductImportComponent - CSV product import with preview and validation
@@ -24,7 +28,14 @@ import { ProductType } from '../../models/product.model';
 @Component({
   selector: 'app-product-import',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+  ],
   templateUrl: './product-import.component.html',
   styleUrls: ['./product-import.component.scss']
 })
@@ -46,7 +57,6 @@ export class ProductImportComponent {
   errorMessage: string | null = null;
 
   // UI helpers
-  ProductType = ProductType;
   IMPORT_STATUS_LABELS = IMPORT_STATUS_LABELS;
   IMPORT_STATUS_COLORS = IMPORT_STATUS_COLORS;
 
@@ -141,13 +151,13 @@ export class ProductImportComponent {
   /**
    * Download CSV template
    */
-  downloadTemplate(productType: ProductType): void {
-    this.importService.downloadTemplate(productType).subscribe({
+  downloadTemplate(): void {
+    this.importService.downloadTemplate().subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `product_import_template_${productType}.csv`;
+        link.download = 'template_importacao_produtos.csv';
         link.click();
         window.URL.revokeObjectURL(url);
       },

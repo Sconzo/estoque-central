@@ -1,9 +1,6 @@
 package com.estoquecentral.catalog.application.importer;
 
 import com.estoquecentral.catalog.adapter.in.dto.ProductCsvRow;
-import com.estoquecentral.catalog.domain.BomType;
-import com.estoquecentral.catalog.domain.ProductStatus;
-import com.estoquecentral.catalog.domain.ProductType;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import org.springframework.stereotype.Service;
@@ -12,22 +9,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * CsvParserService - Parses and validates product CSV files
  *
  * <p>CSV Format (header row required):
- * type,name,sku,barcode,description,categoryId,price,cost,unit,controlsInventory,status,bomType
+ * name,sku,barcode,description,category,price,cost,unit,controlsInventory
  *
  * <p>Example:
  * <pre>
- * SIMPLE,Produto Teste,SKU001,7891234567890,Descrição,uuid-category,99.90,50.00,UN,true,ACTIVE,
- * COMPOSITE,Kit Teste,KIT001,,,uuid-category,199.90,100.00,UN,false,ACTIVE,VIRTUAL
+ * Notebook Dell,NOTE-001,7891234567890,Notebook 15pol,Eletrônicos,3499.90,2500.00,UN,true
  * </pre>
  */
 @Service
@@ -41,9 +37,14 @@ public class CsvParserService {
      * @throws IOException if file cannot be read
      */
     public List<ProductCsvRow> parseAndValidate(MultipartFile file) throws IOException {
+        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+        return parseAndValidate(content);
+    }
+
+    public List<ProductCsvRow> parseAndValidate(String csvContent) throws IOException {
         List<ProductCsvRow> rows = new ArrayList<>();
 
-        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
+        try (Reader reader = new StringReader(csvContent);
              CSVReader csvReader = new CSVReader(reader)) {
 
             List<String[]> allRows = csvReader.readAll();
@@ -73,16 +74,15 @@ public class CsvParserService {
     private ProductCsvRow parseRow(int rowNumber, String[] fields) {
         ProductCsvRow row = new ProductCsvRow(rowNumber);
 
-        // Safe get with bounds checking
-        row.setType(getField(fields, 0));
-        row.setName(getField(fields, 1));
-        row.setSku(getField(fields, 2));
-        row.setBarcode(getField(fields, 3));
-        row.setDescription(getField(fields, 4));
-        row.setCategoryId(getField(fields, 5));
+        // name,sku,barcode,description,category,price,cost,unit,controlsInventory
+        row.setName(getField(fields, 0));
+        row.setSku(getField(fields, 1));
+        row.setBarcode(getField(fields, 2));
+        row.setDescription(getField(fields, 3));
+        row.setCategory(getField(fields, 4));
 
         // Parse numeric fields
-        String priceStr = getField(fields, 6);
+        String priceStr = getField(fields, 5);
         if (priceStr != null && !priceStr.isEmpty()) {
             try {
                 row.setPrice(new BigDecimal(priceStr));
@@ -91,7 +91,7 @@ public class CsvParserService {
             }
         }
 
-        String costStr = getField(fields, 7);
+        String costStr = getField(fields, 6);
         if (costStr != null && !costStr.isEmpty()) {
             try {
                 row.setCost(new BigDecimal(costStr));
@@ -100,16 +100,13 @@ public class CsvParserService {
             }
         }
 
-        row.setUnit(getField(fields, 8));
+        row.setUnit(getField(fields, 7));
 
         // Parse boolean
-        String controlsInvStr = getField(fields, 9);
+        String controlsInvStr = getField(fields, 8);
         if (controlsInvStr != null && !controlsInvStr.isEmpty()) {
             row.setControlsInventory(Boolean.parseBoolean(controlsInvStr));
         }
-
-        row.setStatus(getField(fields, 10));
-        row.setBomType(getField(fields, 11));
 
         return row;
     }
@@ -118,18 +115,6 @@ public class CsvParserService {
      * Validates a ProductCsvRow
      */
     private void validateRow(ProductCsvRow row) {
-        // Required fields
-        if (isEmpty(row.getType())) {
-            row.addError("Tipo é obrigatório");
-        } else {
-            // Validate type enum
-            try {
-                ProductType.valueOf(row.getType());
-            } catch (IllegalArgumentException e) {
-                row.addError("Tipo inválido: " + row.getType() + " (valores válidos: SIMPLE, VARIANT_PARENT, VARIANT, COMPOSITE)");
-            }
-        }
-
         if (isEmpty(row.getName())) {
             row.addError("Nome é obrigatório");
         }
@@ -138,48 +123,14 @@ public class CsvParserService {
             row.addError("SKU é obrigatório");
         }
 
-        if (isEmpty(row.getCategoryId())) {
-            row.addError("ID da categoria é obrigatório");
-        } else {
-            // Validate UUID format
-            try {
-                UUID.fromString(row.getCategoryId());
-            } catch (IllegalArgumentException e) {
-                row.addError("ID da categoria inválido (deve ser UUID)");
-            }
+        if (isEmpty(row.getCategory())) {
+            row.addError("Categoria é obrigatória");
         }
 
         if (row.getPrice() == null) {
             row.addError("Preço é obrigatório");
         } else if (row.getPrice().compareTo(BigDecimal.ZERO) < 0) {
             row.addError("Preço não pode ser negativo");
-        }
-
-        // Validate status enum (if provided)
-        if (!isEmpty(row.getStatus())) {
-            try {
-                ProductStatus.valueOf(row.getStatus());
-            } catch (IllegalArgumentException e) {
-                row.addError("Status inválido: " + row.getStatus() + " (valores válidos: ACTIVE, INACTIVE, DISCONTINUED)");
-            }
-        }
-
-        // COMPOSITE products must have bomType
-        if ("COMPOSITE".equals(row.getType())) {
-            if (isEmpty(row.getBomType())) {
-                row.addError("Produtos COMPOSITE devem ter bomType (VIRTUAL ou PHYSICAL)");
-            } else {
-                try {
-                    BomType.valueOf(row.getBomType());
-                } catch (IllegalArgumentException e) {
-                    row.addError("bomType inválido: " + row.getBomType() + " (valores válidos: VIRTUAL, PHYSICAL)");
-                }
-            }
-        } else {
-            // Non-COMPOSITE products should not have bomType
-            if (!isEmpty(row.getBomType())) {
-                row.addError("Apenas produtos COMPOSITE podem ter bomType");
-            }
         }
     }
 

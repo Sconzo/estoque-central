@@ -6,7 +6,6 @@ import {
   ImportConfirmResponse,
   ImportLog
 } from '../models/import.model';
-import { ProductType } from '../models/product.model';
 import { environment } from '../../../../environments/environment';
 
 /**
@@ -64,20 +63,14 @@ export class ImportService {
   }
 
   /**
-   * Download CSV template for specific product type
+   * Download CSV template
    *
-   * @param productType product type (SIMPLE, COMPOSITE, etc.)
    * @returns Observable of CSV template as blob
    */
-  downloadTemplate(productType: ProductType): Observable<Blob> {
-    const params = new HttpParams().set('type', productType);
-
+  downloadTemplate(): Observable<Blob> {
     return this.http.get(
       `${this.apiUrl}/import/template`,
-      {
-        params,
-        responseType: 'blob'
-      }
+      { responseType: 'blob' }
     );
   }
 

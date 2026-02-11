@@ -15,18 +15,15 @@ export interface ProductCsvRow {
   rowNumber: number;
 
   // CSV fields
-  type: string;
   name: string;
   sku: string;
   barcode?: string;
   description?: string;
-  categoryId: string;
+  category: string;
   price: number;
   cost?: number;
   unit?: string;
   controlsInventory?: boolean;
-  status?: string;
-  bomType?: string;
 
   // Validation
   errors: string[];

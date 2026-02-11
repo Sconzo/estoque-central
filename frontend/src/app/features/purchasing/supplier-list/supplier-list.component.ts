@@ -14,6 +14,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SupplierService } from '../services/supplier.service';
 import { SupplierResponse, SupplierStatus } from '../../../shared/models/supplier.model';
 import { SupplierFormComponent } from '../supplier-form/supplier-form.component';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * SupplierListComponent - List and manage suppliers
@@ -44,6 +45,7 @@ export class SupplierListComponent implements OnInit {
   private supplierService = inject(SupplierService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
 
   filterForm!: FormGroup;
   suppliers = signal<SupplierResponse[]>([]);
@@ -172,7 +174,12 @@ export class SupplierListComponent implements OnInit {
   }
 
   deleteSupplier(supplier: SupplierResponse): void {
-    if (confirm(`Deseja realmente inativar o fornecedor ${supplier.companyName}?`)) {
+    this.confirmDialog.confirmDanger({
+      title: 'Inativar Fornecedor',
+      message: `Deseja realmente inativar o fornecedor ${supplier.companyName}?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.supplierService.deleteSupplier(supplier.id).subscribe({
         next: () => {
           this.snackBar.open('Fornecedor inativado com sucesso', 'Fechar', { duration: 3000 });
@@ -183,6 +190,6 @@ export class SupplierListComponent implements OnInit {
           this.snackBar.open('Erro ao inativar fornecedor', 'Fechar', { duration: 3000 });
         }
       });
-    }
+    });
   }
 }

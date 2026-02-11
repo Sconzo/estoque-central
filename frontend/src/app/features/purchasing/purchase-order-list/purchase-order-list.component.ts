@@ -17,6 +17,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { PurchaseOrderService } from '../services/purchase-order.service';
 import { PurchaseOrderResponse, PurchaseOrderStatus } from '../../../shared/models/purchase-order.model';
 import { PurchaseOrderFormComponent } from '../purchase-order-form/purchase-order-form.component';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * PurchaseOrderListComponent - List and manage purchase orders
@@ -50,6 +51,7 @@ export class PurchaseOrderListComponent implements OnInit {
   private purchaseOrderService = inject(PurchaseOrderService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  private confirmDialog = inject(ConfirmDialogService);
 
   filterForm!: FormGroup;
   purchaseOrders = signal<PurchaseOrderResponse[]>([]);
@@ -210,7 +212,12 @@ export class PurchaseOrderListComponent implements OnInit {
   }
 
   sendToSupplier(po: PurchaseOrderResponse): void {
-    if (confirm(`Deseja enviar a ordem ${po.poNumber} para o fornecedor?`)) {
+    this.confirmDialog.confirmInfo({
+      title: 'Enviar para Fornecedor',
+      message: `Deseja enviar a ordem ${po.poNumber} para o fornecedor?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.purchaseOrderService.updateStatus(po.id, {
         status: PurchaseOrderStatus.SENT_TO_SUPPLIER
       }).subscribe({
@@ -223,11 +230,16 @@ export class PurchaseOrderListComponent implements OnInit {
           this.snackBar.open('Erro ao enviar ordem', 'Fechar', { duration: 3000 });
         }
       });
-    }
+    });
   }
 
   cancelPurchaseOrder(po: PurchaseOrderResponse): void {
-    if (confirm(`Deseja realmente cancelar a ordem ${po.poNumber}?`)) {
+    this.confirmDialog.confirmDanger({
+      title: 'Cancelar Ordem de Compra',
+      message: `Deseja realmente cancelar a ordem ${po.poNumber}?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.purchaseOrderService.updateStatus(po.id, {
         status: PurchaseOrderStatus.CANCELLED
       }).subscribe({
@@ -240,7 +252,7 @@ export class PurchaseOrderListComponent implements OnInit {
           this.snackBar.open('Erro ao cancelar ordem', 'Fechar', { duration: 3000 });
         }
       });
-    }
+    });
   }
 
   canEdit(po: PurchaseOrderResponse): boolean {

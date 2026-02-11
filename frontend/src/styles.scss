@@ -56,6 +56,15 @@ body {
 }
 
 /* ===========================
+   Confirm Dialog - Remove default padding
+   =========================== */
+.confirm-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 0 !important;
+}
+
+/* ===========================
    Accessibility - Focus Visible
    =========================== */
 
@@ -67,15 +76,28 @@ body:not(.user-is-tabbing) *:focus {
 /* Show focus outline only for keyboard users */
 body.user-is-tabbing *:focus,
 *:focus-visible {
-  outline: 2px solid #6A1B9A;
+  outline: 2px solid #0d9488;
   outline-offset: 2px;
+}
+
+/* Suppress inner focus outline on inputs inside Material form fields
+   (Material already handles focus via the outline border color change) */
+.mat-mdc-form-field input:focus,
+.mat-mdc-form-field input:focus-visible,
+.mat-mdc-form-field textarea:focus,
+.mat-mdc-form-field textarea:focus-visible,
+.mat-mdc-form-field select:focus,
+.mat-mdc-form-field select:focus-visible,
+.mat-mdc-form-field .mat-mdc-select:focus,
+.mat-mdc-form-field .mat-mdc-select:focus-visible {
+  outline: none !important;
 }
 
 /* Material Design components focus */
 body.user-is-tabbing .mat-mdc-button:focus,
 body.user-is-tabbing .mat-mdc-icon-button:focus,
 body.user-is-tabbing .mat-mdc-raised-button:focus {
-  outline: 2px solid #6A1B9A;
+  outline: 2px solid #0d9488;
   outline-offset: 2px;
 }
 
@@ -137,6 +159,11 @@ body.user-is-tabbing .mat-mdc-raised-button:focus {
   width: 100%;
 }
 
+/* Hide Material's auto-generated required asterisk (templates use manual <span class="required">*</span>) */
+.mat-mdc-form-field-required-marker {
+  display: none;
+}
+
 /* Fix outlined form fields notch issues */
 .mat-mdc-text-field-wrapper.mdc-text-field--outlined {
   .mdc-notched-outline {
@@ -172,7 +199,7 @@ body.user-is-tabbing .mat-mdc-raised-button:focus {
     .mdc-notched-outline__leading,
     .mdc-notched-outline__notch,
     .mdc-notched-outline__trailing {
-      border-color: #6A1B9A !important;
+      border-color: #0d9488 !important;
       border-width: 2px !important;
     }
   }
@@ -244,4 +271,54 @@ body.user-is-tabbing .mat-mdc-raised-button:focus {
 
 .collaborators-table .mat-mdc-cell:last-child .mat-mdc-icon-button {
   vertical-align: middle !important;
+}
+
+/* ===========================
+   Sidebar - Dark theme overrides for Angular Material
+   =========================== */
+.mat-drawer.sidenav {
+  border-radius: 0 !important;
+}
+
+.sidenav .mat-mdc-list-item,
+.sidenav .mdc-list-item {
+  border-radius: 0 !important;
+}
+
+.sidenav .mat-mdc-list-item-interactive::before {
+  border-radius: 0 !important;
+}
+
+/* Force text color and vertical alignment on Material internal elements */
+.sidenav .mat-mdc-list-item .mdc-list-item__content {
+  align-self: center;
+}
+
+.sidenav .mat-mdc-list-item .mdc-list-item__primary-text,
+.sidenav .mat-mdc-list-item .mat-mdc-list-item-title {
+  color: #cbd5e1 !important;
+}
+
+.sidenav .mat-mdc-list-item .mat-mdc-list-item-icon {
+  color: #94a3b8 !important;
+}
+
+.sidenav .mat-mdc-list-item.active .mdc-list-item__primary-text,
+.sidenav .mat-mdc-list-item.active .mat-mdc-list-item-title {
+  color: #2dd4bf !important;
+  font-weight: 500;
+}
+
+.sidenav .mat-mdc-list-item.active .mat-mdc-list-item-icon {
+  color: #2dd4bf !important;
+}
+
+.sidenav .nav-child .mdc-list-item__primary-text,
+.sidenav .nav-child .mat-mdc-list-item-title {
+  color: #94a3b8 !important;
+}
+
+.sidenav .nav-child.active .mdc-list-item__primary-text,
+.sidenav .nav-child.active .mat-mdc-list-item-title {
+  color: #2dd4bf !important;
 }

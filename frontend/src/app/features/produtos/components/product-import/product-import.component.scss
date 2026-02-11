@@ -1,52 +1,611 @@
-.sticky-top {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+// ===========================
+// Import Products - Slate & Teal theme
+// ===========================
+
+.import-container {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.table-responsive {
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
-}
-
-.btn-group {
-  flex-wrap: wrap;
-}
-
-.alert ul {
-  padding-left: 1.5rem;
-  margin-bottom: 0;
-}
-
-.card {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.progress {
-  height: 25px;
-}
-
-.progress-bar {
-  font-size: 0.875rem;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.d-flex.gap-2 {
+// Header
+.header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #0f172a;
+  }
 }
 
-.table-success td {
-  background-color: #d1e7dd !important;
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
-.table-danger td {
-  background-color: #f8d7da !important;
+// ===========================
+// Step Indicator
+// ===========================
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+
+  &.active {
+    color: #0d9488;
+    font-weight: 500;
+
+    .step-number {
+      background: #0d9488;
+      color: white;
+    }
+  }
+
+  &.done {
+    color: #16a34a;
+
+    .step-number {
+      background: #16a34a;
+      color: white;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #94a3b8;
+}
+
+.step-line {
+  width: 40px;
+  height: 2px;
+  background: #e2e8f0;
+
+  &.done {
+    background: #16a34a;
+  }
+}
+
+// ===========================
+// Form Sections (cards)
+// ===========================
+.form-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: #0d9488;
+    }
+  }
+}
+
+// ===========================
+// Template Buttons
+// ===========================
+.template-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.template-hint {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+// ===========================
+// Upload Area
+// ===========================
+.upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafbfc;
+
+  &:hover {
+    border-color: #0d9488;
+    background: #f0fdfa;
+
+    .upload-icon {
+      color: #0d9488;
+    }
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    transition: color 0.2s;
+  }
+
+  p {
+    font-size: 15px;
+    color: #475569;
+    margin: 0 0 4px;
+  }
+
+  small {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+}
+
+// ===========================
+// File Info Chip
+// ===========================
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+
+  > mat-icon {
+    color: #0d9488;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.file-info-text {
+  flex: 1;
+}
+
+.file-info-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.file-info-size {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.remove-btn {
+  color: #94a3b8 !important;
+
+  &:hover {
+    color: #ef4444 !important;
+    background: #fef2f2 !important;
+  }
+}
+
+// ===========================
+// Progress Bar
+// ===========================
+.progress-bar-container {
+  margin-top: 16px;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 6px;
+  text-align: right;
+}
+
+// ===========================
+// Form Actions
+// ===========================
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+
+  ::ng-deep circle {
+    stroke: white !important;
+  }
+}
+
+.btn-success {
+  background-color: #16a34a !important;
+  color: white !important;
+
+  &:hover:not([disabled]) {
+    background-color: #15803d !important;
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+  }
+}
+
+// ===========================
+// Stats Grid (Preview)
+// ===========================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-card-default {
+  background: white;
+  border: 1px solid #e5e7eb;
+
+  .stat-value { color: #0f172a; }
+}
+
+.stat-card-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+
+  .stat-value { color: #16a34a; }
+}
+
+.stat-card-danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+
+  .stat-value { color: #dc2626; }
+}
+
+.stat-card-info {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.stat-filename {
+  font-size: 13px;
+  color: #0d9488;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+// ===========================
+// Preview Table
+// ===========================
+.table-section {
+  padding: 0;
+  overflow: hidden;
+
+  .table-header {
+    padding: 20px 24px 0;
+
+    h3 {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+
+  // Thin scrollbar
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 2px;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+
+  tr:hover td {
+    background: #f8fafc;
+  }
+}
+
+.row-valid {
+  background: #f0fdf4;
+
+  &:hover td {
+    background: #f0fdf4 !important;
+  }
+}
+
+.row-invalid {
+  background: #fef2f2;
+
+  &:hover td {
+    background: #fef2f2 !important;
+  }
+}
+
+.status-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.status-valid {
+  color: #16a34a;
+}
+
+.status-invalid {
+  color: #dc2626;
+}
+
+.error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    color: #dc2626;
+    font-size: 12px;
+    line-height: 1.4;
+
+    & + li {
+      margin-top: 2px;
+    }
+  }
+}
+
+.no-error {
+  color: #94a3b8;
+}
+
+// ===========================
+// Alert Banners
+// ===========================
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+  }
+}
+
+.alert-info {
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
+}
+
+.alert-warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+
+  .alert-close {
+    color: #dc2626 !important;
+    flex-shrink: 0;
+  }
+}
+
+// ===========================
+// Result Card
+// ===========================
+.result-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 48px 24px;
+  text-align: center;
+
+  h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 8px;
+  }
+
+  > p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 24px;
+  }
+}
+
+.result-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: #16a34a;
+  margin-bottom: 16px;
+}
+
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.result-stat {
+  text-align: center;
+}
+
+.result-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+
+  &.total { color: #0f172a; }
+  &.success { color: #16a34a; }
+  &.errors { color: #dc2626; }
+}
+
+.result-stat-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-redirect {
+  font-size: 13px;
+  color: #94a3b8 !important;
+  font-style: italic;
+}
+
+// ===========================
+// Responsive
+// ===========================
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .template-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .result-stats {
+    flex-direction: column;
+    gap: 16px;
+  }
 }

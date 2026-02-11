@@ -150,6 +150,52 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles illegal argument exceptions (e.g., resource not found).
+     * Returns 400 Bad Request.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex,
+            WebRequest request) {
+
+        logger.warn("Illegal argument: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "Requisição inválida",
+            ex.getMessage(),
+            request.getDescription(false),
+            null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * Handles illegal state exceptions (e.g., invalid workflow state).
+     * Returns 409 Conflict.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(
+            IllegalStateException ex,
+            WebRequest request) {
+
+        logger.warn("Illegal state: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.CONFLICT.value(),
+            "Estado inválido",
+            ex.getMessage(),
+            request.getDescription(false),
+            null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Generic exception handler for unexpected errors.
      * Returns 500 Internal Server Error.
      */

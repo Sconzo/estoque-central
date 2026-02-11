@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConfirmDialog - Opcoes de Layout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f0f0f0;
+      padding: 40px;
+      color: #333;
+    }
+    h1 { text-align: center; margin-bottom: 12px; font-size: 28px; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 48px; font-size: 14px; }
+    .section {
+      margin-bottom: 60px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      padding-left: 8px;
+      border-left: 4px solid #1976d2;
+    }
+    .section-desc {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 24px;
+      padding-left: 16px;
+    }
+    .row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Backdrop overlay simulation */
+    .dialog-wrapper {
+      background: rgba(0,0,0,0.32);
+      border-radius: 12px;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== SHARED BUTTON STYLES ===== */
+    .btn {
+      border: none;
+      border-radius: 4px;
+      padding: 8px 20px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.25px;
+      transition: background 0.2s;
+    }
+    .btn-flat {
+      background: transparent;
+      color: #666;
+    }
+    .btn-flat:hover { background: rgba(0,0,0,0.04); }
+    .btn-danger { background: #C62828; color: white; }
+    .btn-danger:hover { background: #B71C1C; }
+    .btn-warning { background: #F9A825; color: #333; }
+    .btn-warning:hover { background: #F57F17; }
+    .btn-info { background: #0277BD; color: white; }
+    .btn-info:hover { background: #01579B; }
+    .btn-outlined-danger { background: transparent; color: #C62828; border: 1px solid #C62828; }
+    .btn-outlined-danger:hover { background: rgba(198,40,40,0.08); }
+    .btn-outlined-warning { background: transparent; color: #E65100; border: 1px solid #F9A825; }
+    .btn-outlined-warning:hover { background: rgba(249,168,37,0.08); }
+    .btn-outlined-info { background: transparent; color: #0277BD; border: 1px solid #0277BD; }
+    .btn-outlined-info:hover { background: rgba(2,119,189,0.08); }
+
+    .material-icons { font-size: 24px; vertical-align: middle; }
+
+    /* ===== OPTION A: Current (inline icon + title) ===== */
+    .opt-a {
+      background: white;
+      border-radius: 8px;
+      width: 460px;
+      box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14);
+      overflow: hidden;
+    }
+    .opt-a .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .opt-a .body {
+      padding: 16px 24px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+    }
+    .opt-a .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 16px 16px;
+    }
+
+    /* ===== OPTION B: Centered icon with colored band ===== */
+    .opt-b {
+      background: white;
+      border-radius: 12px;
+      width: 420px;
+      box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14);
+      overflow: hidden;
+      text-align: center;
+    }
+    .opt-b .icon-band {
+      padding: 28px 0 20px;
+    }
+    .opt-b .icon-band .icon-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+    }
+    .opt-b .icon-band .material-icons {
+      font-size: 32px;
+      color: white;
+    }
+    .opt-b .title {
+      font-size: 18px;
+      font-weight: 500;
+      padding: 0 24px 8px;
+    }
+    .opt-b .body {
+      padding: 0 24px 24px;
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .opt-b .actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 24px 24px;
+    }
+    .opt-b .actions .btn { min-width: 120px; border-radius: 20px; }
+
+    /* ===== OPTION C: Left color bar accent ===== */
+    .opt-c {
+      background: white;
+      border-radius: 8px;
+      width: 480px;
+      box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14);
+      overflow: hidden;
+      display: flex;
+    }
+    .opt-c .color-bar {
+      width: 6px;
+      flex-shrink: 0;
+    }
+    .opt-c .content {
+      flex: 1;
+      padding: 20px 24px;
+    }
+    .opt-c .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .opt-c .body {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .opt-c .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* ===== OPTION D: Icon top-left + subtle bg tint ===== */
+    .opt-d {
+      background: white;
+      border-radius: 12px;
+      width: 440px;
+      box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14);
+      overflow: hidden;
+    }
+    .opt-d .header-area {
+      padding: 24px 24px 16px;
+      display: flex;
+      gap: 16px;
+    }
+    .opt-d .icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .opt-d .icon-box .material-icons {
+      font-size: 22px;
+      color: white;
+    }
+    .opt-d .text-area {
+      flex: 1;
+    }
+    .opt-d .title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .opt-d .body {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .opt-d .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 20px 20px;
+    }
+
+    /* ===== OPTION E: Full-width top color bar + big icon ===== */
+    .opt-e {
+      background: white;
+      border-radius: 12px;
+      width: 440px;
+      box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14);
+      overflow: hidden;
+    }
+    .opt-e .top-bar {
+      height: 4px;
+    }
+    .opt-e .inner {
+      padding: 24px;
+    }
+    .opt-e .header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .opt-e .icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .opt-e .icon-wrap .material-icons { font-size: 24px; }
+    .opt-e .title {
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .opt-e .body {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .opt-e .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .label-tag {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1565c0;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ConfirmDialog - Opcoes de Layout</h1>
+  <p class="subtitle">Abra no browser, escolha a opcao que preferir e me diga a letra (A, B, C, D ou E)</p>
+
+  <!-- ===== OPTION A: Current ===== -->
+  <div class="section">
+    <h2 class="section-title">Opcao A <span class="label-tag">ATUAL</span></h2>
+    <p class="section-desc">Icone inline no titulo, layout simples Material Dialog padrao</p>
+    <div class="row">
+      <!-- Danger -->
+      <div class="dialog-wrapper">
+        <div class="opt-a">
+          <div class="header">
+            <span class="material-icons" style="color: #C62828">delete_forever</span>
+            Excluir Produto
+          </div>
+          <div class="body">
+            Tem certeza que deseja excluir o produto "Camiseta Polo"?<br><br>
+            SKU: PROD-001<br><br>
+            Esta acao marcara o produto como inativo (soft delete).
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat">Cancelar</button>
+            <button class="btn btn-danger">Confirmar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Warning -->
+      <div class="dialog-wrapper">
+        <div class="opt-a">
+          <div class="header">
+            <span class="material-icons" style="color: #F9A825">warning</span>
+            Desconectar Mercado Livre
+          </div>
+          <div class="body">
+            Tem certeza que deseja desconectar do Mercado Livre?
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat">Cancelar</button>
+            <button class="btn btn-warning">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPTION B: Centered Icon Circle ===== -->
+  <div class="section">
+    <h2 class="section-title">Opcao B</h2>
+    <p class="section-desc">Icone grande centralizado em circulo colorido, botoes pill arredondados, visual "sweet alert"</p>
+    <div class="row">
+      <!-- Danger -->
+      <div class="dialog-wrapper">
+        <div class="opt-b">
+          <div class="icon-band">
+            <div class="icon-circle" style="background: #C62828;">
+              <span class="material-icons">delete_forever</span>
+            </div>
+          </div>
+          <div class="title">Excluir Produto</div>
+          <div class="body">
+            Tem certeza que deseja excluir o produto "Camiseta Polo"?<br><br>
+            SKU: PROD-001<br>
+            Esta acao marcara o produto como inativo.
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat" style="border-radius:20px; border: 1px solid #ddd;">Cancelar</button>
+            <button class="btn btn-danger" style="border-radius:20px;">Excluir</button>
+          </div>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="dialog-wrapper">
+        <div class="opt-b">
+          <div class="icon-band">
+            <div class="icon-circle" style="background: #0277BD;">
+              <span class="material-icons">info</span>
+            </div>
+          </div>
+          <div class="title">Confirmar Pedido</div>
+          <div class="body">
+            Confirmar pedido PV-2024-001?<br>
+            Esta acao validara o estoque disponivel.
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat" style="border-radius:20px; border: 1px solid #ddd;">Cancelar</button>
+            <button class="btn btn-info" style="border-radius:20px;">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPTION C: Left Color Bar ===== -->
+  <div class="section">
+    <h2 class="section-title">Opcao C</h2>
+    <p class="section-desc">Barra lateral colorida a esquerda, compacto e moderno</p>
+    <div class="row">
+      <!-- Danger -->
+      <div class="dialog-wrapper">
+        <div class="opt-c">
+          <div class="color-bar" style="background: #C62828;"></div>
+          <div class="content">
+            <div class="header">
+              <span class="material-icons" style="color: #C62828">delete_forever</span>
+              Excluir Produto
+            </div>
+            <div class="body">
+              Tem certeza que deseja excluir o produto "Camiseta Polo"?<br><br>
+              SKU: PROD-001 &mdash; Esta acao marcara o produto como inativo.
+            </div>
+            <div class="actions">
+              <button class="btn btn-flat">Cancelar</button>
+              <button class="btn btn-outlined-danger">Excluir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Warning -->
+      <div class="dialog-wrapper">
+        <div class="opt-c">
+          <div class="color-bar" style="background: #F9A825;"></div>
+          <div class="content">
+            <div class="header">
+              <span class="material-icons" style="color: #F9A825">warning</span>
+              Remover Item
+            </div>
+            <div class="body">
+              Remover Camiseta Polo do carrinho?
+            </div>
+            <div class="actions">
+              <button class="btn btn-flat">Cancelar</button>
+              <button class="btn btn-outlined-warning">Remover</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPTION D: Rounded Icon Box ===== -->
+  <div class="section">
+    <h2 class="section-title">Opcao D</h2>
+    <p class="section-desc">Icone em caixa arredondada ao lado do texto, visual limpo estilo notificacao</p>
+    <div class="row">
+      <!-- Danger -->
+      <div class="dialog-wrapper">
+        <div class="opt-d">
+          <div class="header-area">
+            <div class="icon-box" style="background: #C62828;">
+              <span class="material-icons">delete_forever</span>
+            </div>
+            <div class="text-area">
+              <div class="title">Excluir Produto</div>
+              <div class="body">
+                Tem certeza que deseja excluir o produto "Camiseta Polo"?<br><br>
+                SKU: PROD-001 &mdash; Esta acao marcara o produto como inativo.
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat">Cancelar</button>
+            <button class="btn btn-danger">Excluir</button>
+          </div>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="dialog-wrapper">
+        <div class="opt-d">
+          <div class="header-area">
+            <div class="icon-box" style="background: #0277BD;">
+              <span class="material-icons">sync</span>
+            </div>
+            <div class="text-area">
+              <div class="title">Sincronizar Estoque</div>
+              <div class="body">
+                Sincronizar estoque com os marketplaces agora?<br>
+                SKU: PROD-001
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-flat">Cancelar</button>
+            <button class="btn btn-info">Sincronizar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPTION E: Top Color Bar + Outlined Circle Icon ===== -->
+  <div class="section">
+    <h2 class="section-title">Opcao E</h2>
+    <p class="section-desc">Barra superior colorida fina, icone em circulo com fundo suave, elegante</p>
+    <div class="row">
+      <!-- Danger -->
+      <div class="dialog-wrapper">
+        <div class="opt-e">
+          <div class="top-bar" style="background: #C62828;"></div>
+          <div class="inner">
+            <div class="header">
+              <div class="icon-wrap" style="background: #FFEBEE;">
+                <span class="material-icons" style="color: #C62828;">delete_forever</span>
+              </div>
+              <div>
+                <div class="title">Excluir Produto</div>
+                <div class="body">
+                  Tem certeza que deseja excluir o produto "Camiseta Polo"?<br><br>
+                  SKU: PROD-001 &mdash; Esta acao marcara o produto como inativo.
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-flat">Cancelar</button>
+              <button class="btn btn-danger">Excluir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Warning -->
+      <div class="dialog-wrapper">
+        <div class="opt-e">
+          <div class="top-bar" style="background: #F9A825;"></div>
+          <div class="inner">
+            <div class="header">
+              <div class="icon-wrap" style="background: #FFF8E1;">
+                <span class="material-icons" style="color: #F9A825;">warning</span>
+              </div>
+              <div>
+                <div class="title">Desconectar Mercado Livre</div>
+                <div class="body">
+                  Tem certeza que deseja desconectar do Mercado Livre?
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-flat">Cancelar</button>
+              <button class="btn btn-warning">Desconectar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="dialog-wrapper">
+        <div class="opt-e">
+          <div class="top-bar" style="background: #0277BD;"></div>
+          <div class="inner">
+            <div class="header">
+              <div class="icon-wrap" style="background: #E1F5FE;">
+                <span class="material-icons" style="color: #0277BD;">info</span>
+              </div>
+              <div>
+                <div class="title">Confirmar Pedido</div>
+                <div class="body">
+                  Confirmar pedido PV-2024-001? Esta acao validara o estoque disponivel.
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-flat">Cancelar</button>
+              <button class="btn btn-info">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

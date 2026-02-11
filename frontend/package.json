@@ -26,6 +26,7 @@
     "@zxing/ngx-scanner": "^20.0.0",
     "angular-oauth2-oidc": "^20.0.2",
     "date-fns": "^3.0.0",
+    "ngx-mask": "^21.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

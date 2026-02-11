@@ -19,26 +19,40 @@
     <mat-nav-list>
       @for (item of menuItems; track item.route) {
         <div class="nav-item-wrapper">
-          <a
-            mat-list-item
-            (click)="navigate(item.route, isHandset)"
-            [class.active]="isRouteActive(item.route)"
-            [attr.aria-label]="'Navegar para ' + item.label">
-            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
-          </a>
+          @if (item.children) {
+            <a
+              mat-list-item
+              (click)="toggleMenu(item.route)"
+              [class.active]="isRouteActive(item.route)"
+              [attr.aria-label]="item.label"
+              [attr.aria-expanded]="isMenuExpanded(item.route)">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+              <mat-icon class="expand-icon" [class.expanded]="isMenuExpanded(item.route)">expand_more</mat-icon>
+            </a>
 
-          @if (item.children && isRouteActive(item.route)) {
-            <div class="nav-children">
-              @for (child of item.children; track child.route) {
-                <a
-                  mat-list-item
-                  (click)="navigate(child.route, isHandset)"
-                  class="nav-child">
-                  <span matListItemTitle>{{ child.label }}</span>
-                </a>
-              }
-            </div>
+            @if (isMenuExpanded(item.route)) {
+              <div class="nav-children">
+                @for (child of item.children; track child.route) {
+                  <a
+                    mat-list-item
+                    (click)="navigate(child.route, isHandset)"
+                    [class.active]="isRouteActive(child.route)"
+                    class="nav-child">
+                    <span matListItemTitle>{{ child.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          } @else {
+            <a
+              mat-list-item
+              (click)="navigate(item.route, isHandset)"
+              [class.active]="isRouteActive(item.route)"
+              [attr.aria-label]="'Navegar para ' + item.label">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </a>
           }
         </div>
       }
@@ -98,27 +112,43 @@
       <mat-nav-list>
         @for (item of menuItems; track item.route) {
           <div class="nav-item-wrapper">
-            <a
-              mat-list-item
-              [routerLink]="item.route"
-              routerLinkActive="active"
-              [attr.aria-label]="'Navegar para ' + item.label">
-              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-              <span matListItemTitle>{{ item.label }}</span>
-            </a>
+            @if (item.children) {
+              <!-- Parent with children: toggle expand, no navigation -->
+              <a
+                mat-list-item
+                (click)="toggleMenu(item.route)"
+                [class.active]="isRouteActive(item.route)"
+                [attr.aria-label]="item.label"
+                [attr.aria-expanded]="isMenuExpanded(item.route)">
+                <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                <span matListItemTitle>{{ item.label }}</span>
+                <mat-icon class="expand-icon" [class.expanded]="isMenuExpanded(item.route)">expand_more</mat-icon>
+              </a>
 
-            @if (item.children && isRouteActive(item.route)) {
-              <div class="nav-children">
-                @for (child of item.children; track child.route) {
-                  <a
-                    mat-list-item
-                    [routerLink]="child.route"
-                    routerLinkActive="active"
-                    class="nav-child">
-                    <span matListItemTitle>{{ child.label }}</span>
-                  </a>
-                }
-              </div>
+              @if (isMenuExpanded(item.route)) {
+                <div class="nav-children">
+                  @for (child of item.children; track child.route) {
+                    <a
+                      mat-list-item
+                      [routerLink]="child.route"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="{ exact: child.route === item.route }"
+                      class="nav-child">
+                      <span matListItemTitle>{{ child.label }}</span>
+                    </a>
+                  }
+                </div>
+              }
+            } @else {
+              <!-- Item without children: navigate directly -->
+              <a
+                mat-list-item
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [attr.aria-label]="'Navegar para ' + item.label">
+                <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                <span matListItemTitle>{{ item.label }}</span>
+              </a>
             }
           </div>
         }
@@ -139,7 +169,7 @@
 
     <mat-sidenav-content>
       <!-- Desktop Toolbar -->
-      <mat-toolbar color="primary" class="desktop-toolbar">
+      <mat-toolbar class="desktop-toolbar">
         @if (currentCompany()) {
           <span class="company-name">
             <mat-icon class="company-icon">business</mat-icon>

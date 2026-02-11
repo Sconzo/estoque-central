@@ -43,20 +43,16 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- AC2: CNPJ (optional, 14 digits with validation) -->
+        <!-- AC2: CNPJ (optional, with mask) -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>CNPJ</mat-label>
           <input
             matInput
             formControlName="cnpj"
-            placeholder="12345678000190"
-            maxlength="14"
+            mask="00.000.000/0000-00"
+            placeholder="00.000.000/0000-00"
           />
-          <mat-hint>Apenas números (14 dígitos)</mat-hint>
-          <!-- AC3: Inline error messages -->
-          <mat-error *ngIf="companyForm.get('cnpj')?.hasError('pattern')">
-            {{ getErrorMessage('cnpj') }}
-          </mat-error>
+          <mat-hint>Opcional</mat-hint>
         </mat-form-field>
 
         <!-- AC2: Email (required, email format validation) -->
@@ -78,13 +74,14 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- AC2: Telefone (optional, phone format) -->
+        <!-- AC2: Telefone (optional, with mask) -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Telefone</mat-label>
           <input
             matInput
             formControlName="telefone"
-            placeholder="(11) 98765-4321"
+            mask="(00) 00000-0000"
+            placeholder="(00) 00000-0000"
           />
           <mat-hint>Opcional</mat-hint>
         </mat-form-field>

@@ -16,6 +16,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chip';
 import { Observable, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 import { SalesOrderService, PaymentTerms, SalesOrderStatus } from '../services/sales-order.service';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * SalesOrderFormComponent - Create/Edit B2B sales orders
@@ -56,6 +57,7 @@ export class SalesOrderFormComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private confirmDialog = inject(ConfirmDialogService);
 
   orderForm!: FormGroup;
   loading = signal(false);
@@ -297,11 +299,20 @@ export class SalesOrderFormComponent implements OnInit {
     // Check stock for all items
     const hasStockIssue = this.items.controls.some(item => this.hasStockIssues(item as FormGroup));
     if (hasStockIssue) {
-      if (!confirm('Alguns itens têm estoque insuficiente. Deseja continuar mesmo assim?')) {
-        return;
-      }
+      this.confirmDialog.confirm({
+        title: 'Estoque Insuficiente',
+        message: 'Alguns itens têm estoque insuficiente. Deseja continuar mesmo assim?',
+        type: 'warning'
+      }).subscribe(confirmed => {
+        if (!confirmed) return;
+        this.doConfirmOrder();
+      });
+    } else {
+      this.doConfirmOrder();
     }
+  }
 
+  private doConfirmOrder(): void {
     this.loading.set(true);
     const formValue = this.prepareFormData();
 
@@ -356,8 +367,13 @@ export class SalesOrderFormComponent implements OnInit {
   }
 
   cancel(): void {
-    if (confirm('Descartar alterações?')) {
+    this.confirmDialog.confirm({
+      title: 'Descartar Alterações',
+      message: 'Descartar alterações?',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
       this.router.navigate(['/sales-orders']);
-    }
+    });
   }
 }

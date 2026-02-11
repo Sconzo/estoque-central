@@ -37,14 +37,17 @@ export class CustomerService {
    */
   listAll(
     customerType?: CustomerType,
-    ativo: boolean = true,
+    ativo?: boolean,
     page: number = 0,
     size: number = 20
   ): Observable<PagedCustomers> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString())
-      .set('ativo', ativo.toString());
+      .set('size', size.toString());
+
+    if (ativo !== undefined) {
+      params = params.set('ativo', ativo.toString());
+    }
 
     if (customerType) {
       params = params.set('customerType', customerType);

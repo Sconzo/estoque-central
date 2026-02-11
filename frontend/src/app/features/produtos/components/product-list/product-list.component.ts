@@ -27,6 +27,7 @@ import {
 import { Category } from '../../models/category.model';
 import { debounceTime, Subject } from 'rxjs';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * ProductListComponent - Product listing with filters and pagination
@@ -98,7 +99,8 @@ export class ProductListComponent implements OnInit {
     private categoryService: CategoryService,
     private router: Router,
     private mlService: MercadoLivreService,
-    private feedback: FeedbackService
+    private feedback: FeedbackService,
+    private confirmDialog: ConfirmDialogService
   ) {
     // Setup search debounce
     this.searchSubject
@@ -220,24 +222,25 @@ export class ProductListComponent implements OnInit {
   deleteProduct(product: ProductDTO, event: Event): void {
     event.stopPropagation(); // Prevent row click
 
-    const confirmMessage = `Tem certeza que deseja excluir o produto "${product.name}"?\n\nSKU: ${product.sku}\n\nEsta ação marcará o produto como inativo (soft delete).`;
+    this.confirmDialog.confirmDanger({
+      title: 'Excluir Produto',
+      message: `Tem certeza que deseja excluir o produto "${product.name}"?\n\nSKU: ${product.sku}\n\nEsta ação marcará o produto como inativo (soft delete).`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+      this.loading = true;
 
-    this.loading = true;
-
-    this.productService.delete(product.id).subscribe({
-      next: () => {
-        this.loadProducts();
-      },
-      error: (err) => {
-        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
-        this.feedback.showError(`Erro ao deletar produto: ${errorMessage}`, () => this.deleteProduct(product, event));
-        this.loading = false;
-        console.error('Error deleting product:', err);
-      }
+      this.productService.delete(product.id).subscribe({
+        next: () => {
+          this.loadProducts();
+        },
+        error: (err) => {
+          const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao deletar produto: ${errorMessage}`, () => this.deleteProduct(product, event));
+          this.loading = false;
+          console.error('Error deleting product:', err);
+        }
+      });
     });
   }
 
@@ -246,21 +249,22 @@ export class ProductListComponent implements OnInit {
    * Story 5.4: Manual stock synchronization
    */
   syncStockToMarketplace(product: ProductDTO): void {
-    const confirmMessage = `Sincronizar estoque do produto "${product.name}" com os marketplaces agora?\n\nSKU: ${product.sku}\n\nEsta ação enviará o estoque atual para todos os marketplaces onde este produto está publicado.`;
+    this.confirmDialog.confirmInfo({
+      title: 'Sincronizar Estoque',
+      message: `Sincronizar estoque do produto "${product.name}" com os marketplaces agora?\n\nSKU: ${product.sku}\n\nEsta ação enviará o estoque atual para todos os marketplaces onde este produto está publicado.`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
-
-    this.mlService.syncStock(product.id).subscribe({
-      next: (response) => {
-        this.feedback.showSuccess(`Sincronização enfileirada com sucesso! ${response.message}`);
-      },
-      error: (err) => {
-        const errorMessage = err.error?.error || err.message || 'Erro desconhecido';
-        this.feedback.showError(`Erro ao sincronizar estoque: ${errorMessage}`, () => this.syncStockToMarketplace(product));
-        console.error('Error syncing stock:', err);
-      }
+      this.mlService.syncStock(product.id).subscribe({
+        next: (response) => {
+          this.feedback.showSuccess(`Sincronização enfileirada com sucesso! ${response.message}`);
+        },
+        error: (err) => {
+          const errorMessage = err.error?.error || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao sincronizar estoque: ${errorMessage}`, () => this.syncStockToMarketplace(product));
+          console.error('Error syncing stock:', err);
+        }
+      });
     });
   }
 

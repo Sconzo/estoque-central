@@ -14,6 +14,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProfileService } from '../../services/profile.service';
 import { Profile } from '../../models/profile.model';
 import { FeedbackService } from '../../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../../shared/services/confirm-dialog.service';
 
 /**
  * ProfileListComponent - Profile listing with actions
@@ -63,7 +64,8 @@ export class ProfileListComponent implements OnInit {
     private profileService: ProfileService,
     private router: Router,
     private feedback: FeedbackService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -141,8 +143,12 @@ export class ProfileListComponent implements OnInit {
    * Soft deletes a profile (marks as inactive)
    */
   deleteProfile(profile: Profile): void {
-    const confirmMsg = `Tem certeza que deseja desativar o perfil "${profile.nome}"?`;
-    if (confirm(confirmMsg)) {
+    this.confirmDialog.confirmDanger({
+      title: 'Desativar Perfil',
+      message: `Tem certeza que deseja desativar o perfil "${profile.nome}"?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.profileService.delete(profile.id).subscribe({
         next: () => {
           this.feedback.showSuccess('Perfil desativado com sucesso!');
@@ -153,7 +159,7 @@ export class ProfileListComponent implements OnInit {
           this.feedback.showError('Erro ao desativar perfil.', () => this.deleteProfile(profile));
         }
       });
-    }
+    });
   }
 
   /**

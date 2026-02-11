@@ -16,6 +16,7 @@ import { SaleManagementService, SaleResponse, NfceStatus } from '../../services/
 import { Page } from '../../../produtos/models/product.model';
 import { CancelSaleDialogComponent } from '../cancel-sale-dialog/cancel-sale-dialog.component';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * PendingSalesComponent - NFCe Retry Queue Management
@@ -361,7 +362,8 @@ export class PendingSalesComponent implements OnInit {
   constructor(
     private saleManagementService: SaleManagementService,
     private dialog: MatDialog,
-    private feedback: FeedbackService
+    private feedback: FeedbackService,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -397,24 +399,28 @@ export class PendingSalesComponent implements OnInit {
    * Retry NFCe emission for a sale (AC2)
    */
   retrySale(saleId: string): void {
-    if (!confirm('Deseja realmente retentar a emissão da NFCe para esta venda?')) {
-      return;
-    }
+    this.confirmDialog.confirm({
+      title: 'Retentar Emissão NFCe',
+      message: 'Deseja realmente retentar a emissão da NFCe para esta venda?',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.loading = true;
+      this.loading = true;
 
-    this.saleManagementService.retrySale(this.tenantId, saleId).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.feedback.showSuccess(`NFCe retentada com sucesso! Status: ${response.nfceStatus}`);
-        this.loadPendingSales();
-      },
-      error: (err) => {
-        this.loading = false;
-        const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
-        this.feedback.showError(`Erro ao retentar emissão: ${errorMessage}`, () => this.retrySale(saleId));
-        console.error('Error retrying sale:', err);
-      }
+      this.saleManagementService.retrySale(this.tenantId, saleId).subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.feedback.showSuccess(`NFCe retentada com sucesso! Status: ${response.nfceStatus}`);
+          this.loadPendingSales();
+        },
+        error: (err) => {
+          this.loading = false;
+          const errorMessage = err.error?.message || err.message || 'Erro desconhecido';
+          this.feedback.showError(`Erro ao retentar emissão: ${errorMessage}`, () => this.retrySale(saleId));
+          console.error('Error retrying sale:', err);
+        }
+      });
     });
   }
 

@@ -1,5 +1,6 @@
 package com.estoquecentral.catalog.domain;
 
+import com.estoquecentral.config.JsonValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -50,7 +51,10 @@ public class ImportLog {
      * Format: [{"row": 1, "errors": ["SKU is required", "Invalid price"]}, ...]
      */
     @Column("error_details")
-    private String errorDetails;
+    private JsonValue errorDetails;
+
+    @Column("file_content")
+    private String fileContent;
 
     @Column("created_at")
     private Instant createdAt;
@@ -139,11 +143,19 @@ public class ImportLog {
     }
 
     public String getErrorDetails() {
-        return errorDetails;
+        return errorDetails != null ? errorDetails.value() : null;
     }
 
     public void setErrorDetails(String errorDetails) {
-        this.errorDetails = errorDetails;
+        this.errorDetails = JsonValue.of(errorDetails);
+    }
+
+    public String getFileContent() {
+        return fileContent;
+    }
+
+    public void setFileContent(String fileContent) {
+        this.fileContent = fileContent;
     }
 
     public Instant getCreatedAt() {

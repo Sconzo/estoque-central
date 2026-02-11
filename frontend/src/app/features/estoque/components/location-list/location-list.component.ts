@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { LocationService } from '../../services/location.service';
 import { Location, LOCATION_TYPE_LABELS, LOCATION_TYPE_COLORS } from '../../models/location.model';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * LocationListComponent - List and manage stock locations
@@ -29,7 +30,8 @@ export class LocationListComponent implements OnInit {
   constructor(
     private locationService: LocationService,
     private router: Router,
-    private feedback: FeedbackService
+    private feedback: FeedbackService,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -68,31 +70,32 @@ export class LocationListComponent implements OnInit {
   }
 
   deleteLocation(location: Location): void {
-    const confirmMessage = `Tem certeza que deseja inativar "${location.name}"?\n\nCódigo: ${location.code}`;
+    this.confirmDialog.confirmDanger({
+      title: 'Inativar Local de Estoque',
+      message: `Tem certeza que deseja inativar "${location.name}"?\n\nCódigo: ${location.code}`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+      this.loading = true;
 
-    this.loading = true;
+      this.locationService.delete(location.id).subscribe({
+        next: () => {
+          this.loadLocations();
+        },
+        error: (error) => {
+          let errorMsg = 'Erro ao deletar local de estoque';
 
-    this.locationService.delete(location.id).subscribe({
-      next: () => {
-        this.loadLocations();
-      },
-      error: (error) => {
-        let errorMsg = 'Erro ao deletar local de estoque';
+          if (error.status === 409) {
+            errorMsg = 'Não é possível inativar local com estoque alocado. Transfira o estoque antes.';
+          } else if (error.error?.message) {
+            errorMsg = error.error.message;
+          }
 
-        if (error.status === 409) {
-          errorMsg = 'Não é possível inativar local com estoque alocado. Transfira o estoque antes.';
-        } else if (error.error?.message) {
-          errorMsg = error.error.message;
+          this.feedback.showError(errorMsg, () => this.deleteLocation(location));
+          this.loading = false;
+          console.error('Error deleting location:', error);
         }
-
-        this.feedback.showError(errorMsg, () => this.deleteLocation(location));
-        this.loading = false;
-        console.error('Error deleting location:', error);
-      }
+      });
     });
   }
 

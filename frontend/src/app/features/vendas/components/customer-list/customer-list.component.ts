@@ -20,6 +20,7 @@ import {
 } from '../../models/customer.model';
 import { debounceTime, Subject } from 'rxjs';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
+import { ConfirmDialogService } from '../../../../shared/services/confirm-dialog.service';
 
 /**
  * CustomerListComponent - Customer listing with filters and pagination
@@ -85,7 +86,8 @@ export class CustomerListComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private router: Router,
-    private feedback: FeedbackService
+    private feedback: FeedbackService,
+    private confirmDialog: ConfirmDialogService
   ) {
     // Setup search debounce
     this.searchSubject
@@ -109,7 +111,7 @@ export class CustomerListComponent implements OnInit {
     this.error = null;
 
     const customerType = this.selectedType || undefined;
-    const ativo = this.selectedStatus === '' ? true : this.selectedStatus;
+    const ativo = this.selectedStatus === '' ? undefined : this.selectedStatus;
 
     this.customerService
       .listAll(customerType, ativo, this.currentPage, this.pageSize)
@@ -154,14 +156,14 @@ export class CustomerListComponent implements OnInit {
    * Navigates to create customer page
    */
   createCustomer(): void {
-    this.router.navigate(['/customers/new']);
+    this.router.navigate(['/clientes/novo']);
   }
 
   /**
    * Navigates to edit customer page
    */
   editCustomer(id: string): void {
-    this.router.navigate(['/customers/edit', id]);
+    this.router.navigate(['/clientes', id, 'editar']);
   }
 
   /**
@@ -173,8 +175,12 @@ export class CustomerListComponent implements OnInit {
       return;
     }
 
-    const confirmMsg = `Tem certeza que deseja inativar o cliente ${customer.displayName}?`;
-    if (confirm(confirmMsg)) {
+    this.confirmDialog.confirmDanger({
+      title: 'Inativar Cliente',
+      message: `Tem certeza que deseja inativar o cliente ${customer.displayName}?`
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
       this.customerService.softDelete(customer.id).subscribe({
         next: () => {
           this.loadCustomers(); // Reload list
@@ -184,7 +190,7 @@ export class CustomerListComponent implements OnInit {
           this.feedback.showError('Erro ao excluir cliente.', () => this.deleteCustomer(customer));
         }
       });
-    }
+    });
   }
 
   /**

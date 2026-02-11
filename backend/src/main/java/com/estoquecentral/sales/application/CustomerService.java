@@ -55,6 +55,7 @@ public class CustomerService {
         UUID tenantId = UUID.fromString(TenantContext.getTenantId());
         customer.setTenantId(tenantId);
         customer.setId(UUID.randomUUID());
+        customer.markAsNew();
         customer.setAtivo(true);
         customer.setIsDefaultConsumer(false);
         customer.setCreatedAt(LocalDateTime.now());
@@ -198,7 +199,7 @@ public class CustomerService {
                 pageable.getPageSize(),
                 pageable.getOffset()
             );
-            total = customerRepository.countByTenantIdAndAtivo(tenantId, true);
+            total = customerRepository.countByTenantId(tenantId);
         }
 
         Page<Customer> page = new PageImpl<>(content, pageable, total);

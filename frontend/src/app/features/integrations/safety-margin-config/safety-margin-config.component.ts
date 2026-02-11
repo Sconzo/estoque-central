@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SafetyMarginService, SafetyMarginRule } from '../services/safety-margin.service';
 import { SafetyMarginModalComponent } from '../safety-margin-modal/safety-margin-modal.component';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * SafetyMarginConfigComponent - Configure safety stock margins
@@ -17,6 +18,7 @@ import { SafetyMarginModalComponent } from '../safety-margin-modal/safety-margin
 })
 export class SafetyMarginConfigComponent implements OnInit {
   private safetyMarginService = inject(SafetyMarginService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   rules: SafetyMarginRule[] = [];
   loading = false;
@@ -84,26 +86,29 @@ export class SafetyMarginConfigComponent implements OnInit {
   }
 
   deleteRule(rule: SafetyMarginRule) {
-    if (!confirm(`Tem certeza que deseja deletar esta regra de margem de segurança?`)) {
-      return;
-    }
+    this.confirmDialog.confirmDanger({
+      title: 'Deletar Regra',
+      message: 'Tem certeza que deseja deletar esta regra de margem de segurança?'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.loading = true;
-    this.error = null;
+      this.loading = true;
+      this.error = null;
 
-    this.safetyMarginService.deleteRule(rule.id).subscribe({
-      next: () => {
-        this.successMessage = 'Regra deletada com sucesso!';
-        this.loadRules();
-        setTimeout(() => {
-          this.successMessage = null;
-        }, 3000);
-      },
-      error: (err) => {
-        this.error = 'Erro ao deletar regra';
-        console.error('Error deleting rule:', err);
-        this.loading = false;
-      }
+      this.safetyMarginService.deleteRule(rule.id).subscribe({
+        next: () => {
+          this.successMessage = 'Regra deletada com sucesso!';
+          this.loadRules();
+          setTimeout(() => {
+            this.successMessage = null;
+          }, 3000);
+        },
+        error: (err) => {
+          this.error = 'Erro ao deletar regra';
+          console.error('Error deleting rule:', err);
+          this.loading = false;
+        }
+      });
     });
   }
 

@@ -50,13 +50,9 @@ public class CustomerController {
      */
     @PostMapping
     public ResponseEntity<CustomerResponseDTO> create(@RequestBody CustomerRequestDTO request) {
-        try {
-            Customer customer = toEntity(request);
-            Customer created = customerService.create(customer);
-            return ResponseEntity.status(HttpStatus.CREATED).body(CustomerResponseDTO.from(created));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        Customer customer = toEntity(request);
+        Customer created = customerService.create(customer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(CustomerResponseDTO.from(created));
     }
 
     /**
@@ -71,7 +67,7 @@ public class CustomerController {
     @GetMapping
     public ResponseEntity<Page<CustomerResponseDTO>> list(
         @RequestParam(required = false) CustomerType customerType,
-        @RequestParam(required = false, defaultValue = "true") Boolean ativo,
+        @RequestParam(required = false) Boolean ativo,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
@@ -94,12 +90,8 @@ public class CustomerController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable UUID id) {
-        try {
-            Customer customer = customerService.findById(id);
-            return ResponseEntity.ok(CustomerResponseDTO.from(customer));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        Customer customer = customerService.findById(id);
+        return ResponseEntity.ok(CustomerResponseDTO.from(customer));
     }
 
     /**
@@ -149,16 +141,9 @@ public class CustomerController {
         @PathVariable UUID id,
         @RequestBody CustomerRequestDTO request
     ) {
-        try {
-            Customer customer = toEntity(request);
-            Customer updated = customerService.update(id, customer);
-            return ResponseEntity.ok(CustomerResponseDTO.from(updated));
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        Customer customer = toEntity(request);
+        Customer updated = customerService.update(id, customer);
+        return ResponseEntity.ok(CustomerResponseDTO.from(updated));
     }
 
     /**
@@ -169,15 +154,8 @@ public class CustomerController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDelete(@PathVariable UUID id) {
-        try {
-            customerService.softDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        customerService.softDelete(id);
+        return ResponseEntity.noContent().build();
     }
 
     // ============================================================

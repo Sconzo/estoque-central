@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { Subject, takeUntil } from 'rxjs';
 import { CompanyService, CreateCompanyRequest } from '../../../core/services/company.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -42,8 +43,10 @@ import { TenantService } from '../../../core/services/tenant.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    NgxMaskDirective
   ],
+  providers: [provideNgxMask()],
   templateUrl: './create-company.component.html',
   styleUrls: ['./create-company.component.scss']
 })
@@ -77,7 +80,7 @@ export class CreateCompanyComponent implements OnInit, OnDestroy {
   private initializeForm(): void {
     this.companyForm = this.fb.group({
       nome: ['', [Validators.required, Validators.maxLength(255)]],
-      cnpj: ['', [Validators.pattern(/^\d{14}$/)]],
+      cnpj: [''],
       email: ['', [Validators.required, Validators.email]],
       telefone: ['']
     });

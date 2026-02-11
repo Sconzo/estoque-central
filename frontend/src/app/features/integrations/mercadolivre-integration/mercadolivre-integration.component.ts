@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MercadoLivreService, ConnectionStatusResponse } from '../services/mercadolivre.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
 /**
  * MercadoLivreIntegrationComponent - Mercado Livre OAuth2 integration UI
@@ -314,6 +315,7 @@ export class MercadoLivreIntegrationComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmDialog = inject(ConfirmDialogService);
 
   connectionStatus: ConnectionStatusResponse | null = null;
   loading = false;
@@ -397,19 +399,23 @@ export class MercadoLivreIntegrationComponent implements OnInit {
    * AC7: Disconnect Mercado Livre
    */
   disconnect(): void {
-    if (!confirm('Tem certeza que deseja desconectar do Mercado Livre?')) {
-      return;
-    }
+    this.confirmDialog.confirm({
+      title: 'Desconectar Mercado Livre',
+      message: 'Tem certeza que deseja desconectar do Mercado Livre?',
+      type: 'warning'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.mlService.disconnect().subscribe({
-      next: () => {
-        this.snackBar.open('Desconectado do Mercado Livre', 'Fechar', { duration: 3000 });
-        this.loadStatus();
-      },
-      error: (error) => {
-        console.error('Error disconnecting:', error);
-        this.snackBar.open('Erro ao desconectar', 'Fechar', { duration: 3000 });
-      }
+      this.mlService.disconnect().subscribe({
+        next: () => {
+          this.snackBar.open('Desconectado do Mercado Livre', 'Fechar', { duration: 3000 });
+          this.loadStatus();
+        },
+        error: (error) => {
+          console.error('Error disconnecting:', error);
+          this.snackBar.open('Erro ao desconectar', 'Fechar', { duration: 3000 });
+        }
+      });
     });
   }
 

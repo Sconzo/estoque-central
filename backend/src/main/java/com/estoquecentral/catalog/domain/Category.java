@@ -1,6 +1,8 @@
 package com.estoquecentral.catalog.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -37,10 +39,13 @@ import java.util.UUID;
  * @see com.estoquecentral.catalog.application.CategoryService
  */
 @Table("categories")
-public class Category {
+public class Category implements Persistable<UUID> {
 
     @Id
     private UUID id;
+
+    @Transient
+    private boolean isNew = false;
 
     private String name;
     private String description;
@@ -76,6 +81,7 @@ public class Category {
         this.name = name;
         this.description = description;
         this.parentId = parentId;
+        this.isNew = true;
     }
 
     /**
@@ -93,6 +99,13 @@ public class Category {
         this.updatedAt = updatedAt;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+    }
+
+    // ==================== Persistable ====================
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     // ==================== Business Methods ====================

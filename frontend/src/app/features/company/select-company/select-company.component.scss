@@ -1,7 +1,7 @@
 /**
  * Story 9.2: Company Selection Screen Styles
  * AC6: Responsive design (UX2 - Desktop, Tablet, Mobile)
- * UX4: Deep Purple theme (#6A1B9A)
+ * UX4: Deep Purple theme (#0d9488)
  * UX19: MatCard components for company display
  * UX20: Large touch targets (44x44px minimum)
  */
@@ -9,7 +9,7 @@
 .select-company-container {
   min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,7 +46,7 @@
   margin-top: 24px;
   font-size: 18px;
   font-weight: 500;
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
 }
 
 /* Header */
@@ -60,7 +60,7 @@
 .title {
   font-size: 32px;
   font-weight: 600;
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
   margin: 0 0 12px 0;
 }
 
@@ -90,17 +90,17 @@
 
 .company-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(106, 27, 154, 0.15); /* Deep Purple shadow */
-  border-color: #6A1B9A;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.12);
+  border-color: #0d9488;
 }
 
 .company-card.selecting {
-  border-color: #6A1B9A;
-  background-color: #f3e5f5; /* Light purple background */
+  border-color: #0d9488;
+  background-color: #f0fdfa;
 }
 
 .company-avatar {
-  background-color: #6A1B9A; /* UX4: Deep Purple */
+  background-color: #0d9488; /* UX4: Deep Purple */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,7 +140,7 @@ mat-card-subtitle {
 }
 
 .info-icon {
-  color: #6A1B9A; /* UX4: Deep Purple */
+  color: #0d9488; /* UX4: Deep Purple */
   font-size: 20px;
   width: 20px;
   height: 20px;

@@ -55,7 +55,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param offset page offset
      * @return list of products with the specified status
      */
-    @Query("SELECT * FROM products WHERE status = CAST(:status AS product_status) ORDER BY name LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM products WHERE status = CAST(:status AS product_status) AND ativo = true ORDER BY name LIMIT :limit OFFSET :offset")
     java.util.List<Product> findByStatus(@Param("status") ProductStatus status, @Param("limit") int limit, @Param("offset") long offset);
 
     /**
@@ -64,7 +64,7 @@ public interface ProductRepository extends CrudRepository<Product, UUID>,
      * @param status product status
      * @return count of products with the specified status
      */
-    @Query("SELECT COUNT(*) FROM products WHERE status = CAST(:status AS product_status)")
+    @Query("SELECT COUNT(*) FROM products WHERE status = CAST(:status AS product_status) AND ativo = true")
     long countByStatus(@Param("status") ProductStatus status);
 
     /**
