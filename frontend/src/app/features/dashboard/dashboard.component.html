@@ -9,6 +9,15 @@
       <div class="spinner"></div>
       <p>Carregando dados...</p>
     </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button mat-raised-button color="primary" (click)="carregarDados()">
+        <mat-icon>refresh</mat-icon>
+        Tentar novamente
+      </button>
+    </div>
   } @else {
     <!-- Cards de Estatísticas -->
     <div class="stats-grid">
@@ -22,7 +31,6 @@
       <app-metric-card
         title="Estoque Total"
         [value]="stats().estoqueTotal.toString()"
-        [changePercent]="stats().alertasEstoque > 0 ? -((stats().alertasEstoque / stats().estoqueTotal) * 100) : undefined"
         icon="warehouse"
         [color]="stats().alertasEstoque > 0 ? '#C62828' : '#f97316'">
       </app-metric-card>
@@ -30,7 +38,6 @@
       <app-metric-card
         title="Vendas do Mês"
         [value]="stats().vendasMes.toString()"
-        [changePercent]="12.5"
         icon="point_of_sale"
         color="#0d9488">
       </app-metric-card>
@@ -38,7 +45,6 @@
       <app-metric-card
         title="Clientes Ativos"
         [value]="stats().clientesAtivos.toString()"
-        [changePercent]="8.3"
         icon="people"
         color="#2E7D32">
       </app-metric-card>
@@ -71,21 +77,15 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (produto of produtosEstoqueBaixo(); track produto.id) {
+                  @for (produto of produtosEstoqueBaixo(); track produto.productId) {
                     <tr>
-                      <td>{{ produto.codigo }}</td>
-                      <td>{{ produto.nome }}</td>
-                      <td>{{ produto.estoque }}</td>
-                      <td>{{ produto.minimo }}</td>
+                      <td>{{ produto.sku }}</td>
+                      <td>{{ produto.productName }}</td>
+                      <td>{{ produto.currentQuantity }}</td>
+                      <td>{{ produto.minimumQuantity }}</td>
                       <td>
-                        <span class="badge" [class]="getAlertClass(produto.estoque, produto.minimo)">
-                          @if (produto.estoque < produto.minimo * 0.3) {
-                            Crítico
-                          } @else if (produto.estoque < produto.minimo * 0.6) {
-                            Baixo
-                          } @else {
-                            OK
-                          }
+                        <span class="badge" [class]="getAlertClass(produto.alertLevel)">
+                          {{ getAlertLabel(produto.alertLevel) }}
                         </span>
                       </td>
                     </tr>
@@ -95,7 +95,7 @@
             </div>
           } @else {
             <div class="empty-state">
-              <p>✅ Nenhum alerta de estoque no momento</p>
+              <p>Nenhum alerta de estoque no momento</p>
             </div>
           }
         </div>
@@ -117,13 +117,13 @@
           <div class="card-body">
             @if (produtosMaisVendidos().length > 0) {
               <div class="list">
-                @for (produto of produtosMaisVendidos(); track produto.id) {
+                @for (produto of produtosMaisVendidos(); track produto.productId) {
                   <div class="list-item">
                     <div class="list-item-content">
-                      <div class="list-item-title">{{ produto.nome }}</div>
-                      <div class="list-item-subtitle">{{ produto.codigo }}</div>
+                      <div class="list-item-title">{{ produto.productName }}</div>
+                      <div class="list-item-subtitle">{{ produto.sku }}</div>
                     </div>
-                    <div class="list-item-badge">{{ produto.vendas }} vendas</div>
+                    <div class="list-item-badge">{{ produto.totalQuantitySold }} vendas</div>
                   </div>
                 }
               </div>
@@ -151,7 +151,7 @@
                     <div class="timeline-marker" [class]="'marker-' + atividade.tipo"></div>
                     <div class="timeline-content">
                       <div class="timeline-title">{{ atividade.descricao }}</div>
-                      <div class="timeline-time">{{ atividade.tempo }}</div>
+                      <div class="timeline-time">{{ formatTimestamp(atividade.timestamp) }}</div>
                     </div>
                   </div>
                 }

@@ -1,0 +1,191 @@
+Funcionalidades do Módulo
+Está seção apresenta as User Stories relativas ao módulo de Produto.
+
+Épico 1: Cadastro e Estrutura de Produtos
+Este épico cobre a criação e o gerenciamento da estrutura fundamental do catálogo de produtos.
+
+US-401: Cadastrar um único Produto 
+
+1. Visão Geral
+Como um Gerente de Produto, eu quero cadastrar um produto, para que ele possa ser controlado no estoque e vendido individualmente.
+
+No módulo de Produto, ao clicar no botão +Produto o usuário deve ser direcionado à página de criação de um produto.
+
+O formulário de criação de produto deve ser dividido nas seguintes abas que serão detalhadas nos próximos itens:
+
+Dados Gerais 
+
+Dados Complementares
+
+Atributos
+
+Preço
+
+Custos
+
+Cada aba deve ser mostrada em tela para que usuário consiga navegar intuitivamente entre abas
+
+Ao preencher todos os campos obrigatórios, o botão Salvar deve estar habilitado para o usuário clicar. 
+
+Após o salvamento do Produto, o usuário deve ser redirecionado para a tela de listagem de produtos e o Produto que acabou de ser criado deve estar nessa listagem.
+
+2. Dados Gerais
+A aba de Dados Gerais deve possuir os seguintes campos obrigatórios:
+
+Nome 
+
+Campo texto
+
+Limite de 255 caracteres
+
+Tipo 
+
+Campo dropdown com as opções:
+
+Simples (default)
+
+Variante
+
+Composto
+
+Categoria 
+
+Campo dropdown filtrável que apresenta todas as categorias do sistema
+
+Valor default: Sem Categoria
+
+Preço de venda
+
+Campo numérico
+
+Unidade de Medida
+
+Campo dropdown filtrável que apresenta todas as unidades de medida do sistema
+
+Caso o usuário preencha um valor que não exista ainda no sistema, ele deve ser criado
+
+Ao final da aba, deve existir um botão Próxima Aba para o usuário ir para a aba de Dados Complementares.
+
+3. Dados Complementares
+Esta aba será divida nas seguintes seções:
+
+Dimensões e Peso
+
+Estoque
+
+Detalhes
+
+Dimensões e Peso terá os seguintes campos
+
+Peso líquido
+
+Campo numérico 
+
+Sempre em kg
+
+Peso bruto
+
+Campo numérico 
+
+Sempre em kg
+
+Largura
+
+Campo numérico 
+
+Sempre em cm
+
+Altura
+
+Campo numérico 
+
+Sempre em cm
+
+Comprimento
+
+Campo numérico 
+
+Sempre em cm
+
+Estoque terá os seguintes campos
+
+Estoque Inicial
+
+Campo numérico 
+
+Sempre em unidades
+
+Estoque Mínimo
+
+Campo numérico 
+
+Sempre em unidades
+
+Estoque Máximo
+
+Campo numérico 
+
+Sempre em unidades
+
+Localização
+
+Campo dropdown filtrável que apresenta todos os Estoques cadastrados no sistema
+
+Detalhes
+
+Marca
+
+Campo dropdown filtrável que apresenta todas as marcas do sistema
+
+Caso o usuário preencha uma marca que não exista ainda no sistema, ela deve ser criado
+
+Origem
+
+Campo dropdown que apresenta todas as origens possíveis de um Produto de acordo com Tabela ORIGEM ICMS | Mainô 
+
+Data de Validade
+
+Campo data
+
+Deve ser maior ou igual ao dia atual
+
+Código de Barras
+
+Campo texto que o usuário deve inserir apenas números
+
+No banco de dados esse valor deve ser salvo como string
+
+Descrição
+
+Campo texto
+
+Limite de 1000 caracteres
+
+Imagem
+
+Campo que o usuário consegue anexar imagens do produto
+
+A ordem das imagens deve ser salva para exibição em ordem
+
+4. Atributos
+Nesta etapa o usuário irá poder adicionar atributo e valor para o produto
+
+O usuário poderá adicionar até 30 atributos por produto
+
+Um atributo pode ter apenas um valor relacionado
+
+O sistema terá dois campos:
+
+Atributo
+
+Campo texto
+
+Limite de 255 caracteres
+
+Valor
+
+Campo texto
+
+Limite de 255 caracteres
+
+Após preencher os dois campos, o usuário deve clicar no botão adicionar para incluir o atributo e valor no grid abaixo. Os campos serão limpos, permitindo a criação de novos atributos e valores.

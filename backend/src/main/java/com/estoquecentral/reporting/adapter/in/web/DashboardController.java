@@ -102,6 +102,66 @@ public class DashboardController {
     }
 
     /**
+     * GET /api/dashboard/products/count
+     * Get total count of active products
+     */
+    @GetMapping("/products/count")
+    public ResponseEntity<Map<String, Integer>> getTotalActiveProducts() {
+        Integer count = dashboardService.getTotalActiveProducts();
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    /**
+     * GET /api/dashboard/products/top
+     * Get top selling products for today
+     *
+     * Query params:
+     * - limit: Max number of products (default: 10)
+     */
+    @GetMapping("/products/top")
+    public ResponseEntity<List<TopProductDTO>> getTopProducts(
+            @RequestParam(defaultValue = "10") Integer limit
+    ) {
+        List<TopProductDTO> topProducts = dashboardService.getTopProducts(limit);
+        return ResponseEntity.ok(topProducts);
+    }
+
+    /**
+     * GET /api/dashboard/sales/monthly
+     * Get aggregated sales for current month
+     */
+    @GetMapping("/sales/monthly")
+    public ResponseEntity<MonthlySalesDTO> getMonthlySales() {
+        MonthlySalesDTO monthlySales = dashboardService.getMonthlySales();
+        return ResponseEntity.ok(monthlySales);
+    }
+
+    /**
+     * GET /api/dashboard/customers/active-count
+     * Get count of active customers
+     */
+    @GetMapping("/customers/active-count")
+    public ResponseEntity<Map<String, Integer>> getActiveCustomersCount() {
+        Integer count = dashboardService.getActiveCustomersCount();
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    /**
+     * GET /api/dashboard/activities/recent
+     * Get recent activities (inventory movements + order status changes)
+     *
+     * Query params:
+     * - limit: Max number of activities (default: 10)
+     */
+    @GetMapping("/activities/recent")
+    public ResponseEntity<List<RecentActivityDTO>> getRecentActivities(
+            @RequestParam(defaultValue = "10") Integer limit
+    ) {
+        List<RecentActivityDTO> activities = dashboardService.getRecentActivities(limit);
+        return ResponseEntity.ok(activities);
+    }
+
+    /**
      * GET /api/dashboard/stock/critical
      * Get products below minimum stock level
      *

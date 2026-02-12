@@ -175,6 +175,46 @@ public class DashboardService {
     }
 
     /**
+     * Get top selling products for today
+     */
+    @Cacheable(value = "dashboard", key = "'top-products-' + #limit")
+    public List<TopProductDTO> getTopProducts(Integer limit) {
+        return dashboardRepository.getTopProducts(limit);
+    }
+
+    /**
+     * Get monthly sales aggregation
+     */
+    @Cacheable(value = "dashboard", key = "'monthly-sales'")
+    public MonthlySalesDTO getMonthlySales() {
+        return dashboardRepository.getMonthlySales();
+    }
+
+    /**
+     * Get active customers count
+     */
+    @Cacheable(value = "dashboard", key = "'active-customers-count'")
+    public Integer getActiveCustomersCount() {
+        return dashboardRepository.getActiveCustomersCount();
+    }
+
+    /**
+     * Get recent activities
+     */
+    @Cacheable(value = "dashboard", key = "'recent-activities-' + #limit")
+    public List<RecentActivityDTO> getRecentActivities(Integer limit) {
+        return dashboardRepository.getRecentActivities(limit);
+    }
+
+    /**
+     * Get total count of active products
+     */
+    @Cacheable(value = "dashboard", key = "'total-active-products'")
+    public Integer getTotalActiveProducts() {
+        return dashboardRepository.getTotalActiveProducts();
+    }
+
+    /**
      * Get performance indicators (KPIs)
      */
     public Map<String, Object> getPerformanceIndicators() {

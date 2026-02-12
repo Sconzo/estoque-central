@@ -1,19 +1,13 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { forkJoin } from 'rxjs';
 import { MetricCardComponent } from '../../shared/components/feedback/metric-card/metric-card.component';
+import { DashboardService } from './services/dashboard.service';
+import { CriticalStockProduct, TopProduct, RecentActivity } from '../../shared/models/dashboard.model';
 
-/**
- * DashboardComponent - Página inicial com resumo e métricas
- *
- * Exibe:
- * - Cards com estatísticas principais
- * - Alertas de estoque baixo
- * - Produtos mais vendidos
- * - Resumo de vendas
- */
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -28,12 +22,13 @@ import { MetricCardComponent } from '../../shared/components/feedback/metric-car
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  loading = signal(true);
+  private dashboardService = inject(DashboardService);
 
-  // Estatísticas principais
+  loading = signal(true);
+  error = signal<string | null>(null);
+
   stats = signal({
     totalProdutos: 0,
-    produtosAtivos: 0,
     estoqueTotal: 0,
     alertasEstoque: 0,
     vendasHoje: 0,
@@ -42,71 +37,83 @@ export class DashboardComponent implements OnInit {
     pedidosPendentes: 0
   });
 
-  // Produtos com estoque baixo
-  produtosEstoqueBaixo = signal<any[]>([]);
-
-  // Produtos mais vendidos
-  produtosMaisVendidos = signal<any[]>([]);
-
-  // Atividades recentes
-  atividadesRecentes = signal<any[]>([]);
+  produtosEstoqueBaixo = signal<CriticalStockProduct[]>([]);
+  produtosMaisVendidos = signal<TopProduct[]>([]);
+  atividadesRecentes = signal<RecentActivity[]>([]);
 
   ngOnInit() {
     this.carregarDados();
   }
 
-  async carregarDados() {
-    try {
-      this.loading.set(true);
+  carregarDados() {
+    this.loading.set(true);
+    this.error.set(null);
 
-      // TODO: Substituir por chamadas reais de API
-      // Simulação de dados para demonstração
-      await this.simularCarregamento();
+    forkJoin({
+      summary: this.dashboardService.getSummary(),
+      totalProducts: this.dashboardService.getTotalActiveProducts(),
+      criticalStock: this.dashboardService.getCriticalStock(10),
+      topProducts: this.dashboardService.getTopProducts(10),
+      monthlySales: this.dashboardService.getMonthlySales(),
+      activeCustomers: this.dashboardService.getActiveCustomersCount(),
+      recentActivities: this.dashboardService.getRecentActivities(10)
+    }).subscribe({
+      next: (data) => {
+        const s = data.summary;
+        this.stats.set({
+          totalProdutos: data.totalProducts.count,
+          estoqueTotal: s.totalInventoryQuantity,
+          alertasEstoque: s.outOfStockCount + s.criticalStockCount + s.lowStockCount,
+          vendasHoje: s.dailyOrderCount,
+          vendasMes: data.monthlySales.orderCount,
+          clientesAtivos: data.activeCustomers.count,
+          pedidosPendentes: s.pendingOrdersCount
+        });
 
-      this.stats.set({
-        totalProdutos: 156,
-        produtosAtivos: 142,
-        estoqueTotal: 3420,
-        alertasEstoque: 12,
-        vendasHoje: 8,
-        vendasMes: 234,
-        clientesAtivos: 89,
-        pedidosPendentes: 5
-      });
+        this.produtosEstoqueBaixo.set(data.criticalStock);
+        this.produtosMaisVendidos.set(data.topProducts);
+        this.atividadesRecentes.set(data.recentActivities);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar dados do dashboard:', err);
+        this.error.set('Erro ao carregar dados do dashboard. Tente novamente.');
+        this.loading.set(false);
+      }
+    });
+  }
 
-      this.produtosEstoqueBaixo.set([
-        { id: 1, nome: 'Produto A', estoque: 3, minimo: 10, codigo: 'PROD-001' },
-        { id: 2, nome: 'Produto B', estoque: 1, minimo: 5, codigo: 'PROD-002' },
-        { id: 3, nome: 'Produto C', estoque: 5, minimo: 15, codigo: 'PROD-003' }
-      ]);
-
-      this.produtosMaisVendidos.set([
-        { id: 1, nome: 'Produto X', vendas: 45, codigo: 'PROD-X' },
-        { id: 2, nome: 'Produto Y', vendas: 38, codigo: 'PROD-Y' },
-        { id: 3, nome: 'Produto Z', vendas: 32, codigo: 'PROD-Z' }
-      ]);
-
-      this.atividadesRecentes.set([
-        { tipo: 'venda', descricao: 'Venda #1234 finalizada', tempo: '5 min atrás' },
-        { tipo: 'estoque', descricao: 'Estoque atualizado: Produto A', tempo: '15 min atrás' },
-        { tipo: 'cliente', descricao: 'Novo cliente cadastrado', tempo: '1 hora atrás' }
-      ]);
-
-    } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
-    } finally {
-      this.loading.set(false);
+  getAlertClass(alertLevel: string): string {
+    switch (alertLevel) {
+      case 'OUT_OF_STOCK': return 'alert-critical';
+      case 'CRITICAL': return 'alert-warning';
+      case 'LOW': return 'alert-ok';
+      default: return 'alert-ok';
     }
   }
 
-  private simularCarregamento(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, 800));
+  getAlertLabel(alertLevel: string): string {
+    switch (alertLevel) {
+      case 'OUT_OF_STOCK': return 'Esgotado';
+      case 'CRITICAL': return 'Crítico';
+      case 'LOW': return 'Baixo';
+      default: return 'OK';
+    }
   }
 
-  getAlertClass(estoque: number, minimo: number): string {
-    const percentual = (estoque / minimo) * 100;
-    if (percentual < 30) return 'alert-critical';
-    if (percentual < 60) return 'alert-warning';
-    return 'alert-ok';
+  formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 1) return 'Agora';
+    if (diffMin < 60) return `${diffMin} min atrás`;
+
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h atrás`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d atrás`;
   }
 }

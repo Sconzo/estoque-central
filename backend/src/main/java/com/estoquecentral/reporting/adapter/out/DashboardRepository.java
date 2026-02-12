@@ -238,6 +238,126 @@ public class DashboardRepository {
         );
     }
 
+    /**
+     * Get top selling products for today from v_top_products_today view
+     */
+    public List<TopProductDTO> getTopProducts(Integer limit) {
+        String sql = """
+                SELECT * FROM v_top_products_today
+                LIMIT :limit
+                """;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("limit", limit != null ? limit : 10);
+
+        return jdbcTemplate.query(sql, params, (rs, rowNum) ->
+                new TopProductDTO(
+                        getUUID(rs, "product_id"),
+                        rs.getString("sku"),
+                        rs.getString("product_name"),
+                        rs.getString("category_name"),
+                        rs.getLong("order_count"),
+                        null, // uniqueCustomers - not in view
+                        rs.getBigDecimal("total_quantity_sold"),
+                        rs.getBigDecimal("total_revenue"),
+                        rs.getBigDecimal("average_price"),
+                        null, // minPrice
+                        null, // maxPrice
+                        null, // revenuePerUnit
+                        null, // avgQuantityPerOrder
+                        rs.getBigDecimal("current_stock"),
+                        null, // firstSaleDate
+                        null, // lastSaleDate
+                        (long) rowNum + 1 // rankPosition
+                )
+        );
+    }
+
+    /**
+     * Get monthly sales aggregation for current month
+     */
+    public MonthlySalesDTO getMonthlySales() {
+        String sql = """
+                SELECT
+                    COUNT(*) AS order_count,
+                    COALESCE(SUM(total), 0) AS total_sales,
+                    COALESCE(AVG(total), 0) AS average_ticket
+                FROM orders
+                WHERE created_at >= date_trunc('month', CURRENT_DATE)
+                  AND status NOT IN ('CANCELLED', 'REJECTED')
+                """;
+
+        return jdbcTemplate.queryForObject(sql, new HashMap<>(), (rs, rowNum) ->
+                new MonthlySalesDTO(
+                        rs.getInt("order_count"),
+                        rs.getBigDecimal("total_sales"),
+                        rs.getBigDecimal("average_ticket")
+                )
+        );
+    }
+
+    /**
+     * Get count of active customers (customers who have placed at least one order)
+     */
+    public Integer getActiveCustomersCount() {
+        String sql = """
+                SELECT COUNT(DISTINCT customer_id)
+                FROM orders
+                WHERE status NOT IN ('CANCELLED', 'FAILED')
+                """;
+        return jdbcTemplate.queryForObject(sql, new HashMap<>(), Integer.class);
+    }
+
+    /**
+     * Get total count of active products
+     */
+    public Integer getTotalActiveProducts() {
+        String sql = "SELECT COUNT(*) FROM products WHERE ativo = true";
+        return jdbcTemplate.queryForObject(sql, new HashMap<>(), Integer.class);
+    }
+
+    /**
+     * Get recent activities combining inventory movements and order status changes
+     */
+    public List<RecentActivityDTO> getRecentActivities(Integer limit) {
+        String sql = """
+                (
+                    SELECT
+                        'estoque' AS tipo,
+                        im.type || ' - ' || p.name AS descricao,
+                        im.created_at AS timestamp
+                    FROM inventory_movements im
+                    INNER JOIN products p ON p.id = im.product_id
+                    ORDER BY im.created_at DESC
+                    LIMIT :limit
+                )
+                UNION ALL
+                (
+                    SELECT
+                        'venda' AS tipo,
+                        'Pedido #' || o.order_number || ' ' || COALESCE(osh.from_status, '?') || ' -> ' || osh.to_status AS descricao,
+                        osh.changed_at AS timestamp
+                    FROM order_status_history osh
+                    INNER JOIN orders o ON o.id = osh.order_id
+                    ORDER BY osh.changed_at DESC
+                    LIMIT :limit
+                )
+                ORDER BY timestamp DESC
+                LIMIT :limit
+                """;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("limit", limit != null ? limit : 10);
+
+        return jdbcTemplate.query(sql, params, (rs, rowNum) ->
+                new RecentActivityDTO(
+                        rs.getString("tipo"),
+                        rs.getString("descricao"),
+                        rs.getTimestamp("timestamp").toLocalDateTime()
+                )
+        );
+    }
+
     // Helper methods
 
     private UUID getUUID(ResultSet rs, String columnName) throws SQLException {
