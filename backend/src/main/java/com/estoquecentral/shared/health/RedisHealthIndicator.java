@@ -3,6 +3,7 @@ package com.estoquecentral.shared.health;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
  * @see org.springframework.boot.actuate.health.HealthIndicator
  */
 @Component("redis")
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true")
 public class RedisHealthIndicator implements HealthIndicator {
 
     private final RedissonClient redissonClient;

@@ -2,6 +2,7 @@ package com.estoquecentral.config;
 
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.cache.RedissonSpringCacheManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableCaching
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true")
 public class CacheConfig {
 
     /**

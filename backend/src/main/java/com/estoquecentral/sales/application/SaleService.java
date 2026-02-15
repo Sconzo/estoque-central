@@ -12,6 +12,7 @@ import com.estoquecentral.sales.adapter.out.FiscalEventRepository;
 import com.estoquecentral.sales.adapter.out.SaleItemRepository;
 import com.estoquecentral.sales.adapter.out.SaleRepository;
 import com.estoquecentral.sales.domain.*;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,7 @@ public class SaleService {
     private final FiscalEventRepository fiscalEventRepository;
     private final SaleNumberGenerator saleNumberGenerator;
     private final NfceService nfceService;
+    @Nullable
     private final RetryQueueService retryQueueService;
     private final NotificationService notificationService;
     private final MarketplaceStockSyncService marketplaceStockSyncService;
@@ -62,7 +64,7 @@ public class SaleService {
             FiscalEventRepository fiscalEventRepository,
             SaleNumberGenerator saleNumberGenerator,
             NfceService nfceService,
-            RetryQueueService retryQueueService,
+            @Nullable RetryQueueService retryQueueService,
             NotificationService notificationService,
             MarketplaceStockSyncService marketplaceStockSyncService,
             MarketplaceListingRepository marketplaceListingRepository) {

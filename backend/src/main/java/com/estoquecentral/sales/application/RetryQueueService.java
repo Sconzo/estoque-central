@@ -5,6 +5,7 @@ import org.redisson.api.RDelayedQueue;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * </ul>
  */
 @Service
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true")
 public class RetryQueueService {
 
     private static final Logger logger = LoggerFactory.getLogger(RetryQueueService.class);
