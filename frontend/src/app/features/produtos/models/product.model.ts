@@ -51,6 +51,14 @@ export interface ProductDTO extends Product {
 }
 
 /**
+ * ProductAttribute - Descriptive key/value attribute
+ */
+export interface ProductAttribute {
+  key: string;
+  value: string;
+}
+
+/**
  * ProductCreateRequest - DTO for creating product
  */
 export interface ProductCreateRequest {
@@ -66,6 +74,13 @@ export interface ProductCreateRequest {
   unit?: string;
   controlsInventory?: boolean;
   status?: ProductStatus;
+  // Inventory fields (optional)
+  locationId?: string;
+  initialQuantity?: number;
+  minimumQuantity?: number;
+  maximumQuantity?: number;
+  // Descriptive attributes (optional)
+  attributes?: ProductAttribute[];
 }
 
 /**

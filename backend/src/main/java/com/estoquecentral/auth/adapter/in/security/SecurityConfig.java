@@ -1,6 +1,7 @@
 package com.estoquecentral.auth.adapter.in.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,6 +57,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${cors.allowed-origins}")
+    private String allowedOriginsStr;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -129,13 +134,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow frontend origins
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",     // Angular dev server
-                "http://localhost:8080",     // Backend serving frontend
-                "http://localhost:3000"      // Alternative frontend port
-                // Add production frontend URLs here
-        ));
+        // Allow frontend origins (configurable via CORS_ALLOWED_ORIGINS env var)
+        List<String> origins = Arrays.asList(allowedOriginsStr.split(","));
+        configuration.setAllowedOrigins(origins);
 
         // Allow all HTTP methods
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

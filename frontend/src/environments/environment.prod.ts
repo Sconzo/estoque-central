@@ -3,5 +3,5 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'https://api.estoque-central.com' // Update with actual production URL
+  apiUrl: 'https://estoque-central-api.onrender.com' // Update with your actual Render URL
 };

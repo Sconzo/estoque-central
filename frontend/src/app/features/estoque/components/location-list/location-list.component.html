@@ -1,118 +1,150 @@
-<div class="container-fluid py-4">
-  <div class="row">
-    <div class="col-12">
-      <!-- Header -->
-      <div class="header mb-4">
-        <h2>Locais de Estoque</h2>
-        <button class="btn btn-primary" (click)="createLocation()" [disabled]="loading">
-          <span class="icon">+</span>
-          Novo Local
-        </button>
-      </div>
-
-      <!-- Error Alert -->
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erro:</strong> {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage = null"></button>
-      </div>
-
-      <!-- Filters -->
-      <div class="filters mb-3">
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="includeInactive"
-            [(ngModel)]="includeInactive"
-            (ngModelChange)="onIncludeInactiveChange()"
-          >
-          <label class="form-check-label" for="includeInactive">
-            Mostrar inativos
-          </label>
-        </div>
-      </div>
-
-      <!-- Loading -->
-      <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Carregando...</span>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!loading && locations.length === 0" class="alert alert-info">
-        <strong>Nenhum local encontrado.</strong>
-        Crie seu primeiro local de estoque clicando no botão "Novo Local".
-      </div>
-
-      <!-- Table -->
-      <div *ngIf="!loading && locations.length > 0" class="card">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Código</th>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th>Endereço</th>
-                  <th>Cidade</th>
-                  <th>Status</th>
-                  <th style="width: 120px;">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let location of locations">
-                  <td>
-                    <strong>{{ location.code }}</strong>
-                  </td>
-                  <td>{{ location.name }}</td>
-                  <td>
-                    <span [class]="getTypeBadgeClass(location.type)">
-                      {{ locationTypeLabels[location.type] }}
-                    </span>
-                  </td>
-                  <td>{{ truncate(location.address, 30) }}</td>
-                  <td>{{ location.city || '-' }}</td>
-                  <td>
-                    <span [class]="getStatusBadgeClass(location.ativo)">
-                      {{ getStatusLabel(location.ativo) }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="btn-group btn-group-sm" role="group">
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        (click)="editLocation(location)"
-                        title="Editar"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        (click)="deleteLocation(location)"
-                        [disabled]="!location.ativo"
-                        title="Inativar"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Summary -->
-      <div *ngIf="!loading && locations.length > 0" class="mt-3 text-muted">
-        <small>
-          Total: {{ locations.length }} local(is)
-        </small>
-      </div>
+<div class="location-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Locais de Estoque</h2>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createLocation()"
+        [disabled]="loading"
+        aria-label="Criar novo local de estoque">
+        <mat-icon>add</mat-icon>
+        Novo Local
+      </button>
     </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <mat-checkbox
+      [(ngModel)]="includeInactive"
+      (ngModelChange)="onIncludeInactiveChange()"
+      aria-label="Mostrar locais inativos">
+      Mostrar inativos
+    </mat-checkbox>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="locations.length > 0 && !loading">
+    <p>
+      Total: <strong>{{ locations.length }}</strong> local(is)
+    </p>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading" role="status" aria-live="polite">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Carregando locais...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage" role="alert">
+    <mat-icon color="warn" class="error-icon">warning</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-stroked-button (click)="loadLocations()" aria-label="Tentar carregar novamente">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading && !errorMessage">
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="locations.length === 0">
+      <mat-icon class="empty-icon">warehouse</mat-icon>
+      <p>Nenhum local de estoque encontrado.</p>
+      <p class="hint">Crie seu primeiro local de estoque clicando no botão "Novo Local".</p>
+      <button mat-raised-button color="primary" (click)="createLocation()" aria-label="Cadastrar primeiro local">
+        <mat-icon>add</mat-icon>
+        Cadastrar Primeiro Local
+      </button>
+    </div>
+
+    <!-- Mat Table -->
+    <table mat-table [dataSource]="locations" class="location-table" *ngIf="locations.length > 0">
+      <!-- Code Column -->
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let location">
+          <strong>{{ location.code }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nome</th>
+        <td mat-cell *matCellDef="let location">
+          <strong>{{ location.name }}</strong>
+          <div class="subtitle" *ngIf="location.description">
+            {{ truncate(location.description, 50) }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Type Column -->
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let location">
+          <mat-chip [class]="getTypeClass(location.type)">
+            {{ getTypeLabel(location.type) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Address Column -->
+      <ng-container matColumnDef="address">
+        <th mat-header-cell *matHeaderCellDef>Endereço</th>
+        <td mat-cell *matCellDef="let location">
+          {{ truncate(location.address, 30) }}
+        </td>
+      </ng-container>
+
+      <!-- City Column -->
+      <ng-container matColumnDef="city">
+        <th mat-header-cell *matHeaderCellDef>Cidade</th>
+        <td mat-cell *matCellDef="let location">
+          <span *ngIf="location.city">{{ location.city }}</span>
+          <span *ngIf="!location.city" class="text-muted">-</span>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let location">
+          <mat-chip [class]="getStatusClass(location.ativo)">
+            {{ getStatusLabel(location.ativo) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let location" class="actions">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="editLocation(location)"
+            [attr.aria-label]="'Editar local ' + location.name"
+            matTooltip="Editar Local">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="deleteLocation(location)"
+            [disabled]="!location.ativo"
+            [attr.aria-label]="'Inativar local ' + location.name"
+            matTooltip="Inativar Local">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </div>
 </div>

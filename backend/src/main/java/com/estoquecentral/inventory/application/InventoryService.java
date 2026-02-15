@@ -157,6 +157,49 @@ public class InventoryService {
     }
 
     /**
+     * Creates inventory record for a product variant
+     *
+     * @param variantId variant ID
+     * @param initialQuantity initial quantity
+     * @param locationId location ID
+     * @param minQuantity minimum quantity threshold
+     * @param maxQuantity maximum quantity threshold
+     * @param userId user creating the inventory
+     * @return created inventory
+     */
+    public Inventory createInventoryForVariant(UUID variantId, BigDecimal initialQuantity,
+                                                UUID locationId, BigDecimal minQuantity, BigDecimal maxQuantity,
+                                                UUID userId) {
+        UUID tenantId = getTenantIdAsUUID();
+
+        // Check if inventory already exists
+        if (inventoryRepository.existsByTenantIdAndVariantIdAndLocationId(tenantId, variantId, locationId)) {
+            throw new IllegalArgumentException(
+                    "Inventory already exists for variant " + variantId + " at location " + locationId);
+        }
+
+        // Create inventory using variant constructor
+        Inventory inventory = new Inventory(tenantId, variantId, locationId);
+        if (initialQuantity != null && initialQuantity.compareTo(BigDecimal.ZERO) > 0) {
+            inventory.setQuantityAvailable(initialQuantity);
+        }
+        inventory.setLevels(minQuantity, maxQuantity);
+        inventory = inventoryRepository.save(inventory);
+
+        // Create initial movement if quantity > 0
+        if (initialQuantity != null && initialQuantity.compareTo(BigDecimal.ZERO) > 0) {
+            createMovement(
+                    tenantId, variantId, MovementType.ENTRY, initialQuantity, locationId,
+                    BigDecimal.ZERO, initialQuantity,
+                    MovementReason.INITIAL, "Initial variant inventory setup",
+                    null, null, userId
+            );
+        }
+
+        return inventory;
+    }
+
+    /**
      * Adds quantity to inventory (IN movement)
      *
      * @param productId product ID
@@ -541,7 +584,7 @@ public class InventoryService {
                                 String referenceType, UUID referenceId, UUID userId) {
         // Save to old InventoryMovement table (legacy)
         InventoryMovement movement = new InventoryMovement(
-                tenantId, productId, type, quantity, locationId.toString(),
+                tenantId, productId, type, quantity, locationId,
                 quantityBefore, quantityAfter,
                 reason, notes, referenceType, referenceId, userId
         );

@@ -2,6 +2,7 @@ import { ApplicationConfig, provideZoneChangeDetection, LOCALE_ID, APP_INITIALIZ
 import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
@@ -59,6 +60,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
+    provideAnimationsAsync(),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     {

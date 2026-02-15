@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,14 +11,19 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTableModule } from '@angular/material/table';
+import { MatStepperModule } from '@angular/material/stepper';
+import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { VariantService } from '../../services/variant.service';
+import { LocationService } from '../../../estoque/services/location.service';
+import { TenantService } from '../../../../core/services/tenant.service';
 import {
   ProductType,
   ProductStatus,
   ProductCreateRequest,
   ProductUpdateRequest,
+  ProductAttribute,
   UNIT_OPTIONS,
   STATUS_LABELS,
   ProductDTO
@@ -26,6 +31,7 @@ import {
 import { Category } from '../../models/category.model';
 import { ProductVariant, VariantAttribute } from '../../models/variant.model';
 import { BomComponent, AddBomComponentRequest } from '../../models/composite.model';
+import { Location } from '../../../estoque/models/location.model';
 import { CompositeProductService } from '../../services/composite.service';
 import { VariantMatrixComponent } from '../variant-matrix/variant-matrix.component';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
@@ -40,17 +46,12 @@ interface BomComponentDraft {
 }
 
 /**
- * ProductFormComponent - Create/Edit product form
+ * ProductFormComponent - Create/Edit product form with 3-step wizard
  *
- * Features:
- * - Reactive form with validation
- * - Create mode (route: /produtos/novo)
- * - Edit mode (route: /produtos/:id/editar)
- * - Category dropdown (hierarchical)
- * - Unit of measure dropdown
- * - Status dropdown
- * - Price/Cost validation (>= 0)
- * - SKU uniqueness validation (backend)
+ * Steps:
+ * 1. Dados Gerais - Type, Name, SKU, Barcode, Description, Category, Status, Price, Cost, Unit, ControlsInventory
+ * 2. Estoque - Location, Initial Qty, Min, Max (visible when controlsInventory=true)
+ * 3. Atributos - Descriptive attributes + type-specific (variant attrs / BOM components)
  */
 @Component({
   selector: 'app-product-form',
@@ -68,14 +69,46 @@ interface BomComponentDraft {
     MatChipsModule,
     MatAutocompleteModule,
     MatTableModule,
+    MatStepperModule,
     VariantMatrixComponent
+  ],
+  providers: [
+    {
+      provide: STEPPER_GLOBAL_OPTIONS,
+      useValue: { showError: true }
+    }
   ],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss']
 })
 export class ProductFormComponent implements OnInit {
-  productForm!: FormGroup;
+  private _fb = inject(FormBuilder);
+
+  // Form groups for each stepper step (initialized eagerly for template binding)
+  generalForm: FormGroup = this._fb.group({
+    type: [ProductType.SIMPLE],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
+    sku: ['', [Validators.required, Validators.maxLength(100)]],
+    barcode: ['', Validators.maxLength(100)],
+    description: [''],
+    categoryId: ['', Validators.required],
+    price: [0, [Validators.required, Validators.min(0)]],
+    cost: [0, Validators.min(0)],
+    unit: ['UN', Validators.required],
+    controlsInventory: [true],
+    status: [ProductStatus.ACTIVE, Validators.required],
+    bomType: ['']
+  });
+
+  stockForm: FormGroup = this._fb.group({
+    locationId: [''],
+    initialQuantity: [0, Validators.min(0)],
+    minimumQuantity: [null],
+    maximumQuantity: [null]
+  });
+
   categories: Category[] = [];
+  locations: Location[] = [];
   isEditMode = false;
   productId: string | null = null;
   loading = false;
@@ -99,9 +132,12 @@ export class ProductFormComponent implements OnInit {
   searchingProducts = false;
   private productSearchSubject = new Subject<string>();
 
+  // Descriptive product attributes (key/value)
+  productAttributes: ProductAttribute[] = [];
+
   // Edit mode: existing data for type-specific products
-  existingVariants: ProductVariant[] = [];      // For VARIANT_PARENT (read-only in edit)
-  existingBomComponents: BomComponent[] = [];   // For COMPOSITE (editable in edit)
+  existingVariants: ProductVariant[] = [];
+  existingBomComponents: BomComponent[] = [];
   loadingTypeData = false;
 
   // Type labels for display
@@ -129,15 +165,19 @@ export class ProductFormComponent implements OnInit {
   readonly ProductType = ProductType;
 
   constructor(
-    private fb: FormBuilder,
     private productService: ProductService,
     private categoryService: CategoryService,
     private variantService: VariantService,
     private compositeService: CompositeProductService,
+    private locationService: LocationService,
+    private tenantService: TenantService,
     private feedbackService: FeedbackService,
     private route: ActivatedRoute,
     private router: Router
   ) {
+    // Set up form subscriptions
+    this.initForms();
+
     // Set up product search with debounce
     this.productSearchSubject.pipe(
       debounceTime(300),
@@ -151,7 +191,6 @@ export class ProductFormComponent implements OnInit {
       })
     ).subscribe({
       next: (results) => {
-        // Filter out composite products and already added components
         const addedIds = this.bomComponents.map(c => c.product.id);
         this.productSearchResults = results.content
           .filter(p => p.type !== ProductType.COMPOSITE && !addedIds.includes(p.id));
@@ -165,41 +204,25 @@ export class ProductFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.initForm();
     this.loadCategories();
+    this.loadLocations();
     this.checkEditMode();
   }
 
   /**
-   * Initializes reactive form
+   * Sets up form subscriptions (called in constructor after forms are created)
    */
-  initForm(): void {
-    this.productForm = this.fb.group({
-      type: [ProductType.SIMPLE],
-      name: ['', [Validators.required, Validators.maxLength(200)]],
-      sku: ['', [Validators.required, Validators.maxLength(100)]],
-      barcode: ['', Validators.maxLength(100)],
-      description: [''],
-      categoryId: ['', Validators.required],
-      price: [0, [Validators.required, Validators.min(0)]],
-      cost: [0, Validators.min(0)],
-      unit: ['UN', Validators.required],
-      controlsInventory: [true],
-      status: [ProductStatus.ACTIVE, Validators.required],
-      bomType: ['']
-    });
-
-    // Sync type form control with selectedProductType and handle type-specific logic
-    this.productForm.get('type')?.valueChanges.subscribe(value => {
+  initForms(): void {
+    // Sync type form control with selectedProductType
+    this.generalForm.get('type')?.valueChanges.subscribe(value => {
       if (value) {
         this.selectedProductType = value;
 
-        // Update bomType validation based on product type
-        const bomTypeControl = this.productForm.get('bomType');
+        const bomTypeControl = this.generalForm.get('bomType');
         if (value === ProductType.COMPOSITE) {
           bomTypeControl?.setValidators([Validators.required]);
           if (!bomTypeControl?.value) {
-            bomTypeControl?.setValue('VIRTUAL'); // Default to VIRTUAL
+            bomTypeControl?.setValue('VIRTUAL');
           }
         } else {
           bomTypeControl?.clearValidators();
@@ -207,7 +230,6 @@ export class ProductFormComponent implements OnInit {
         }
         bomTypeControl?.updateValueAndValidity();
 
-        // Initialize attributes array for VARIANT_PARENT
         if (value === ProductType.VARIANT_PARENT && this.variantAttributes.length === 0) {
           this.addAttribute();
         }
@@ -228,6 +250,23 @@ export class ProductFormComponent implements OnInit {
         this.error = 'Erro ao carregar categorias';
       }
     });
+  }
+
+  /**
+   * Loads locations for stock step dropdown
+   */
+  loadLocations(): void {
+    const tenantId = this.tenantService.getCurrentTenant();
+    if (tenantId) {
+      this.locationService.listAll(tenantId).subscribe({
+        next: (locations) => {
+          this.locations = locations;
+        },
+        error: (err) => {
+          console.error('Error loading locations:', err);
+        }
+      });
+    }
   }
 
   /**
@@ -254,11 +293,26 @@ export class ProductFormComponent implements OnInit {
         this.patchFormWithProduct(product);
         this.loading = false;
         this.loadTypeSpecificDataForEdit(product);
+        this.loadProductAttributes(id);
       },
       error: (err) => {
         this.error = 'Erro ao carregar produto: ' + (err.message || 'Erro desconhecido');
         this.loading = false;
         console.error('Error loading product:', err);
+      }
+    });
+  }
+
+  /**
+   * Loads descriptive attributes for edit mode
+   */
+  loadProductAttributes(productId: string): void {
+    this.productService.getAttributes(productId).subscribe({
+      next: (attrs) => {
+        this.productAttributes = attrs;
+      },
+      error: (err) => {
+        console.error('Error loading product attributes:', err);
       }
     });
   }
@@ -300,7 +354,7 @@ export class ProductFormComponent implements OnInit {
   patchFormWithProduct(product: ProductDTO): void {
     this.selectedProductType = product.type;
 
-    this.productForm.patchValue({
+    this.generalForm.patchValue({
       type: product.type,
       name: product.name,
       sku: product.sku,
@@ -315,16 +369,16 @@ export class ProductFormComponent implements OnInit {
       bomType: product.bomType || ''
     });
 
-    // Disable SKU in edit mode (cannot change)
-    this.productForm.get('sku')?.disable();
+    // Disable SKU in edit mode
+    this.generalForm.get('sku')?.disable();
   }
 
   /**
    * Submits form (create or update)
    */
   onSubmit(): void {
-    if (this.productForm.invalid) {
-      this.markFormGroupTouched(this.productForm);
+    if (this.generalForm.invalid) {
+      this.markFormGroupTouched(this.generalForm);
       return;
     }
 
@@ -339,35 +393,43 @@ export class ProductFormComponent implements OnInit {
    * Creates new product
    */
   createProduct(): void {
-    // For VARIANT_PARENT, validate attributes first
     if (this.selectedProductType === ProductType.VARIANT_PARENT) {
       if (!this.validateVariantAttributes()) {
         return;
       }
     }
 
-    // For COMPOSITE, validate BOM components first
     if (this.selectedProductType === ProductType.COMPOSITE) {
       if (!this.validateBomComponents()) {
         return;
       }
     }
 
-    const formValue = this.productForm.getRawValue();
+    const generalValue = this.generalForm.getRawValue();
+    const stockValue = this.stockForm.getRawValue();
 
     const request: ProductCreateRequest = {
-      type: formValue.type || ProductType.SIMPLE,
-      bomType: formValue.type === ProductType.COMPOSITE ? formValue.bomType : undefined,
-      name: formValue.name,
-      sku: formValue.sku,
-      barcode: formValue.barcode || undefined,
-      description: formValue.description || undefined,
-      categoryId: formValue.categoryId,
-      price: formValue.price,
-      cost: formValue.cost > 0 ? formValue.cost : undefined,
-      unit: formValue.unit,
-      controlsInventory: formValue.controlsInventory,
-      status: formValue.status
+      type: generalValue.type || ProductType.SIMPLE,
+      bomType: generalValue.type === ProductType.COMPOSITE ? generalValue.bomType : undefined,
+      name: generalValue.name,
+      sku: generalValue.sku,
+      barcode: generalValue.barcode || undefined,
+      description: generalValue.description || undefined,
+      categoryId: generalValue.categoryId,
+      price: generalValue.price,
+      cost: generalValue.cost > 0 ? generalValue.cost : undefined,
+      unit: generalValue.unit,
+      controlsInventory: generalValue.controlsInventory,
+      status: generalValue.status,
+      // Inventory fields
+      locationId: generalValue.controlsInventory && stockValue.locationId ? stockValue.locationId : undefined,
+      initialQuantity: generalValue.controlsInventory && stockValue.locationId ? (stockValue.initialQuantity || 0) : undefined,
+      minimumQuantity: generalValue.controlsInventory && stockValue.locationId && stockValue.minimumQuantity != null ? stockValue.minimumQuantity : undefined,
+      maximumQuantity: generalValue.controlsInventory && stockValue.locationId && stockValue.maximumQuantity != null ? stockValue.maximumQuantity : undefined,
+      // Descriptive attributes
+      attributes: this.productAttributes.filter(a => a.key && a.value).length > 0
+        ? this.productAttributes.filter(a => a.key && a.value)
+        : undefined
     };
 
     this.saving = true;
@@ -377,16 +439,13 @@ export class ProductFormComponent implements OnInit {
       next: (product) => {
         console.log('Product created:', product);
 
-        // If it's a variant parent product, store the ID and show variant matrix for generation
         if (this.selectedProductType === ProductType.VARIANT_PARENT) {
           this.createdProductId = product.id;
           this.saving = false;
-          // The VariantMatrixComponent will now be shown with pre-configured attributes
         } else if (this.selectedProductType === ProductType.COMPOSITE) {
-          // Save BOM components after composite product is created
           this.saveBomComponents(product.id);
         } else {
-          // Simple product - navigate back to list
+          this.feedbackService.showSuccess('Produto criado com sucesso!');
           this.router.navigate(['/produtos']);
         }
       },
@@ -404,26 +463,39 @@ export class ProductFormComponent implements OnInit {
   updateProduct(): void {
     if (!this.productId) return;
 
-    const formValue = this.productForm.value;
+    const generalValue = this.generalForm.value;
 
     const request: ProductUpdateRequest = {
-      name: formValue.name,
-      description: formValue.description || undefined,
-      categoryId: formValue.categoryId,
-      price: formValue.price,
-      cost: formValue.cost > 0 ? formValue.cost : undefined,
-      unit: formValue.unit,
-      controlsInventory: formValue.controlsInventory,
-      status: formValue.status
+      name: generalValue.name,
+      description: generalValue.description || undefined,
+      categoryId: generalValue.categoryId,
+      price: generalValue.price,
+      cost: generalValue.cost > 0 ? generalValue.cost : undefined,
+      unit: generalValue.unit,
+      controlsInventory: generalValue.controlsInventory,
+      status: generalValue.status
     };
 
     this.saving = true;
     this.error = null;
 
+    // Save product + attributes in parallel
     this.productService.update(this.productId, request).subscribe({
       next: (product) => {
-        console.log('Product updated:', product);
-        this.router.navigate(['/produtos']);
+        // Save attributes
+        const validAttrs = this.productAttributes.filter(a => a.key && a.value);
+        this.productService.saveAttributes(this.productId!, validAttrs).subscribe({
+          next: () => {
+            this.feedbackService.showSuccess('Produto atualizado com sucesso!');
+            this.router.navigate(['/produtos']);
+          },
+          error: (err) => {
+            // Product was saved, but attributes failed
+            console.error('Error saving attributes:', err);
+            this.feedbackService.showSuccess('Produto atualizado, mas houve erro ao salvar atributos.');
+            this.router.navigate(['/produtos']);
+          }
+        });
       },
       error: (err) => {
         this.saving = false;
@@ -441,7 +513,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Marks all form fields as touched (shows validation errors)
+   * Marks all form fields as touched
    */
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
@@ -470,16 +542,18 @@ export class ProductFormComponent implements OnInit {
   /**
    * Checks if field has error and is touched
    */
-  hasError(fieldName: string): boolean {
-    const field = this.productForm.get(fieldName);
+  hasError(fieldName: string, form?: FormGroup): boolean {
+    const f = form || this.generalForm;
+    const field = f.get(fieldName);
     return !!(field && field.invalid && field.touched);
   }
 
   /**
    * Gets error message for field
    */
-  getErrorMessage(fieldName: string): string {
-    const field = this.productForm.get(fieldName);
+  getErrorMessage(fieldName: string, form?: FormGroup): string {
+    const f = form || this.generalForm;
+    const field = f.get(fieldName);
     if (!field || !field.errors) return '';
 
     if (field.errors['required']) return 'Este campo é obrigatório';
@@ -495,22 +569,40 @@ export class ProductFormComponent implements OnInit {
   onVariantsGenerated(variants: ProductVariant[]): void {
     this.variantsGenerated = variants;
     console.log('Variants generated:', variants);
-
-    // Navigate to product list after variants are saved
     this.router.navigate(['/produtos']);
   }
 
   /**
-   * Handles product type change (kept for compatibility, logic moved to valueChanges subscription)
+   * Handles product type change
    */
   onProductTypeChange(event: any): void {
-    // Logic moved to initForm() valueChanges subscription
+    // Logic moved to initForms() valueChanges subscription
+  }
+
+  // ==================== Descriptive Product Attributes ====================
+
+  /**
+   * Adds new descriptive attribute (max 30)
+   */
+  addProductAttribute(): void {
+    if (this.productAttributes.length >= 30) {
+      this.feedbackService.showWarning('Máximo de 30 atributos permitidos');
+      return;
+    }
+    this.productAttributes.push({ key: '', value: '' });
+  }
+
+  /**
+   * Removes descriptive attribute
+   */
+  removeProductAttribute(index: number): void {
+    this.productAttributes.splice(index, 1);
   }
 
   // ==================== Variant Attribute Methods ====================
 
   /**
-   * Adds new attribute (max 3)
+   * Adds new variant attribute (max 3)
    */
   addAttribute(): void {
     if (this.variantAttributes.length >= 3) {
@@ -525,7 +617,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Removes attribute
+   * Removes variant attribute
    */
   removeAttribute(index: number): void {
     this.variantAttributes.splice(index, 1);
@@ -533,7 +625,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Adds value to attribute using input
+   * Adds value to variant attribute using input
    */
   addValueToAttribute(index: number, inputElement: HTMLInputElement): void {
     const attribute = this.variantAttributes[index];
@@ -569,7 +661,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Removes value from attribute
+   * Removes value from variant attribute
    */
   removeValue(attributeIndex: number, valueIndex: number): void {
     this.variantAttributes[attributeIndex].values.splice(valueIndex, 1);
@@ -621,7 +713,7 @@ export class ProductFormComponent implements OnInit {
    * Checks if can proceed with variant product creation
    */
   canCreateVariantProduct(): boolean {
-    return this.productForm.valid &&
+    return this.generalForm.valid &&
            this.variantAttributes.length > 0 &&
            this.variantAttributes.every(attr => attr.name && attr.values.length > 0) &&
            this.estimatedVariantCount > 0 &&
@@ -642,7 +734,6 @@ export class ProductFormComponent implements OnInit {
    * Adds product to BOM components
    */
   addBomComponent(product: ProductDTO): void {
-    // Check if already added
     if (this.bomComponents.some(c => c.product.id === product.id)) {
       this.feedbackService.showWarning('Este produto já foi adicionado');
       return;
@@ -653,7 +744,6 @@ export class ProductFormComponent implements OnInit {
       quantityRequired: 1
     });
 
-    // Clear search
     this.productSearchQuery = '';
     this.productSearchResults = [];
   }
@@ -697,7 +787,7 @@ export class ProductFormComponent implements OnInit {
    * Checks if can proceed with composite product creation
    */
   canCreateCompositeProduct(): boolean {
-    return this.productForm.valid && this.bomComponents.length > 0;
+    return this.generalForm.valid && this.bomComponents.length > 0;
   }
 
   /**
@@ -738,12 +828,11 @@ export class ProductFormComponent implements OnInit {
   // ==================== Edit Mode BOM Management ====================
 
   /**
-   * Adds BOM component in edit mode (saves to backend immediately)
+   * Adds BOM component in edit mode
    */
   addBomComponentInEdit(product: ProductDTO): void {
     if (!this.productId) return;
 
-    // Check if already added
     if (this.existingBomComponents.some(c => c.componentProductId === product.id)) {
       this.feedbackService.showWarning('Este produto já foi adicionado');
       return;
@@ -758,7 +847,6 @@ export class ProductFormComponent implements OnInit {
       next: (component) => {
         this.existingBomComponents.push(component);
         this.feedbackService.showSuccess('Componente adicionado');
-        // Clear search
         this.productSearchQuery = '';
         this.productSearchResults = [];
       },
@@ -827,5 +915,12 @@ export class ProductFormComponent implements OnInit {
    */
   getStatusLabel(status: string): string {
     return this.STATUS_LABELS[status as ProductStatus] || status;
+  }
+
+  /**
+   * Returns whether controls inventory checkbox is checked
+   */
+  get controlsInventory(): boolean {
+    return this.generalForm?.get('controlsInventory')?.value === true;
   }
 }

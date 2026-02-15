@@ -27,6 +27,7 @@
         <archunit.version>1.2.1</archunit.version>
         <testcontainers.version>1.19.8</testcontainers.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <skip.frontend>false</skip.frontend>
     </properties>
 
     <dependencies>
@@ -207,6 +208,7 @@
                     <workingDirectory>../frontend</workingDirectory>
                     <nodeVersion>v22.12.0</nodeVersion>
                     <npmVersion>10.9.0</npmVersion>
+                    <skip>${skip.frontend}</skip>
                 </configuration>
                 <executions>
                     <execution>

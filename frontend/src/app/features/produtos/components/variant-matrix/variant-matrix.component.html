@@ -105,6 +105,9 @@
             <th *ngFor="let attrName of getAttributeNames()">{{ attrName }}</th>
             <th>Preço</th>
             <th>Custo</th>
+            <th >Qtd Inicial</th>
+            <th >Mín</th>
+            <th >Máx</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -136,6 +139,33 @@
                 min="0"
                 class="form-control form-control-sm"
                 [(ngModel)]="variant.cost"
+              />
+            </td>
+            <td >
+              <input
+                type="number"
+                step="1"
+                min="0"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.initialQuantity"
+              />
+            </td>
+            <td >
+              <input
+                type="number"
+                step="1"
+                min="0"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.minimumQuantity"
+              />
+            </td>
+            <td >
+              <input
+                type="number"
+                step="1"
+                min="0"
+                class="form-control form-control-sm"
+                [(ngModel)]="variant.maximumQuantity"
               />
             </td>
             <td>

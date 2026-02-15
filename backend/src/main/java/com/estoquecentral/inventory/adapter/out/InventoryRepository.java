@@ -111,10 +111,10 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT i.* FROM inventory i
         WHERE i.tenant_id = :tenantId
-          AND i.minimum_quantity IS NOT NULL
-          AND i.minimum_quantity > 0
-          AND i.quantity_for_sale < i.minimum_quantity
-        ORDER BY (i.quantity_for_sale * 100.0 / i.minimum_quantity) ASC
+          AND i.min_quantity IS NOT NULL
+          AND i.min_quantity > 0
+          AND i.available_quantity < i.min_quantity
+        ORDER BY (i.available_quantity * 100.0 / i.min_quantity) ASC
         """)
     List<Inventory> findBelowMinimum(@Param("tenantId") UUID tenantId);
 
@@ -129,10 +129,10 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
         SELECT i.* FROM inventory i
         WHERE i.tenant_id = :tenantId
           AND i.location_id = :locationId
-          AND i.minimum_quantity IS NOT NULL
-          AND i.minimum_quantity > 0
-          AND i.quantity_for_sale < i.minimum_quantity
-        ORDER BY (i.quantity_for_sale * 100.0 / i.minimum_quantity) ASC
+          AND i.min_quantity IS NOT NULL
+          AND i.min_quantity > 0
+          AND i.available_quantity < i.min_quantity
+        ORDER BY (i.available_quantity * 100.0 / i.min_quantity) ASC
         """)
     List<Inventory> findBelowMinimumByLocation(
         @Param("tenantId") UUID tenantId,
@@ -147,9 +147,9 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT i.* FROM inventory i
         WHERE i.tenant_id = :tenantId
-          AND i.maximum_quantity IS NOT NULL
-          AND i.quantity_available >= i.maximum_quantity
-        ORDER BY i.quantity_available DESC
+          AND i.max_quantity IS NOT NULL
+          AND i.quantity >= i.max_quantity
+        ORDER BY i.quantity DESC
         """)
     List<Inventory> findAboveMaximum(@Param("tenantId") UUID tenantId);
 
@@ -162,8 +162,8 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT * FROM inventory
         WHERE tenant_id = :tenantId
-          AND quantity_for_sale <= 0
-        ORDER BY quantity_available ASC
+          AND available_quantity <= 0
+        ORDER BY quantity ASC
         """)
     List<Inventory> findOutOfStock(@Param("tenantId") UUID tenantId);
 
@@ -206,9 +206,9 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT COUNT(*) FROM inventory
         WHERE tenant_id = :tenantId
-          AND minimum_quantity IS NOT NULL
-          AND minimum_quantity > 0
-          AND quantity_for_sale < minimum_quantity
+          AND min_quantity IS NOT NULL
+          AND min_quantity > 0
+          AND available_quantity < min_quantity
         """)
     long countBelowMinimum(@Param("tenantId") UUID tenantId);
 
@@ -221,7 +221,7 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT COUNT(*) FROM inventory
         WHERE tenant_id = :tenantId
-          AND quantity_for_sale <= 0
+          AND available_quantity <= 0
         """)
     long countOutOfStock(@Param("tenantId") UUID tenantId);
 
@@ -234,7 +234,7 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
     @Query("""
         SELECT COUNT(*) FROM inventory
         WHERE location_id = :locationId
-          AND quantity_available > 0
+          AND quantity > 0
         """)
     long countByLocationIdWithAvailableStock(@Param("locationId") UUID locationId);
 
@@ -247,7 +247,7 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
      * @return total inventory value
      */
     @Query("""
-        SELECT COALESCE(SUM(i.quantity_available * COALESCE(pv.cost, p.cost)), 0)
+        SELECT COALESCE(SUM(i.quantity * COALESCE(pv.cost, p.cost)), 0)
         FROM inventory i
         LEFT JOIN products p ON i.product_id = p.id
         LEFT JOIN product_variants pv ON i.variant_id = pv.id
@@ -266,7 +266,7 @@ public interface InventoryRepository extends CrudRepository<Inventory, UUID> {
      * @return total inventory value
      */
     @Query("""
-        SELECT COALESCE(SUM(i.quantity_available * COALESCE(pv.cost, p.cost)), 0)
+        SELECT COALESCE(SUM(i.quantity * COALESCE(pv.cost, p.cost)), 0)
         FROM inventory i
         LEFT JOIN products p ON i.product_id = p.id
         LEFT JOIN product_variants pv ON i.variant_id = pv.id

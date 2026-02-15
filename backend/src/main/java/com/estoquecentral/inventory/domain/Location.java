@@ -1,16 +1,21 @@
 package com.estoquecentral.inventory.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Table("locations")
-public class Location {
+public class Location implements Persistable<UUID> {
 
     @Id
     private UUID id;
+
+    @Transient
+    private boolean isNew = false;
     private UUID tenantId;
     private String code;
     private String name;
@@ -47,6 +52,12 @@ public class Location {
         this.ativo = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     public void update(String name, String description, String address, String city,

@@ -1,47 +1,264 @@
+.location-list-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ==================== Header ====================
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 24px;
 
   h2 {
     margin: 0;
     font-size: 24px;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--mat-sys-on-surface);
   }
 }
 
-.card {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
-.table {
-  th {
-    font-weight: 600;
-    color: #374151;
+// ==================== Filters ====================
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+// ==================== Results Summary ====================
+.results-summary {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+    color: var(--mat-sys-on-surface-variant);
     font-size: 14px;
-    border-bottom: 2px solid #dee2e6;
-  }
 
-  td {
-    vertical-align: middle;
-  }
-
-  tbody tr:hover {
-    background-color: #f8f9fa;
+    strong {
+      color: var(--mat-sys-on-surface);
+    }
   }
 }
 
-.badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+// ==================== Loading & Error ====================
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  p {
+    margin-top: 16px;
+    color: var(--mat-sys-on-surface-variant);
+  }
 }
 
-.btn-group {
-  gap: 0.25rem;
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: var(--mat-sys-error-container);
+  border-radius: 8px;
+  gap: 16px;
+
+  .error-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    color: var(--mat-sys-on-error-container);
+    margin: 0;
+  }
 }
 
-.icon {
-  font-size: 1.2rem;
-  margin-right: 0.25rem;
+// ==================== Table ====================
+.table-container {
+  background: var(--mat-sys-surface);
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  overflow: hidden;
+}
+
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    color: var(--mat-sys-outline);
+  }
+
+  p {
+    margin: 8px 0;
+  }
+
+  .hint {
+    font-size: 14px;
+    color: var(--mat-sys-outline);
+    margin-bottom: 24px;
+  }
+}
+
+.location-table {
+  width: 100%;
+
+  .mat-mdc-header-cell {
+    font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border-bottom: none;
+  }
+
+  .mat-mdc-header-row {
+    border-bottom: 2px solid var(--mat-sys-outline-variant);
+  }
+
+  .mat-mdc-row {
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--mat-sys-surface-container);
+    }
+  }
+
+  .mat-mdc-cell {
+    color: var(--mat-sys-on-surface);
+    border-bottom: none;
+
+    strong {
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--mat-sys-on-surface-variant);
+      margin-top: 4px;
+    }
+
+    .text-muted {
+      color: var(--mat-sys-outline);
+    }
+  }
+
+  // Actions column
+  .mat-column-actions {
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    text-align: center;
+
+    &.mat-mdc-header-cell {
+      text-align: center;
+      padding-right: 16px;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+
+    .mat-mdc-icon-button {
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
+// ==================== Status Badges ====================
+.badge-success {
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+.badge-secondary {
+  background-color: var(--mat-sys-surface-container-high) !important;
+  color: var(--mat-sys-on-surface-variant) !important;
+}
+
+// ==================== Type Badges ====================
+.type-warehouse {
+  background-color: #e3f2fd !important;
+  color: #1565c0 !important;
+}
+
+.type-store {
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+.type-distribution {
+  background-color: #e0f7fa !important;
+  color: #00838f !important;
+}
+
+.type-supplier {
+  background-color: #fff3e0 !important;
+  color: #e65100 !important;
+}
+
+.type-customer {
+  background-color: var(--mat-sys-surface-container-high) !important;
+  color: var(--mat-sys-on-surface-variant) !important;
+}
+
+.type-transit {
+  background-color: #f3e5f5 !important;
+  color: #6a1b9a !important;
+}
+
+.type-quarantine {
+  background-color: #fce4ec !important;
+  color: #c62828 !important;
+}
+
+// ==================== Responsive ====================
+@media (max-width: 768px) {
+  .location-list-container {
+    padding: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-actions {
+      width: 100%;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
 }

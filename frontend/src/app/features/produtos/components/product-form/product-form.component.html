@@ -16,700 +16,844 @@
     <p>{{ error }}</p>
   </div>
 
-  <!-- Form -->
-  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" *ngIf="!loading" aria-labelledby="form-title">
-    <div class="form-sections">
-      <!-- Product Type (only in create mode) -->
-      <div class="form-section" *ngIf="!isEditMode">
-        <h3>Tipo de Produto</h3>
+  <!-- Stepper Form -->
+  <mat-stepper [linear]="!isEditMode" #stepper *ngIf="!loading" labelPosition="bottom" class="product-stepper">
 
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Tipo <span class="required">*</span></mat-label>
-            <mat-select
-              formControlName="type"
-              [disabled]="createdProductId !== null"
-              required
-              aria-label="Tipo de produto"
-              aria-required="true">
-              <mat-option *ngFor="let option of PRODUCT_TYPE_OPTIONS" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+    <!-- ==================== Step 1: Dados Gerais ==================== -->
+    <mat-step [stepControl]="generalForm" label="Dados Gerais">
+      <form [formGroup]="generalForm">
+        <div class="step-content">
+          <div class="form-sections">
 
-          <!-- BOM Type (only for COMPOSITE products) -->
-          <mat-form-field appearance="outline" class="full-width" *ngIf="selectedProductType === ProductType.COMPOSITE">
-            <mat-label>Tipo de Composição <span class="required">*</span></mat-label>
-            <mat-select
-              formControlName="bomType"
-              required
-              aria-label="Tipo de composição do kit"
-              aria-required="true">
-              <mat-option *ngFor="let option of BOM_TYPE_OPTIONS" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="productForm.get('bomType')?.hasError('required')">
-              Tipo de composição é obrigatório para kits
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
+            <!-- Product Type (only in create mode) -->
+            <div class="form-section" *ngIf="!isEditMode">
+              <h3>Tipo de Produto</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Tipo <span class="required">*</span></mat-label>
+                  <mat-select
+                    formControlName="type"
+                    [disabled]="createdProductId !== null"
+                    required
+                    aria-label="Tipo de produto"
+                    aria-required="true">
+                    <mat-option *ngFor="let option of PRODUCT_TYPE_OPTIONS" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
 
-      <!-- Product Type Display (read-only in edit mode) -->
-      <div class="form-section type-display-section" *ngIf="isEditMode">
-        <h3>Tipo de Produto</h3>
-        <div class="type-display">
-          <span class="type-badge" [ngClass]="'type-' + selectedProductType.toLowerCase()">
-            {{ TYPE_LABELS[selectedProductType] }}
-          </span>
-          <span class="type-hint">O tipo não pode ser alterado após a criação</span>
-        </div>
-      </div>
+                <!-- BOM Type (only for COMPOSITE products) -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="selectedProductType === ProductType.COMPOSITE">
+                  <mat-label>Tipo de Composição <span class="required">*</span></mat-label>
+                  <mat-select
+                    formControlName="bomType"
+                    required
+                    aria-label="Tipo de composição do kit"
+                    aria-required="true">
+                    <mat-option *ngFor="let option of BOM_TYPE_OPTIONS" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="generalForm.get('bomType')?.hasError('required')">
+                    Tipo de composição é obrigatório para kits
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
 
-      <!-- Basic Information -->
-      <div class="form-section">
-        <h3>Informações Básicas</h3>
-
-        <div class="form-row">
-          <!-- Name -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nome do Produto <span class="required">*</span></mat-label>
-            <input
-              matInput
-              formControlName="name"
-              placeholder="Ex: Notebook Dell Inspiron 15"
-              required
-              aria-label="Nome do Produto"
-              aria-required="true"
-              [attr.aria-describedby]="productForm.get('name')?.hasError('required') || productForm.get('name')?.hasError('maxlength') ? 'name-error' : null">
-            <mat-error id="name-error" role="alert" *ngIf="productForm.get('name')?.hasError('required')">
-              Nome é obrigatório
-            </mat-error>
-            <mat-error id="name-error" role="alert" *ngIf="productForm.get('name')?.hasError('maxlength')">
-              Máximo de 200 caracteres
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <!-- SKU -->
-          <mat-form-field appearance="outline">
-            <mat-label>SKU <span class="required">*</span></mat-label>
-            <input
-              matInput
-              formControlName="sku"
-              placeholder="Ex: NOTE-DELL-I15-001"
-              [readonly]="isEditMode"
-              required
-              aria-label="SKU - Código único do produto"
-              aria-required="true"
-              [attr.aria-describedby]="isEditMode ? 'sku-hint' : (productForm.get('sku')?.hasError('required') || productForm.get('sku')?.hasError('maxlength') ? 'sku-error' : null)">
-            <mat-hint id="sku-hint" *ngIf="isEditMode">SKU não pode ser alterado</mat-hint>
-            <mat-error id="sku-error" role="alert" *ngIf="productForm.get('sku')?.hasError('required')">
-              SKU é obrigatório
-            </mat-error>
-            <mat-error id="sku-error" role="alert" *ngIf="productForm.get('sku')?.hasError('maxlength')">
-              Máximo de 100 caracteres
-            </mat-error>
-          </mat-form-field>
-
-          <!-- Barcode -->
-          <mat-form-field appearance="outline">
-            <mat-label>Código de Barras</mat-label>
-            <input
-              matInput
-              formControlName="barcode"
-              placeholder="Ex: 7891234567890"
-              aria-label="Código de Barras"
-              [attr.aria-describedby]="productForm.get('barcode')?.hasError('maxlength') ? 'barcode-error' : null">
-            <mat-error id="barcode-error" role="alert" *ngIf="productForm.get('barcode')?.hasError('maxlength')">
-              Máximo de 100 caracteres
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <!-- Description -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Descrição</mat-label>
-            <textarea
-              matInput
-              formControlName="description"
-              placeholder="Descrição detalhada do produto..."
-              rows="3"
-              aria-label="Descrição detalhada do produto"></textarea>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <!-- Category & Classification -->
-      <div class="form-section">
-        <h3>Categoria e Classificação</h3>
-
-        <div class="form-row">
-          <!-- Category -->
-          <mat-form-field appearance="outline">
-            <mat-label>Categoria <span class="required">*</span></mat-label>
-            <mat-select
-              formControlName="categoryId"
-              required
-              aria-label="Categoria do produto"
-              aria-required="true"
-              [attr.aria-describedby]="productForm.get('categoryId')?.hasError('required') ? 'category-error' : null">
-              <mat-option value="">Selecione uma categoria</mat-option>
-              <mat-option *ngFor="let category of categories" [value]="category.id">
-                {{ category.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error id="category-error" role="alert" *ngIf="productForm.get('categoryId')?.hasError('required')">
-              Categoria é obrigatória
-            </mat-error>
-          </mat-form-field>
-
-          <!-- Status -->
-          <mat-form-field appearance="outline">
-            <mat-label>Status <span class="required">*</span></mat-label>
-            <mat-select
-              formControlName="status"
-              required
-              aria-label="Status do produto"
-              aria-required="true"
-              [attr.aria-describedby]="productForm.get('status')?.hasError('required') ? 'status-error' : null">
-              <mat-option *ngFor="let option of STATUS_OPTIONS" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-            <mat-error id="status-error" role="alert" *ngIf="productForm.get('status')?.hasError('required')">
-              Status é obrigatório
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <!-- Pricing -->
-      <div class="form-section">
-        <h3>Preços</h3>
-
-        <div class="form-row">
-          <!-- Price -->
-          <mat-form-field appearance="outline">
-            <mat-label>Preço de Venda <span class="required">*</span></mat-label>
-            <span matTextPrefix>R$&nbsp;</span>
-            <input
-              matInput
-              type="number"
-              step="0.01"
-              min="0"
-              formControlName="price"
-              placeholder="0,00"
-              required
-              aria-label="Preço de Venda"
-              aria-required="true"
-              [attr.aria-describedby]="productForm.get('price')?.hasError('required') || productForm.get('price')?.hasError('min') ? 'price-error' : null">
-            <mat-error id="price-error" role="alert" *ngIf="productForm.get('price')?.hasError('required')">
-              Preço é obrigatório
-            </mat-error>
-            <mat-error id="price-error" role="alert" *ngIf="productForm.get('price')?.hasError('min')">
-              Preço deve ser maior ou igual a 0
-            </mat-error>
-          </mat-form-field>
-
-          <!-- Cost -->
-          <mat-form-field appearance="outline">
-            <mat-label>Custo</mat-label>
-            <span matTextPrefix>R$&nbsp;</span>
-            <input
-              matInput
-              type="number"
-              step="0.01"
-              min="0"
-              formControlName="cost"
-              placeholder="0,00"
-              aria-label="Custo do produto"
-              [attr.aria-describedby]="productForm.get('cost')?.hasError('min') ? 'cost-error' : null">
-            <mat-error id="cost-error" role="alert" *ngIf="productForm.get('cost')?.hasError('min')">
-              Custo deve ser maior ou igual a 0
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <!-- Inventory -->
-      <div class="form-section">
-        <h3>Controle de Estoque</h3>
-
-        <div class="form-row">
-          <!-- Unit -->
-          <mat-form-field appearance="outline">
-            <mat-label>Unidade de Medida <span class="required">*</span></mat-label>
-            <mat-select
-              formControlName="unit"
-              required
-              aria-label="Unidade de Medida"
-              aria-required="true"
-              [attr.aria-describedby]="productForm.get('unit')?.hasError('required') ? 'unit-error' : null">
-              <mat-option *ngFor="let option of UNIT_OPTIONS" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-            <mat-error id="unit-error" role="alert" *ngIf="productForm.get('unit')?.hasError('required')">
-              Unidade é obrigatória
-            </mat-error>
-          </mat-form-field>
-
-          <!-- Controls Inventory -->
-          <div class="checkbox-group">
-            <mat-checkbox
-              formControlName="controlsInventory"
-              aria-label="Controla estoque do produto"
-              [attr.aria-describedby]="'controls-inventory-hint'">
-              Controla estoque
-            </mat-checkbox>
-            <span class="help-text" id="controls-inventory-hint">
-              Marque esta opção se este produto precisa ter controle de estoque.
-              Desmarque para produtos de serviço ou sem necessidade de controle.
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Existing Variants Section (VARIANT_PARENT in edit mode - read-only) -->
-      <div class="form-section existing-variants-section" *ngIf="isEditMode && selectedProductType === ProductType.VARIANT_PARENT">
-        <div class="section-header-with-action">
-          <h3>Variantes ({{ existingVariants.length }})</h3>
-        </div>
-
-        <p class="section-description">
-          As variantes deste produto são exibidas abaixo. Variantes não podem ser adicionadas ou removidas na edição.
-        </p>
-
-        <!-- Loading -->
-        <div class="loading-inline" *ngIf="loadingTypeData">
-          <div class="spinner-small"></div>
-          <span>Carregando variantes...</span>
-        </div>
-
-        <!-- Empty State -->
-        <div class="empty-components-message" *ngIf="!loadingTypeData && existingVariants.length === 0">
-          <mat-icon>view_module</mat-icon>
-          <p>Nenhuma variante cadastrada</p>
-        </div>
-
-        <!-- Variants Table -->
-        <div class="variants-table-container" *ngIf="!loadingTypeData && existingVariants.length > 0">
-          <table mat-table [dataSource]="existingVariants" class="variants-table">
-            <!-- SKU Column -->
-            <ng-container matColumnDef="sku">
-              <th mat-header-cell *matHeaderCellDef>SKU</th>
-              <td mat-cell *matCellDef="let variant">{{ variant.sku }}</td>
-            </ng-container>
-
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Nome</th>
-              <td mat-cell *matCellDef="let variant">{{ variant.name }}</td>
-            </ng-container>
-
-            <!-- Attributes Column -->
-            <ng-container matColumnDef="attributes">
-              <th mat-header-cell *matHeaderCellDef>Atributos</th>
-              <td mat-cell *matCellDef="let variant">
-                <span class="attributes-text">{{ formatVariantAttributes(variant) }}</span>
-              </td>
-            </ng-container>
-
-            <!-- Price Column -->
-            <ng-container matColumnDef="price">
-              <th mat-header-cell *matHeaderCellDef>Preço</th>
-              <td mat-cell *matCellDef="let variant">
-                {{ variant.price ? ('R$ ' + (variant.price | number:'1.2-2')) : '-' }}
-              </td>
-            </ng-container>
-
-            <!-- Status Column -->
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
-              <td mat-cell *matCellDef="let variant">
-                <span class="variant-status" [ngClass]="'status-' + variant.status.toLowerCase()">
-                  {{ getStatusLabel(variant.status) }}
+            <!-- Product Type Display (read-only in edit mode) -->
+            <div class="form-section type-display-section" *ngIf="isEditMode">
+              <h3>Tipo de Produto</h3>
+              <div class="type-display">
+                <span class="type-badge" [ngClass]="'type-' + selectedProductType.toLowerCase()">
+                  {{ TYPE_LABELS[selectedProductType] }}
                 </span>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="['sku', 'name', 'attributes', 'price', 'status']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['sku', 'name', 'attributes', 'price', 'status'];"></tr>
-          </table>
-        </div>
-      </div>
-
-      <!-- Existing BOM Components Section (COMPOSITE in edit mode - editable) -->
-      <div class="form-section existing-bom-section" *ngIf="isEditMode && selectedProductType === ProductType.COMPOSITE">
-        <div class="section-header-with-action">
-          <h3>Componentes do Kit ({{ existingBomComponents.length }})</h3>
-        </div>
-
-        <p class="section-description">
-          Gerencie os componentes deste kit. Você pode adicionar, remover ou alterar as quantidades.
-        </p>
-
-        <!-- Loading -->
-        <div class="loading-inline" *ngIf="loadingTypeData">
-          <div class="spinner-small"></div>
-          <span>Carregando componentes...</span>
-        </div>
-
-        <!-- Product Search to Add -->
-        <div class="component-search" *ngIf="!loadingTypeData">
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Buscar produto para adicionar</mat-label>
-            <input
-              matInput
-              type="text"
-              [(ngModel)]="productSearchQuery"
-              [ngModelOptions]="{standalone: true}"
-              (ngModelChange)="onProductSearch($event)"
-              [matAutocomplete]="editProductAuto"
-              placeholder="Digite o nome ou SKU do produto...">
-            <mat-icon matSuffix>search</mat-icon>
-            <mat-autocomplete #editProductAuto="matAutocomplete" (optionSelected)="addBomComponentInEdit($event.option.value)">
-              <mat-option *ngFor="let product of productSearchResults" [value]="product">
-                <div class="product-option">
-                  <span class="product-name">{{ product.name }}</span>
-                  <span class="product-sku">SKU: {{ product.sku }}</span>
-                  <span class="product-price">R$ {{ product.price | number:'1.2-2' }}</span>
-                </div>
-              </mat-option>
-              <mat-option *ngIf="searchingProducts" disabled>
-                <div class="searching-indicator">
-                  <span>Buscando...</span>
-                </div>
-              </mat-option>
-              <mat-option *ngIf="!searchingProducts && productSearchQuery.length >= 2 && productSearchResults.length === 0" disabled>
-                <span>Nenhum produto encontrado</span>
-              </mat-option>
-            </mat-autocomplete>
-            <mat-hint>Digite pelo menos 2 caracteres para buscar</mat-hint>
-          </mat-form-field>
-        </div>
-
-        <!-- Existing Components List -->
-        <div class="components-list" *ngIf="!loadingTypeData && existingBomComponents.length > 0">
-          <h4>Componentes adicionados</h4>
-
-          <div class="component-card" *ngFor="let component of existingBomComponents">
-            <div class="component-info">
-              <span class="component-name">{{ component.componentName }}</span>
-              <span class="component-sku">SKU: {{ component.componentSku }}</span>
+                <span class="type-hint">O tipo não pode ser alterado após a criação</span>
+              </div>
             </div>
 
-            <div class="component-quantity">
-              <mat-form-field appearance="outline" class="quantity-field">
-                <mat-label>Qtd</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="1"
-                  step="1"
-                  [value]="component.quantityRequired"
-                  (change)="updateBomComponentInEdit(component, $any($event.target).value)">
-              </mat-form-field>
-              <span class="component-unit">{{ component.unit }}</span>
+            <!-- Basic Information -->
+            <div class="form-section">
+              <h3>Informações Básicas</h3>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nome do Produto <span class="required">*</span></mat-label>
+                  <input
+                    matInput
+                    formControlName="name"
+                    placeholder="Ex: Notebook Dell Inspiron 15"
+                    required
+                    aria-label="Nome do Produto"
+                    aria-required="true">
+                  <mat-error *ngIf="generalForm.get('name')?.hasError('required')">
+                    Nome é obrigatório
+                  </mat-error>
+                  <mat-error *ngIf="generalForm.get('name')?.hasError('maxlength')">
+                    Máximo de 200 caracteres
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>SKU <span class="required">*</span></mat-label>
+                  <input
+                    matInput
+                    formControlName="sku"
+                    placeholder="Ex: NOTE-DELL-I15-001"
+                    [readonly]="isEditMode"
+                    required
+                    aria-label="SKU - Código único do produto"
+                    aria-required="true">
+                  <mat-hint *ngIf="isEditMode">SKU não pode ser alterado</mat-hint>
+                  <mat-error *ngIf="generalForm.get('sku')?.hasError('required')">
+                    SKU é obrigatório
+                  </mat-error>
+                  <mat-error *ngIf="generalForm.get('sku')?.hasError('maxlength')">
+                    Máximo de 100 caracteres
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Código de Barras</mat-label>
+                  <input
+                    matInput
+                    formControlName="barcode"
+                    placeholder="Ex: 7891234567890"
+                    aria-label="Código de Barras">
+                  <mat-error *ngIf="generalForm.get('barcode')?.hasError('maxlength')">
+                    Máximo de 100 caracteres
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Descrição</mat-label>
+                  <textarea
+                    matInput
+                    formControlName="description"
+                    placeholder="Descrição detalhada do produto..."
+                    rows="3"
+                    aria-label="Descrição detalhada do produto"></textarea>
+                </mat-form-field>
+              </div>
             </div>
 
-            <button
-              mat-icon-button
-              type="button"
-              color="warn"
-              (click)="removeBomComponentInEdit(component)"
-              title="Remover componente">
-              <mat-icon>delete</mat-icon>
-            </button>
+            <!-- Category & Classification -->
+            <div class="form-section">
+              <h3>Categoria e Classificação</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Categoria <span class="required">*</span></mat-label>
+                  <mat-select
+                    formControlName="categoryId"
+                    required
+                    aria-label="Categoria do produto"
+                    aria-required="true">
+                    <mat-option value="">Selecione uma categoria</mat-option>
+                    <mat-option *ngFor="let category of categories" [value]="category.id">
+                      {{ category.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="generalForm.get('categoryId')?.hasError('required')">
+                    Categoria é obrigatória
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Status <span class="required">*</span></mat-label>
+                  <mat-select
+                    formControlName="status"
+                    required
+                    aria-label="Status do produto"
+                    aria-required="true">
+                    <mat-option *ngFor="let option of STATUS_OPTIONS" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="generalForm.get('status')?.hasError('required')">
+                    Status é obrigatório
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="form-section">
+              <h3>Preços</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Preço de Venda <span class="required">*</span></mat-label>
+                  <span matTextPrefix>R$&nbsp;</span>
+                  <input
+                    matInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    formControlName="price"
+                    placeholder="0,00"
+                    required
+                    aria-label="Preço de Venda"
+                    aria-required="true">
+                  <mat-error *ngIf="generalForm.get('price')?.hasError('required')">
+                    Preço é obrigatório
+                  </mat-error>
+                  <mat-error *ngIf="generalForm.get('price')?.hasError('min')">
+                    Preço deve ser maior ou igual a 0
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Custo</mat-label>
+                  <span matTextPrefix>R$&nbsp;</span>
+                  <input
+                    matInput
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    formControlName="cost"
+                    placeholder="0,00"
+                    aria-label="Custo do produto">
+                  <mat-error *ngIf="generalForm.get('cost')?.hasError('min')">
+                    Custo deve ser maior ou igual a 0
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Inventory Control -->
+            <div class="form-section">
+              <h3>Controle de Estoque</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Unidade de Medida <span class="required">*</span></mat-label>
+                  <mat-select
+                    formControlName="unit"
+                    required
+                    aria-label="Unidade de Medida"
+                    aria-required="true">
+                    <mat-option *ngFor="let option of UNIT_OPTIONS" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="generalForm.get('unit')?.hasError('required')">
+                    Unidade é obrigatória
+                  </mat-error>
+                </mat-form-field>
+
+                <div class="checkbox-group">
+                  <mat-checkbox
+                    formControlName="controlsInventory"
+                    aria-label="Controla estoque do produto">
+                    Controla estoque
+                  </mat-checkbox>
+                  <span class="help-text">
+                    Marque esta opção se este produto precisa ter controle de estoque.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Step 1 Actions -->
+          <div class="step-actions">
+            <button mat-stroked-button type="button" (click)="cancel()">Cancelar</button>
+            <button mat-raised-button color="primary" matStepperNext type="button">Próximo</button>
           </div>
         </div>
+      </form>
+    </mat-step>
 
-        <!-- Empty State -->
-        <div class="empty-components-message" *ngIf="!loadingTypeData && existingBomComponents.length === 0">
-          <mat-icon>inventory_2</mat-icon>
-          <p>Nenhum componente adicionado. Use a busca acima para adicionar produtos ao kit.</p>
-        </div>
-      </div>
+    <!-- ==================== Step 2: Estoque ==================== -->
+    <mat-step [stepControl]="stockForm" label="Estoque" [optional]="true">
+      <form [formGroup]="stockForm">
+        <div class="step-content">
 
-      <!-- BOM Components Section (only for COMPOSITE in create mode) -->
-      <div class="form-section bom-components-section" *ngIf="!isEditMode && selectedProductType === ProductType.COMPOSITE">
-        <div class="section-header-with-action">
-          <h3>Componentes do Kit (BOM)</h3>
-        </div>
+          <!-- Stock disabled message -->
+          <div class="stock-disabled-message" *ngIf="!controlsInventory">
+            <mat-icon>info</mat-icon>
+            <p>O controle de estoque está desabilitado para este produto. Ative a opção "Controla estoque" no passo anterior para definir estoque inicial.</p>
+          </div>
 
-        <p class="section-description">
-          Adicione os produtos que compõem este kit. Pesquise pelo nome ou SKU e defina a quantidade de cada componente.
-        </p>
+          <!-- VARIANT_PARENT: only location, qty/min/max per variant in the matrix -->
+          <div class="form-sections" *ngIf="controlsInventory && selectedProductType === ProductType.VARIANT_PARENT">
+            <div class="form-section">
+              <h3>Localização do Estoque</h3>
+              <p class="section-description">
+                Selecione a localização onde as variantes serão armazenadas. A quantidade inicial, mínimo e máximo serão definidos por variante no próximo passo.
+              </p>
 
-        <!-- Product Search -->
-        <div class="component-search">
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Buscar produto para adicionar</mat-label>
-            <input
-              matInput
-              type="text"
-              [(ngModel)]="productSearchQuery"
-              [ngModelOptions]="{standalone: true}"
-              (ngModelChange)="onProductSearch($event)"
-              [matAutocomplete]="productAuto"
-              placeholder="Digite o nome ou SKU do produto...">
-            <mat-icon matSuffix>search</mat-icon>
-            <mat-autocomplete #productAuto="matAutocomplete" (optionSelected)="addBomComponent($event.option.value)">
-              <mat-option *ngFor="let product of productSearchResults" [value]="product">
-                <div class="product-option">
-                  <span class="product-name">{{ product.name }}</span>
-                  <span class="product-sku">SKU: {{ product.sku }}</span>
-                  <span class="product-price">R$ {{ product.price | number:'1.2-2' }}</span>
-                </div>
-              </mat-option>
-              <mat-option *ngIf="searchingProducts" disabled>
-                <div class="searching-indicator">
-                  <span>Buscando...</span>
-                </div>
-              </mat-option>
-              <mat-option *ngIf="!searchingProducts && productSearchQuery.length >= 2 && productSearchResults.length === 0" disabled>
-                <span>Nenhum produto encontrado</span>
-              </mat-option>
-            </mat-autocomplete>
-            <mat-hint>Digite pelo menos 2 caracteres para buscar</mat-hint>
-          </mat-form-field>
-        </div>
-
-        <!-- Components List -->
-        <div class="components-list" *ngIf="bomComponents.length > 0">
-          <h4>Componentes adicionados ({{ bomComponents.length }})</h4>
-
-          <div class="component-card" *ngFor="let component of bomComponents; let i = index">
-            <div class="component-info">
-              <span class="component-name">{{ component.product.name }}</span>
-              <span class="component-sku">SKU: {{ component.product.sku }}</span>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Localização</mat-label>
+                  <mat-select
+                    formControlName="locationId"
+                    aria-label="Localização do estoque">
+                    <mat-option value="">Selecione uma localização</mat-option>
+                    <mat-option *ngFor="let location of locations" [value]="location.id">
+                      {{ location.name }} ({{ location.code }})
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint>Selecione onde o estoque será armazenado</mat-hint>
+                </mat-form-field>
+              </div>
             </div>
+          </div>
 
-            <div class="component-quantity">
-              <mat-form-field appearance="outline" class="quantity-field">
-                <mat-label>Qtd</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="1"
-                  step="1"
-                  [(ngModel)]="component.quantityRequired"
-                  [ngModelOptions]="{standalone: true}"
-                  (ngModelChange)="updateComponentQuantity(i, $event)">
-              </mat-form-field>
-              <span class="component-unit">{{ component.product.unit }}</span>
+          <!-- SIMPLE/COMPOSITE: all stock fields -->
+          <div class="form-sections" *ngIf="controlsInventory && selectedProductType !== ProductType.VARIANT_PARENT">
+            <div class="form-section">
+              <h3>Estoque Inicial</h3>
+              <p class="section-description">
+                Selecione a localização e defina o estoque inicial para este produto. Você pode pular este passo e configurar depois.
+              </p>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Localização</mat-label>
+                  <mat-select
+                    formControlName="locationId"
+                    aria-label="Localização do estoque">
+                    <mat-option value="">Selecione uma localização (opcional)</mat-option>
+                    <mat-option *ngFor="let location of locations" [value]="location.id">
+                      {{ location.name }} ({{ location.code }})
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint>Selecione onde o estoque será armazenado</mat-hint>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Quantidade Inicial</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    step="1"
+                    min="0"
+                    formControlName="initialQuantity"
+                    placeholder="0"
+                    aria-label="Quantidade inicial de estoque">
+                  <mat-error *ngIf="stockForm.get('initialQuantity')?.hasError('min')">
+                    Quantidade deve ser maior ou igual a 0
+                  </mat-error>
+                </mat-form-field>
+
+                <div></div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Estoque Mínimo</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    step="1"
+                    min="0"
+                    formControlName="minimumQuantity"
+                    placeholder="Opcional"
+                    aria-label="Quantidade mínima de estoque">
+                  <mat-hint>Alerta quando estoque ficar abaixo</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Estoque Máximo</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    step="1"
+                    min="0"
+                    formControlName="maximumQuantity"
+                    placeholder="Opcional"
+                    aria-label="Quantidade máxima de estoque">
+                  <mat-hint>Alerta quando estoque ultrapassar</mat-hint>
+                </mat-form-field>
+              </div>
             </div>
+          </div>
 
-            <button
-              mat-icon-button
-              type="button"
-              color="warn"
-              (click)="removeBomComponent(i)"
-              title="Remover componente">
-              <mat-icon>delete</mat-icon>
-            </button>
+          <!-- Step 2 Actions -->
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious type="button">Voltar</button>
+            <button mat-raised-button color="primary" matStepperNext type="button">Próximo</button>
           </div>
         </div>
+      </form>
+    </mat-step>
 
-        <!-- Empty State -->
-        <div class="empty-components-message" *ngIf="bomComponents.length === 0">
-          <mat-icon>inventory_2</mat-icon>
-          <p>Nenhum componente adicionado. Use a busca acima para adicionar produtos ao kit.</p>
-        </div>
+    <!-- ==================== Step 3: Atributos ==================== -->
+    <mat-step label="Atributos" [optional]="true">
+      <div class="step-content">
+        <div class="form-sections">
 
-        <!-- Components Summary -->
-        <div class="components-summary" *ngIf="bomComponents.length > 0">
-          <mat-icon>info</mat-icon>
-          <span>
-            Este kit terá <strong>{{ bomComponents.length }}</strong> componente(s).
-            <span *ngIf="productForm.get('bomType')?.value === 'VIRTUAL'">
-              O estoque será calculado automaticamente com base nos componentes.
-            </span>
-            <span *ngIf="productForm.get('bomType')?.value === 'PHYSICAL'">
-              O kit terá controle de estoque próprio (pré-montado).
-            </span>
-          </span>
-        </div>
-      </div>
-
-      <!-- Variant Attributes Section (only for VARIANT_PARENT in create mode, before product is saved) -->
-      <div class="form-section variant-attributes-section" *ngIf="!isEditMode && selectedProductType === ProductType.VARIANT_PARENT && !createdProductId">
-        <div class="section-header-with-action">
-          <h3>Atributos de Variação</h3>
-          <button
-            mat-stroked-button
-            type="button"
-            color="primary"
-            (click)="addAttribute()"
-            [disabled]="variantAttributes.length >= 3">
-            <mat-icon>add</mat-icon>
-            Adicionar Atributo
-          </button>
-        </div>
-
-        <p class="section-description">
-          Defina os atributos (ex: Cor, Tamanho) e seus valores possíveis. As variantes serão geradas a partir das combinações.
-          <strong>Máximo: 3 atributos, 100 variantes.</strong>
-        </p>
-
-        <!-- Attributes List -->
-        <div class="attributes-list">
-          <div *ngFor="let attribute of variantAttributes; let i = index" class="attribute-card">
-            <div class="attribute-header">
-              <mat-form-field appearance="outline" class="attribute-name-field">
-                <mat-label>Nome do Atributo <span class="required">*</span></mat-label>
-                <input
-                  matInput
-                  [(ngModel)]="attribute.name"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="Ex: Cor, Tamanho, Voltagem..."
-                  (ngModelChange)="calculateEstimatedVariants()">
-              </mat-form-field>
-
+          <!-- Descriptive Attributes (SIMPLE and VARIANT_PARENT) -->
+          <div class="form-section descriptive-attributes-section"
+               *ngIf="selectedProductType === ProductType.SIMPLE || selectedProductType === ProductType.VARIANT_PARENT">
+            <div class="section-header-with-action">
+              <h3>Atributos Descritivos</h3>
               <button
-                mat-icon-button
+                mat-stroked-button
                 type="button"
-                color="warn"
-                (click)="removeAttribute(i)"
-                title="Remover Atributo"
-                class="remove-attribute-btn">
-                <mat-icon>delete</mat-icon>
+                color="primary"
+                (click)="addProductAttribute()"
+                [disabled]="productAttributes.length >= 30">
+                <mat-icon>add</mat-icon>
+                Adicionar Atributo
               </button>
             </div>
 
-            <div class="attribute-values-section">
-              <label class="values-label">Valores:</label>
+            <p class="section-description">
+              Adicione informações descritivas ao produto como especificações técnicas (ex: Memória RAM: 8GB, Material: Algodão).
+            </p>
 
-              <div class="values-input-row">
-                <mat-form-field appearance="outline" class="value-input-field">
-                  <mat-label>Adicionar valor</mat-label>
+            <!-- Attributes List -->
+            <div class="descriptive-attributes-list" *ngIf="productAttributes.length > 0">
+              <div *ngFor="let attr of productAttributes; let i = index" class="descriptive-attribute-row">
+                <mat-form-field appearance="outline" class="attr-key-field">
+                  <mat-label>Chave</mat-label>
                   <input
                     matInput
-                    #valueInput
-                    placeholder="Digite e pressione Enter"
-                    [disabled]="!attribute.name"
-                    (keydown)="onValueInputKeydown($event, i, valueInput)">
-                  <mat-hint *ngIf="!attribute.name">Defina o nome do atributo primeiro</mat-hint>
+                    [(ngModel)]="attr.key"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="Ex: Memória RAM">
                 </mat-form-field>
+
+                <mat-form-field appearance="outline" class="attr-value-field">
+                  <mat-label>Valor</mat-label>
+                  <input
+                    matInput
+                    [(ngModel)]="attr.value"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="Ex: 8GB">
+                </mat-form-field>
+
                 <button
-                  mat-stroked-button
+                  mat-icon-button
                   type="button"
-                  (click)="addValueToAttribute(i, valueInput)"
-                  [disabled]="!attribute.name">
-                  <mat-icon>add</mat-icon>
-                  Adicionar
+                  color="warn"
+                  (click)="removeProductAttribute(i)"
+                  title="Remover atributo">
+                  <mat-icon>delete</mat-icon>
                 </button>
               </div>
+            </div>
 
-              <!-- Values Chips -->
-              <div class="values-chips" *ngIf="attribute.values.length > 0">
-                <span *ngFor="let value of attribute.values; let vi = index" class="value-chip">
-                  {{ value }}
-                  <button type="button" class="chip-remove-btn" (click)="removeValue(i, vi)" title="Remover valor">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </span>
-              </div>
-
-              <p class="empty-values-message" *ngIf="attribute.values.length === 0 && attribute.name">
-                Nenhum valor adicionado. Adicione pelo menos um valor.
-              </p>
+            <!-- Empty State -->
+            <div class="empty-components-message" *ngIf="productAttributes.length === 0">
+              <mat-icon>label</mat-icon>
+              <p>Nenhum atributo descritivo adicionado. Clique em "Adicionar Atributo" para começar.</p>
             </div>
           </div>
 
-          <p class="empty-attributes-message" *ngIf="variantAttributes.length === 0">
-            Nenhum atributo definido. Clique em "Adicionar Atributo" para começar.
-          </p>
+          <!-- Variant Attributes Section (VARIANT_PARENT in create mode, before product is saved) -->
+          <div class="form-section variant-attributes-section" *ngIf="!isEditMode && selectedProductType === ProductType.VARIANT_PARENT && !createdProductId">
+            <div class="section-header-with-action">
+              <h3>Atributos de Variação</h3>
+              <button
+                mat-stroked-button
+                type="button"
+                color="primary"
+                (click)="addAttribute()"
+                [disabled]="variantAttributes.length >= 3">
+                <mat-icon>add</mat-icon>
+                Adicionar Atributo
+              </button>
+            </div>
+
+            <p class="section-description">
+              Defina os atributos (ex: Cor, Tamanho) e seus valores possíveis. As variantes serão geradas a partir das combinações.
+              <strong>Máximo: 3 atributos, 100 variantes.</strong>
+            </p>
+
+            <!-- Attributes List -->
+            <div class="attributes-list">
+              <div *ngFor="let attribute of variantAttributes; let i = index" class="attribute-card">
+                <div class="attribute-header">
+                  <mat-form-field appearance="outline" class="attribute-name-field">
+                    <mat-label>Nome do Atributo <span class="required">*</span></mat-label>
+                    <input
+                      matInput
+                      [(ngModel)]="attribute.name"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Ex: Cor, Tamanho, Voltagem..."
+                      (ngModelChange)="calculateEstimatedVariants()">
+                  </mat-form-field>
+
+                  <button
+                    mat-icon-button
+                    type="button"
+                    color="warn"
+                    (click)="removeAttribute(i)"
+                    title="Remover Atributo"
+                    class="remove-attribute-btn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+
+                <div class="attribute-values-section">
+                  <label class="values-label">Valores:</label>
+
+                  <div class="values-input-row">
+                    <mat-form-field appearance="outline" class="value-input-field">
+                      <mat-label>Adicionar valor</mat-label>
+                      <input
+                        matInput
+                        #valueInput
+                        placeholder="Digite e pressione Enter"
+                        [disabled]="!attribute.name"
+                        (keydown)="onValueInputKeydown($event, i, valueInput)">
+                      <mat-hint *ngIf="!attribute.name">Defina o nome do atributo primeiro</mat-hint>
+                    </mat-form-field>
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      (click)="addValueToAttribute(i, valueInput)"
+                      [disabled]="!attribute.name">
+                      <mat-icon>add</mat-icon>
+                      Adicionar
+                    </button>
+                  </div>
+
+                  <!-- Values Chips -->
+                  <div class="values-chips" *ngIf="attribute.values.length > 0">
+                    <span *ngFor="let value of attribute.values; let vi = index" class="value-chip">
+                      {{ value }}
+                      <button type="button" class="chip-remove-btn" (click)="removeValue(i, vi)" title="Remover valor">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </span>
+                  </div>
+
+                  <p class="empty-values-message" *ngIf="attribute.values.length === 0 && attribute.name">
+                    Nenhum valor adicionado. Adicione pelo menos um valor.
+                  </p>
+                </div>
+              </div>
+
+              <p class="empty-attributes-message" *ngIf="variantAttributes.length === 0">
+                Nenhum atributo definido. Clique em "Adicionar Atributo" para começar.
+              </p>
+            </div>
+
+            <!-- Estimated Variants Counter -->
+            <div class="estimated-variants-counter" *ngIf="estimatedVariantCount > 0">
+              <mat-icon [class.warning-icon]="estimatedVariantCount > 100">info</mat-icon>
+              <span>
+                Variantes que serão geradas: <strong [class.warning-text]="estimatedVariantCount > 100">{{ estimatedVariantCount }}</strong>
+                <span class="warning-hint" *ngIf="estimatedVariantCount > 100"> (Máximo permitido: 100)</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Existing Variants Section (VARIANT_PARENT in edit mode - read-only) -->
+          <div class="form-section existing-variants-section" *ngIf="isEditMode && selectedProductType === ProductType.VARIANT_PARENT">
+            <div class="section-header-with-action">
+              <h3>Variantes ({{ existingVariants.length }})</h3>
+            </div>
+
+            <p class="section-description">
+              As variantes deste produto são exibidas abaixo. Variantes não podem ser adicionadas ou removidas na edição.
+            </p>
+
+            <div class="loading-inline" *ngIf="loadingTypeData">
+              <div class="spinner-small"></div>
+              <span>Carregando variantes...</span>
+            </div>
+
+            <div class="empty-components-message" *ngIf="!loadingTypeData && existingVariants.length === 0">
+              <mat-icon>view_module</mat-icon>
+              <p>Nenhuma variante cadastrada</p>
+            </div>
+
+            <div class="variants-table-container" *ngIf="!loadingTypeData && existingVariants.length > 0">
+              <table mat-table [dataSource]="existingVariants" class="variants-table">
+                <ng-container matColumnDef="sku">
+                  <th mat-header-cell *matHeaderCellDef>SKU</th>
+                  <td mat-cell *matCellDef="let variant">{{ variant.sku }}</td>
+                </ng-container>
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Nome</th>
+                  <td mat-cell *matCellDef="let variant">{{ variant.name }}</td>
+                </ng-container>
+                <ng-container matColumnDef="attributes">
+                  <th mat-header-cell *matHeaderCellDef>Atributos</th>
+                  <td mat-cell *matCellDef="let variant">
+                    <span class="attributes-text">{{ formatVariantAttributes(variant) }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="price">
+                  <th mat-header-cell *matHeaderCellDef>Preço</th>
+                  <td mat-cell *matCellDef="let variant">
+                    {{ variant.price ? ('R$ ' + (variant.price | number:'1.2-2')) : '-' }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let variant">
+                    <span class="variant-status" [ngClass]="'status-' + variant.status.toLowerCase()">
+                      {{ getStatusLabel(variant.status) }}
+                    </span>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="['sku', 'name', 'attributes', 'price', 'status']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['sku', 'name', 'attributes', 'price', 'status'];"></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Existing BOM Components Section (COMPOSITE in edit mode - editable) -->
+          <div class="form-section existing-bom-section" *ngIf="isEditMode && selectedProductType === ProductType.COMPOSITE">
+            <div class="section-header-with-action">
+              <h3>Componentes do Kit ({{ existingBomComponents.length }})</h3>
+            </div>
+
+            <p class="section-description">
+              Gerencie os componentes deste kit. Você pode adicionar, remover ou alterar as quantidades.
+            </p>
+
+            <div class="loading-inline" *ngIf="loadingTypeData">
+              <div class="spinner-small"></div>
+              <span>Carregando componentes...</span>
+            </div>
+
+            <div class="component-search" *ngIf="!loadingTypeData">
+              <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Buscar produto para adicionar</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  [(ngModel)]="productSearchQuery"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onProductSearch($event)"
+                  [matAutocomplete]="editProductAuto"
+                  placeholder="Digite o nome ou SKU do produto...">
+                <mat-icon matSuffix>search</mat-icon>
+                <mat-autocomplete #editProductAuto="matAutocomplete" (optionSelected)="addBomComponentInEdit($event.option.value)">
+                  <mat-option *ngFor="let product of productSearchResults" [value]="product">
+                    <div class="product-option">
+                      <span class="product-name">{{ product.name }}</span>
+                      <span class="product-sku">SKU: {{ product.sku }}</span>
+                      <span class="product-price">R$ {{ product.price | number:'1.2-2' }}</span>
+                    </div>
+                  </mat-option>
+                  <mat-option *ngIf="searchingProducts" disabled>
+                    <div class="searching-indicator"><span>Buscando...</span></div>
+                  </mat-option>
+                  <mat-option *ngIf="!searchingProducts && productSearchQuery.length >= 2 && productSearchResults.length === 0" disabled>
+                    <span>Nenhum produto encontrado</span>
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-hint>Digite pelo menos 2 caracteres para buscar</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="components-list" *ngIf="!loadingTypeData && existingBomComponents.length > 0">
+              <h4>Componentes adicionados</h4>
+              <div class="component-card" *ngFor="let component of existingBomComponents">
+                <div class="component-info">
+                  <span class="component-name">{{ component.componentName }}</span>
+                  <span class="component-sku">SKU: {{ component.componentSku }}</span>
+                </div>
+                <div class="component-quantity">
+                  <mat-form-field appearance="outline" class="quantity-field">
+                    <mat-label>Qtd</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      min="1"
+                      step="1"
+                      [value]="component.quantityRequired"
+                      (change)="updateBomComponentInEdit(component, $any($event.target).value)">
+                  </mat-form-field>
+                  <span class="component-unit">{{ component.unit }}</span>
+                </div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  color="warn"
+                  (click)="removeBomComponentInEdit(component)"
+                  title="Remover componente">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="empty-components-message" *ngIf="!loadingTypeData && existingBomComponents.length === 0">
+              <mat-icon>inventory_2</mat-icon>
+              <p>Nenhum componente adicionado. Use a busca acima para adicionar produtos ao kit.</p>
+            </div>
+          </div>
+
+          <!-- BOM Components Section (COMPOSITE in create mode) -->
+          <div class="form-section bom-components-section" *ngIf="!isEditMode && selectedProductType === ProductType.COMPOSITE">
+            <div class="section-header-with-action">
+              <h3>Componentes do Kit (BOM)</h3>
+            </div>
+
+            <p class="section-description">
+              Adicione os produtos que compõem este kit. Pesquise pelo nome ou SKU e defina a quantidade de cada componente.
+            </p>
+
+            <div class="component-search">
+              <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Buscar produto para adicionar</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  [(ngModel)]="productSearchQuery"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onProductSearch($event)"
+                  [matAutocomplete]="productAuto"
+                  placeholder="Digite o nome ou SKU do produto...">
+                <mat-icon matSuffix>search</mat-icon>
+                <mat-autocomplete #productAuto="matAutocomplete" (optionSelected)="addBomComponent($event.option.value)">
+                  <mat-option *ngFor="let product of productSearchResults" [value]="product">
+                    <div class="product-option">
+                      <span class="product-name">{{ product.name }}</span>
+                      <span class="product-sku">SKU: {{ product.sku }}</span>
+                      <span class="product-price">R$ {{ product.price | number:'1.2-2' }}</span>
+                    </div>
+                  </mat-option>
+                  <mat-option *ngIf="searchingProducts" disabled>
+                    <div class="searching-indicator"><span>Buscando...</span></div>
+                  </mat-option>
+                  <mat-option *ngIf="!searchingProducts && productSearchQuery.length >= 2 && productSearchResults.length === 0" disabled>
+                    <span>Nenhum produto encontrado</span>
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-hint>Digite pelo menos 2 caracteres para buscar</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="components-list" *ngIf="bomComponents.length > 0">
+              <h4>Componentes adicionados ({{ bomComponents.length }})</h4>
+              <div class="component-card" *ngFor="let component of bomComponents; let i = index">
+                <div class="component-info">
+                  <span class="component-name">{{ component.product.name }}</span>
+                  <span class="component-sku">SKU: {{ component.product.sku }}</span>
+                </div>
+                <div class="component-quantity">
+                  <mat-form-field appearance="outline" class="quantity-field">
+                    <mat-label>Qtd</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      min="1"
+                      step="1"
+                      [(ngModel)]="component.quantityRequired"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="updateComponentQuantity(i, $event)">
+                  </mat-form-field>
+                  <span class="component-unit">{{ component.product.unit }}</span>
+                </div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  color="warn"
+                  (click)="removeBomComponent(i)"
+                  title="Remover componente">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="empty-components-message" *ngIf="bomComponents.length === 0">
+              <mat-icon>inventory_2</mat-icon>
+              <p>Nenhum componente adicionado. Use a busca acima para adicionar produtos ao kit.</p>
+            </div>
+
+            <div class="components-summary" *ngIf="bomComponents.length > 0">
+              <mat-icon>info</mat-icon>
+              <span>
+                Este kit terá <strong>{{ bomComponents.length }}</strong> componente(s).
+                <span *ngIf="generalForm.get('bomType')?.value === 'VIRTUAL'">
+                  O estoque será calculado automaticamente com base nos componentes.
+                </span>
+                <span *ngIf="generalForm.get('bomType')?.value === 'PHYSICAL'">
+                  O kit terá controle de estoque próprio (pré-montado).
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Empty state for COMPOSITE (no descriptive attrs) -->
+          <div class="form-section" *ngIf="selectedProductType === ProductType.COMPOSITE && !isEditMode && bomComponents.length === 0 && existingBomComponents.length === 0">
+            <!-- Already covered above -->
+          </div>
+
         </div>
 
-        <!-- Estimated Variants Counter -->
-        <div class="estimated-variants-counter" *ngIf="estimatedVariantCount > 0">
-          <mat-icon [class.warning-icon]="estimatedVariantCount > 100">info</mat-icon>
-          <span>
-            Variantes que serão geradas: <strong [class.warning-text]="estimatedVariantCount > 100">{{ estimatedVariantCount }}</strong>
-            <span class="warning-hint" *ngIf="estimatedVariantCount > 100"> (Máximo permitido: 100)</span>
-          </span>
+        <!-- Step 3 Actions -->
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious type="button">Voltar</button>
+
+          <!-- Simple product submit -->
+          <button
+            *ngIf="selectedProductType === ProductType.SIMPLE"
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onSubmit()"
+            [disabled]="saving || generalForm.invalid">
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            {{ saving ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Produto') }}
+          </button>
+
+          <!-- Composite product submit -->
+          <button
+            *ngIf="selectedProductType === ProductType.COMPOSITE && !isEditMode"
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onSubmit()"
+            [disabled]="saving || generalForm.invalid || !canCreateCompositeProduct()">
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            {{ saving ? 'Salvando...' : 'Criar Kit/Composto' }}
+          </button>
+
+          <!-- Variant parent submit (create) -->
+          <button
+            *ngIf="selectedProductType === ProductType.VARIANT_PARENT && !isEditMode && !createdProductId"
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onSubmit()"
+            [disabled]="saving || generalForm.invalid || !canCreateVariantProduct()">
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            {{ saving ? 'Salvando...' : 'Criar Produto e Configurar Variantes' }}
+          </button>
+
+          <!-- Edit mode submit (any type) -->
+          <button
+            *ngIf="isEditMode"
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onSubmit()"
+            [disabled]="saving || generalForm.invalid">
+            <mat-icon *ngIf="!saving">save</mat-icon>
+            {{ saving ? 'Salvando...' : 'Salvar Alterações' }}
+          </button>
         </div>
       </div>
-    </div>
+    </mat-step>
 
-    <!-- Form Actions (for simple products or edit mode) -->
-    <div class="form-actions" *ngIf="selectedProductType === ProductType.SIMPLE || isEditMode">
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="cancel()"
-        [disabled]="saving"
-        aria-label="Cancelar e voltar para lista de produtos">
-        Cancelar
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="saving || productForm.invalid"
-        [attr.aria-label]="saving ? 'Salvando produto...' : (isEditMode ? 'Salvar alterações do produto' : 'Criar novo produto')">
-        <mat-icon *ngIf="!saving">save</mat-icon>
-        {{ saving ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Criar Produto') }}
-      </button>
-    </div>
-
-    <!-- Form Actions (for composite/BOM products) -->
-    <div class="form-actions" *ngIf="selectedProductType === ProductType.COMPOSITE && !isEditMode">
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="cancel()"
-        [disabled]="saving"
-        aria-label="Cancelar e voltar para lista de produtos">
-        Cancelar
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="saving || productForm.invalid || !canCreateCompositeProduct()"
-        [attr.aria-label]="saving ? 'Salvando kit...' : 'Criar kit com componentes'">
-        <mat-icon *ngIf="!saving">save</mat-icon>
-        {{ saving ? 'Salvando...' : 'Criar Kit/Composto' }}
-      </button>
-    </div>
-
-    <!-- Variant Parent Actions (save base product first) -->
-    <div class="form-actions" *ngIf="selectedProductType === ProductType.VARIANT_PARENT && !isEditMode && !createdProductId">
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="cancel()"
-        [disabled]="saving"
-        aria-label="Cancelar e voltar para lista de produtos">
-        Cancelar
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="saving || productForm.invalid || !canCreateVariantProduct()"
-        [attr.aria-label]="saving ? 'Salvando produto...' : 'Criar produto e gerar variantes'">
-        <mat-icon *ngIf="!saving">save</mat-icon>
-        {{ saving ? 'Salvando...' : 'Criar Produto e Configurar Variantes' }}
-      </button>
-    </div>
-  </form>
+  </mat-stepper>
 
   <!-- Variant Matrix (shown after base product is created) -->
   <div class="variant-section" *ngIf="!isEditMode && selectedProductType === ProductType.VARIANT_PARENT && createdProductId">
     <app-variant-matrix
       [parentProductId]="createdProductId"
-      [baseSku]="productForm.get('sku')?.value || ''"
-      [basePrice]="productForm.get('price')?.value || 0"
-      [baseCost]="productForm.get('cost')?.value || 0"
+      [baseSku]="generalForm.get('sku')?.value || ''"
+      [basePrice]="generalForm.get('price')?.value || 0"
+      [baseCost]="generalForm.get('cost')?.value || 0"
       [initialAttributes]="variantAttributes"
+      [locationId]="stockForm.get('locationId')?.value || ''"
+      [controlsInventory]="controlsInventory"
       (variantsGenerated)="onVariantsGenerated($event)"
     ></app-variant-matrix>
   </div>

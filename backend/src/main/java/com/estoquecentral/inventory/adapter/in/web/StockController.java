@@ -2,12 +2,16 @@ package com.estoquecentral.inventory.adapter.in.web;
 
 import com.estoquecentral.inventory.adapter.in.dto.BelowMinimumStockResponse;
 import com.estoquecentral.inventory.adapter.in.dto.BomVirtualStockResponse;
+import com.estoquecentral.inventory.adapter.in.dto.InitializeVariantStockRequest;
 import com.estoquecentral.inventory.adapter.in.dto.SetMinimumQuantityRequest;
 import com.estoquecentral.inventory.adapter.in.dto.StockByLocationResponse;
 import com.estoquecentral.inventory.adapter.in.dto.StockResponse;
+import com.estoquecentral.inventory.application.InventoryService;
 import com.estoquecentral.inventory.application.StockService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,9 +37,11 @@ import java.util.UUID;
 public class StockController {
 
     private final StockService stockService;
+    private final InventoryService inventoryService;
 
-    public StockController(StockService stockService) {
+    public StockController(StockService stockService, InventoryService inventoryService) {
         this.stockService = stockService;
+        this.inventoryService = inventoryService;
     }
 
     /**
@@ -118,6 +124,29 @@ public class StockController {
     ) {
         stockService.setMinimumQuantity(tenantId, productId, null, request);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Initialize stock for a product variant at a location.
+     * POST /api/stock/variant/{variantId}/initialize
+     */
+    @PostMapping("/variant/{variantId}/initialize")
+    public ResponseEntity<Void> initializeVariantStock(
+            @RequestHeader("X-Tenant-ID") UUID tenantId,
+            @PathVariable UUID variantId,
+            @Valid @RequestBody InitializeVariantStockRequest request,
+            Authentication authentication
+    ) {
+        UUID userId = UUID.fromString(authentication.getName());
+        inventoryService.createInventoryForVariant(
+                variantId,
+                request.getInitialQuantity() != null ? request.getInitialQuantity() : java.math.BigDecimal.ZERO,
+                request.getLocationId(),
+                request.getMinimumQuantity(),
+                request.getMaximumQuantity(),
+                userId
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**

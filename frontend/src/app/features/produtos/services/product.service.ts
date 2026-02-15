@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Product,
   ProductDTO,
+  ProductAttribute,
   ProductCreateRequest,
   ProductUpdateRequest,
   ProductSearchFilters,
@@ -186,5 +187,26 @@ export class ProductService {
    */
   activate(id: string): Observable<ProductDTO> {
     return this.http.put<ProductDTO>(`${this.apiUrl}/${id}/activate`, {});
+  }
+
+  /**
+   * Gets descriptive attributes for a product
+   *
+   * @param productId product ID
+   * @returns Observable of attributes
+   */
+  getAttributes(productId: string): Observable<ProductAttribute[]> {
+    return this.http.get<ProductAttribute[]>(`${this.apiUrl}/${productId}/attributes`);
+  }
+
+  /**
+   * Saves (replaces) descriptive attributes for a product
+   *
+   * @param productId product ID
+   * @param attributes attributes to save
+   * @returns Observable of saved attributes
+   */
+  saveAttributes(productId: string, attributes: ProductAttribute[]): Observable<ProductAttribute[]> {
+    return this.http.put<ProductAttribute[]>(`${this.apiUrl}/${productId}/attributes`, attributes);
   }
 }

@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { LocationService } from '../../services/location.service';
 import { LocationType, LOCATION_TYPE_LABELS } from '../../models/location.model';
+import { TenantService } from '../../../../core/services/tenant.service';
 
 /**
  * LocationFormComponent - Create/Edit stock location
@@ -43,6 +44,7 @@ export class LocationFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private locationService: LocationService,
+    private tenantService: TenantService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -124,7 +126,12 @@ export class LocationFormComponent implements OnInit {
     this.errorMessage = null;
 
     const formValue = this.locationForm.getRawValue();
-    const tenantId = '00000000-0000-0000-0000-000000000001'; // TODO: Get from auth service
+    const tenantId = this.tenantService.getCurrentTenant();
+    if (!tenantId) {
+      this.errorMessage = 'Nenhuma empresa selecionada';
+      this.isSubmitting = false;
+      return;
+    }
 
     if (this.isEditMode && this.locationId) {
       // Update

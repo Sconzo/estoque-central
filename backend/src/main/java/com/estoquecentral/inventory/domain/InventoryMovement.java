@@ -1,6 +1,8 @@
 package com.estoquecentral.inventory.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -33,15 +35,18 @@ import java.util.UUID;
  * @see MovementReason
  */
 @Table("inventory_movements")
-public class InventoryMovement {
+public class InventoryMovement implements Persistable<UUID> {
 
     @Id
     private UUID id;
+
+    @Transient
+    private boolean isNew = false;
     private UUID tenantId;
     private UUID productId;
     private MovementType type;
     private BigDecimal quantity;
-    private String location;
+    private UUID locationId;
     private BigDecimal quantityBefore;
     private BigDecimal quantityAfter;
     private MovementReason reason;
@@ -55,7 +60,7 @@ public class InventoryMovement {
      * Constructor for creating new movement
      */
     public InventoryMovement(UUID tenantId, UUID productId, MovementType type,
-                             BigDecimal quantity, String location,
+                             BigDecimal quantity, UUID locationId,
                              BigDecimal quantityBefore, BigDecimal quantityAfter,
                              MovementReason reason, String notes,
                              String referenceType, UUID referenceId,
@@ -65,7 +70,7 @@ public class InventoryMovement {
         this.productId = productId;
         this.type = type;
         this.quantity = quantity;
-        this.location = location != null ? location : "DEFAULT";
+        this.locationId = locationId;
         this.quantityBefore = quantityBefore;
         this.quantityAfter = quantityAfter;
         this.reason = reason;
@@ -74,12 +79,18 @@ public class InventoryMovement {
         this.referenceId = referenceId;
         this.createdAt = LocalDateTime.now();
         this.createdBy = createdBy;
+        this.isNew = true;
     }
 
     /**
      * Default constructor for Spring Data JDBC
      */
     public InventoryMovement() {
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     /**
@@ -171,12 +182,12 @@ public class InventoryMovement {
         this.quantity = quantity;
     }
 
-    public String getLocation() {
-        return location;
+    public UUID getLocationId() {
+        return locationId;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLocationId(UUID locationId) {
+        this.locationId = locationId;
     }
 
     public BigDecimal getQuantityBefore() {

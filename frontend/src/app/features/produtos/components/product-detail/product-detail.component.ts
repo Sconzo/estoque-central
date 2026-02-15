@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,16 +12,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../services/product.service';
 import { VariantService } from '../../services/variant.service';
 import { CompositeProductService } from '../../services/composite.service';
+import { StockService } from '../../../catalog/services/stock.service';
 import {
   ProductDTO,
   ProductType,
   ProductStatus,
+  ProductAttribute,
   STATUS_LABELS,
   TYPE_LABELS,
   UNIT_OPTIONS
 } from '../../models/product.model';
 import { ProductVariant } from '../../models/variant.model';
 import { BomComponent, BOM_TYPE_LABELS, BomType } from '../../models/composite.model';
+import { StockByLocationResponse, LocationStock } from '../../../../shared/models/stock.model';
 
 /**
  * ProductDetailComponent - Read-only product detail view
@@ -53,14 +58,24 @@ export class ProductDetailComponent implements OnInit {
   product: ProductDTO | null = null;
   variants: ProductVariant[] = [];
   bomComponents: BomComponent[] = [];
+  productAttributes: ProductAttribute[] = [];
+  stockData: StockByLocationResponse | null = null;
   loading = true;
   loadingVariants = false;
   loadingBom = false;
+  loadingAttributes = false;
+  loadingStock = false;
   error: string | null = null;
 
+  // Variant stock data
+  variantStockMap = new Map<string, StockByLocationResponse>();
+  variantStockTotals = { available: 0, reserved: 0, forSale: 0 };
+  loadingVariantStock = false;
+
   // Display columns for tables
-  variantColumns = ['sku', 'name', 'attributes', 'price', 'status'];
+  variantColumns = ['sku', 'name', 'attributes', 'price', 'stock', 'status'];
   bomColumns = ['sku', 'name', 'quantity', 'unit'];
+  stockColumns = ['location', 'available', 'reserved', 'forSale', 'minimum', 'status'];
 
   // Labels for template
   readonly STATUS_LABELS = STATUS_LABELS;
@@ -74,6 +89,7 @@ export class ProductDetailComponent implements OnInit {
     private productService: ProductService,
     private variantService: VariantService,
     private compositeService: CompositeProductService,
+    private stockService: StockService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -100,6 +116,10 @@ export class ProductDetailComponent implements OnInit {
         this.product = product;
         this.loading = false;
         this.loadTypeSpecificData(product);
+        this.loadProductAttributes(product.id);
+        if (product.controlsInventory && product.type !== ProductType.VARIANT_PARENT) {
+          this.loadStockData(product.id);
+        }
       },
       error: (err) => {
         this.error = 'Erro ao carregar produto: ' + (err.error?.message || err.message || 'Erro desconhecido');
@@ -129,6 +149,9 @@ export class ProductDetailComponent implements OnInit {
       next: (variants) => {
         this.variants = variants;
         this.loadingVariants = false;
+        if (this.product?.controlsInventory && variants.length > 0) {
+          this.loadVariantStockData(variants);
+        }
       },
       error: (err) => {
         console.error('Error loading variants:', err);
@@ -152,6 +175,121 @@ export class ProductDetailComponent implements OnInit {
         this.loadingBom = false;
       }
     });
+  }
+
+  /**
+   * Loads descriptive attributes for the product
+   */
+  loadProductAttributes(productId: string): void {
+    this.loadingAttributes = true;
+    this.productService.getAttributes(productId).subscribe({
+      next: (attrs) => {
+        this.productAttributes = attrs;
+        this.loadingAttributes = false;
+      },
+      error: (err) => {
+        console.error('Error loading product attributes:', err);
+        this.loadingAttributes = false;
+      }
+    });
+  }
+
+  /**
+   * Loads stock data for the product
+   */
+  loadStockData(productId: string): void {
+    this.loadingStock = true;
+    this.stockService.getStockByProductByLocation(productId).subscribe({
+      next: (data) => {
+        this.stockData = data;
+        this.loadingStock = false;
+      },
+      error: (err) => {
+        console.error('Error loading stock data:', err);
+        this.stockData = {
+          productName: this.product?.name || '',
+          productSku: this.product?.sku || '',
+          totalLocations: 0,
+          totalQuantityAvailable: 0,
+          totalReservedQuantity: 0,
+          totalQuantityForSale: 0,
+          byLocation: []
+        };
+        this.loadingStock = false;
+      }
+    });
+  }
+
+  /**
+   * Loads stock data for each variant and calculates aggregated totals
+   */
+  loadVariantStockData(variants: ProductVariant[]): void {
+    this.loadingVariantStock = true;
+    this.variantStockMap.clear();
+    this.variantStockTotals = { available: 0, reserved: 0, forSale: 0 };
+
+    const emptyStock: StockByLocationResponse = {
+      productName: '',
+      productSku: '',
+      totalLocations: 0,
+      totalQuantityAvailable: 0,
+      totalReservedQuantity: 0,
+      totalQuantityForSale: 0,
+      byLocation: []
+    };
+
+    const requests: Record<string, ReturnType<StockService['getStockByVariant']>> = {};
+    for (const variant of variants) {
+      requests[variant.id] = this.stockService.getStockByVariant(variant.id).pipe(
+        catchError(() => of(emptyStock))
+      );
+    }
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        let totalAvailable = 0;
+        let totalReserved = 0;
+        let totalForSale = 0;
+
+        for (const [variantId, stockData] of Object.entries(results)) {
+          this.variantStockMap.set(variantId, stockData);
+          totalAvailable += stockData.totalQuantityAvailable || 0;
+          totalReserved += stockData.totalReservedQuantity || 0;
+          totalForSale += stockData.totalQuantityForSale || 0;
+        }
+
+        this.variantStockTotals = {
+          available: totalAvailable,
+          reserved: totalReserved,
+          forSale: totalForSale
+        };
+        this.loadingVariantStock = false;
+      },
+      error: (err) => {
+        console.error('Error loading variant stock data:', err);
+        this.loadingVariantStock = false;
+      }
+    });
+  }
+
+  /**
+   * Gets total available stock for a variant
+   */
+  getVariantStockTotal(variantId: string): number {
+    const stock = this.variantStockMap.get(variantId);
+    return stock?.totalQuantityAvailable || 0;
+  }
+
+  /**
+   * Gets stock status label
+   */
+  getStockStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      'OK': 'Normal',
+      'LOW': 'Baixo',
+      'CRITICAL': 'Crítico'
+    };
+    return labels[status] || status;
   }
 
   /**

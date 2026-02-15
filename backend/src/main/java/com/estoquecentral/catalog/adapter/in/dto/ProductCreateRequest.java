@@ -5,6 +5,7 @@ import com.estoquecentral.catalog.domain.ProductType;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -46,6 +47,15 @@ public class ProductCreateRequest {
     private String unit;
 
     private Boolean controlsInventory;
+
+    // Inventory fields (optional, used when controlsInventory=true)
+    private UUID locationId;
+    private BigDecimal initialQuantity;
+    private BigDecimal minimumQuantity;
+    private BigDecimal maximumQuantity;
+
+    // Descriptive attributes (optional)
+    private List<ProductAttributeDTO> attributes;
 
     public ProductCreateRequest() {
     }
@@ -152,5 +162,45 @@ public class ProductCreateRequest {
 
     public void setControlsInventory(Boolean controlsInventory) {
         this.controlsInventory = controlsInventory;
+    }
+
+    public UUID getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(UUID locationId) {
+        this.locationId = locationId;
+    }
+
+    public BigDecimal getInitialQuantity() {
+        return initialQuantity;
+    }
+
+    public void setInitialQuantity(BigDecimal initialQuantity) {
+        this.initialQuantity = initialQuantity;
+    }
+
+    public BigDecimal getMinimumQuantity() {
+        return minimumQuantity;
+    }
+
+    public void setMinimumQuantity(BigDecimal minimumQuantity) {
+        this.minimumQuantity = minimumQuantity;
+    }
+
+    public BigDecimal getMaximumQuantity() {
+        return maximumQuantity;
+    }
+
+    public void setMaximumQuantity(BigDecimal maximumQuantity) {
+        this.maximumQuantity = maximumQuantity;
+    }
+
+    public List<ProductAttributeDTO> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<ProductAttributeDTO> attributes) {
+        this.attributes = attributes;
     }
 }

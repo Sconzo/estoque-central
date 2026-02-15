@@ -1,6 +1,10 @@
 package com.estoquecentral.inventory.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -38,19 +42,31 @@ import java.util.UUID;
  * @see InventoryMovement
  */
 @Table("inventory")
-public class Inventory {
+public class Inventory implements Persistable<UUID> {
 
     @Id
     private UUID id;
+
+    @Transient
+    private boolean isNew = false;
     private UUID tenantId;
     private UUID productId;             // NULL for variants
     private UUID variantId;             // NULL for simple/composite products
     private UUID locationId;            // FK to locations table
+
+    @Column("quantity")
     private BigDecimal quantityAvailable;
     private BigDecimal reservedQuantity;
+
+    @Column("available_quantity")
+    @ReadOnlyProperty
     private BigDecimal quantityForSale; // Computed by database (GENERATED column)
     private BigDecimal cost;            // Weighted average cost (Story 3.4)
+
+    @Column("min_quantity")
     private BigDecimal minimumQuantity;
+
+    @Column("max_quantity")
     private BigDecimal maximumQuantity;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -66,8 +82,10 @@ public class Inventory {
         this.locationId = locationId;
         this.quantityAvailable = quantityAvailable != null ? quantityAvailable : BigDecimal.ZERO;
         this.reservedQuantity = BigDecimal.ZERO;
+        this.cost = BigDecimal.ZERO;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
     }
 
     /**
@@ -81,14 +99,21 @@ public class Inventory {
         this.locationId = locationId;
         this.quantityAvailable = BigDecimal.ZERO;
         this.reservedQuantity = BigDecimal.ZERO;
+        this.cost = BigDecimal.ZERO;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.isNew = true;
     }
 
     /**
      * Default constructor for Spring Data JDBC
      */
     public Inventory() {
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     /**

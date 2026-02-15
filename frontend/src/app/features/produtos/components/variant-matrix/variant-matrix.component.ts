@@ -1,8 +1,11 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { VariantService } from '../../services/variant.service';
 import { VariantAttribute, ProductVariant, VariantMatrixRow } from '../../models/variant.model';
+import { StockService } from '../../../catalog/services/stock.service';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 /**
@@ -28,6 +31,8 @@ export class VariantMatrixComponent implements OnInit {
   @Input() basePrice: number = 0;
   @Input() baseCost: number = 0;
   @Input() initialAttributes: VariantAttribute[] = [];
+  @Input() locationId: string = '';
+  @Input() controlsInventory: boolean = false;
   @Output() variantsGenerated = new EventEmitter<ProductVariant[]>();
 
   // Attributes definition
@@ -46,6 +51,7 @@ export class VariantMatrixComponent implements OnInit {
 
   constructor(
     private variantService: VariantService,
+    private stockService: StockService,
     private feedback: FeedbackService
   ) {}
 
@@ -186,6 +192,9 @@ export class VariantMatrixComponent implements OnInit {
       combination,
       price: this.basePrice,
       cost: this.baseCost,
+      initialQuantity: 0,
+      minimumQuantity: 0,
+      maximumQuantity: 0,
       editable: true
     }));
 
@@ -207,14 +216,52 @@ export class VariantMatrixComponent implements OnInit {
     // Call backend to generate and save variants
     this.variantService.generateVariants(this.parentProductId, this.attributes).subscribe({
       next: (variants) => {
-        this.loading = false;
-        this.variantsGenerated.emit(variants);
-        this.feedback.showSuccess(`${variants.length} variantes criadas com sucesso!`);
+        if (this.controlsInventory && this.locationId) {
+          this.initializeStock(variants);
+        } else {
+          this.loading = false;
+          this.variantsGenerated.emit(variants);
+          this.feedback.showSuccess(`${variants.length} variantes criadas com sucesso!`);
+        }
       },
       error: (err) => {
         this.loading = false;
         this.error = 'Erro ao gerar variantes: ' + (err.error?.message || err.message || 'Erro desconhecido');
         console.error('Error generating variants:', err);
+      }
+    });
+  }
+
+  /**
+   * Initializes stock for each variant after creation
+   */
+  private initializeStock(variants: ProductVariant[]): void {
+    const stockRequests = variants.map((variant, index) => {
+      const matrixRow = this.generatedVariants[index];
+      return this.stockService.initializeVariantStock(variant.id, {
+        locationId: this.locationId,
+        initialQuantity: matrixRow?.initialQuantity || 0,
+        minimumQuantity: matrixRow?.minimumQuantity || 0,
+        maximumQuantity: matrixRow?.maximumQuantity || 0
+      }).pipe(
+        catchError(err => {
+          console.error(`Error initializing stock for variant ${variant.sku}:`, err);
+          return of(undefined);
+        })
+      );
+    });
+
+    forkJoin(stockRequests).subscribe({
+      next: () => {
+        this.loading = false;
+        this.variantsGenerated.emit(variants);
+        this.feedback.showSuccess(`${variants.length} variantes criadas e estoque inicializado!`);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.variantsGenerated.emit(variants);
+        this.feedback.showWarning('Variantes criadas, mas houve erro ao inicializar o estoque.');
+        console.error('Error initializing stock:', err);
       }
     });
   }

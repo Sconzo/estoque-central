@@ -51,5 +51,8 @@ export interface VariantMatrixRow {
   combination: Record<string, string>;
   price?: number;
   cost?: number;
+  initialQuantity?: number;
+  minimumQuantity?: number;
+  maximumQuantity?: number;
   editable: boolean;
 }

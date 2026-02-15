@@ -1,15 +1,19 @@
 package com.estoquecentral.catalog.adapter.in;
 
+import com.estoquecentral.catalog.adapter.in.dto.ProductAttributeDTO;
 import com.estoquecentral.catalog.adapter.in.dto.ProductCreateRequest;
 import com.estoquecentral.catalog.adapter.in.dto.ProductDTO;
 import com.estoquecentral.catalog.adapter.in.dto.ProductUpdateRequest;
 import com.estoquecentral.catalog.adapter.out.CategoryRepository;
+import com.estoquecentral.catalog.adapter.out.ProductAttributeRepository;
 import com.estoquecentral.catalog.application.ProductService;
 import com.estoquecentral.catalog.domain.BomType;
 import com.estoquecentral.catalog.domain.Category;
 import com.estoquecentral.catalog.domain.Product;
+import com.estoquecentral.catalog.domain.ProductAttribute;
 import com.estoquecentral.catalog.domain.ProductStatus;
 import com.estoquecentral.catalog.domain.ProductType;
+import com.estoquecentral.inventory.application.InventoryService;
 import com.estoquecentral.shared.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,8 +27,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,11 +67,16 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+    private final InventoryService inventoryService;
+    private final ProductAttributeRepository productAttributeRepository;
 
     @Autowired
-    public ProductController(ProductService productService, CategoryRepository categoryRepository) {
+    public ProductController(ProductService productService, CategoryRepository categoryRepository,
+                             InventoryService inventoryService, ProductAttributeRepository productAttributeRepository) {
         this.productService = productService;
         this.categoryRepository = categoryRepository;
+        this.inventoryService = inventoryService;
+        this.productAttributeRepository = productAttributeRepository;
     }
 
     /**
@@ -242,15 +254,16 @@ public class ProductController {
     }
 
     /**
-     * Creates new product
+     * Creates new product with optional inventory and descriptive attributes (atomic transaction)
      *
      * @param request product creation request
      * @param authentication current user
      * @return created product
      */
     @PostMapping
+    @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    @Operation(summary = "Create product", description = "Creates new product (requires ADMIN or GERENTE role)")
+    @Operation(summary = "Create product", description = "Creates new product with optional inventory and attributes (requires ADMIN or GERENTE role)")
     public ResponseEntity<ProductDTO> create(
             @Valid @RequestBody ProductCreateRequest request,
             Authentication authentication) {
@@ -277,6 +290,34 @@ public class ProductController {
                 request.getControlsInventory(),
                 userId
         );
+
+        // Create inventory if controlsInventory=true and locationId provided
+        Boolean controlsInventory = request.getControlsInventory() != null ? request.getControlsInventory() : false;
+        if (controlsInventory && request.getLocationId() != null) {
+            BigDecimal initialQty = request.getInitialQuantity() != null ? request.getInitialQuantity() : BigDecimal.ZERO;
+            inventoryService.createInventory(
+                    product.getId(),
+                    initialQty,
+                    request.getLocationId(),
+                    request.getMinimumQuantity(),
+                    request.getMaximumQuantity(),
+                    userId
+            );
+        }
+
+        // Save descriptive attributes
+        if (request.getAttributes() != null && !request.getAttributes().isEmpty()) {
+            int sortOrder = 0;
+            for (ProductAttributeDTO attrDto : request.getAttributes()) {
+                if (attrDto.key() != null && !attrDto.key().isBlank()
+                        && attrDto.value() != null && !attrDto.value().isBlank()) {
+                    ProductAttribute attr = new ProductAttribute(
+                            tenantId, product.getId(), attrDto.key().trim(), attrDto.value().trim(), sortOrder++
+                    );
+                    productAttributeRepository.save(attr);
+                }
+            }
+        }
 
         ProductDTO dto = ProductDTO.fromEntity(product);
         if (product.getCategoryId() != null) {
@@ -369,6 +410,64 @@ public class ProductController {
     public ResponseEntity<ProductDTO> activate(@PathVariable UUID id) {
         Product product = productService.activate(id);
         return ResponseEntity.ok(ProductDTO.fromEntity(product));
+    }
+
+    // ==================== Product Attributes Endpoints ====================
+
+    /**
+     * Gets descriptive attributes for a product
+     *
+     * @param id product ID
+     * @return list of attributes
+     */
+    @GetMapping("/{id}/attributes")
+    @Operation(summary = "Get product attributes", description = "Returns descriptive attributes for a product")
+    public ResponseEntity<List<ProductAttributeDTO>> getAttributes(@PathVariable UUID id) {
+        List<ProductAttribute> attributes = productAttributeRepository.findByProductId(id);
+        List<ProductAttributeDTO> dtos = attributes.stream()
+                .map(attr -> new ProductAttributeDTO(attr.getAttributeKey(), attr.getAttributeValue()))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Replaces all descriptive attributes for a product
+     *
+     * @param id product ID
+     * @param attributes new attributes
+     * @return saved attributes
+     */
+    @PutMapping("/{id}/attributes")
+    @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @Operation(summary = "Update product attributes", description = "Replaces all descriptive attributes (requires ADMIN or GERENTE role)")
+    public ResponseEntity<List<ProductAttributeDTO>> updateAttributes(
+            @PathVariable UUID id,
+            @RequestBody List<ProductAttributeDTO> attributes) {
+
+        UUID tenantId = UUID.fromString(TenantContext.getTenantId());
+
+        // Delete existing attributes
+        productAttributeRepository.deleteByProductId(id);
+
+        // Save new attributes
+        int sortOrder = 0;
+        for (ProductAttributeDTO attrDto : attributes) {
+            if (attrDto.key() != null && !attrDto.key().isBlank()
+                    && attrDto.value() != null && !attrDto.value().isBlank()) {
+                ProductAttribute attr = new ProductAttribute(
+                        tenantId, id, attrDto.key().trim(), attrDto.value().trim(), sortOrder++
+                );
+                productAttributeRepository.save(attr);
+            }
+        }
+
+        // Return saved attributes
+        List<ProductAttribute> saved = productAttributeRepository.findByProductId(id);
+        List<ProductAttributeDTO> dtos = saved.stream()
+                .map(attr -> new ProductAttributeDTO(attr.getAttributeKey(), attr.getAttributeValue()))
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     /**

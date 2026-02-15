@@ -18,7 +18,7 @@ import {
 })
 export class StockService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/stock`;
+  private apiUrl = `${environment.apiUrl}/api/stock`;
 
   /**
    * AC2: Get all stock with optional filters
@@ -87,6 +87,18 @@ export class StockService {
    */
   setMinimumQuantityForVariant(variantId: string, request: SetMinimumQuantityRequest): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/variant/${variantId}/minimum`, request);
+  }
+
+  /**
+   * Initialize stock for a variant at a specific location
+   */
+  initializeVariantStock(variantId: string, request: {
+    locationId: string;
+    initialQuantity?: number;
+    minimumQuantity?: number;
+    maximumQuantity?: number;
+  }): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/variant/${variantId}/initialize`, request);
   }
 
   /**

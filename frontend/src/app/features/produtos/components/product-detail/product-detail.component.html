@@ -128,6 +128,163 @@
         </mat-card-content>
       </mat-card>
 
+      <!-- Stock Levels for SIMPLE/COMPOSITE (when controlsInventory=true) -->
+      <mat-card class="detail-card" *ngIf="product.controlsInventory && product.type !== ProductType.VARIANT_PARENT">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>warehouse</mat-icon>
+            Estoque por Localização
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="loading-inline" *ngIf="loadingStock">
+            <div class="spinner-small"></div>
+            <span>Carregando estoque...</span>
+          </div>
+
+          <!-- Stock Summary -->
+          <div class="info-grid stock-summary" *ngIf="!loadingStock && stockData">
+            <div class="info-item">
+              <label>Quantidade Disponível</label>
+              <span class="stock-value">{{ stockData.totalQuantityAvailable | number:'1.0-2' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Reservado</label>
+              <span class="stock-reserved">{{ stockData.totalReservedQuantity | number:'1.0-2' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Disponível p/ Venda</label>
+              <span class="stock-for-sale">{{ stockData.totalQuantityForSale | number:'1.0-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Stock by Location Table -->
+          <div class="table-container" *ngIf="!loadingStock && stockData && stockData.byLocation && stockData.byLocation.length > 0">
+            <table mat-table [dataSource]="stockData.byLocation" class="stock-table">
+              <ng-container matColumnDef="location">
+                <th mat-header-cell *matHeaderCellDef>Localização</th>
+                <td mat-cell *matCellDef="let stock">
+                  <span class="location-name">{{ stock.locationName }}</span>
+                  <span class="location-code">{{ stock.locationCode }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="available">
+                <th mat-header-cell *matHeaderCellDef>Disponível</th>
+                <td mat-cell *matCellDef="let stock">{{ stock.quantityAvailable | number:'1.0-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="reserved">
+                <th mat-header-cell *matHeaderCellDef>Reservado</th>
+                <td mat-cell *matCellDef="let stock">{{ stock.reservedQuantity | number:'1.0-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="forSale">
+                <th mat-header-cell *matHeaderCellDef>Disponível p/ Venda</th>
+                <td mat-cell *matCellDef="let stock">{{ stock.quantityForSale | number:'1.0-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="minimum">
+                <th mat-header-cell *matHeaderCellDef>Mínimo</th>
+                <td mat-cell *matCellDef="let stock">{{ stock.minimumQuantity != null ? (stock.minimumQuantity | number:'1.0-2') : '-' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let stock">
+                  <span class="stock-status" [ngClass]="'stock-' + stock.status.toLowerCase()">
+                    {{ getStockStatusLabel(stock.status) }}
+                  </span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="stockColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: stockColumns;"></tr>
+            </table>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingStock && (!stockData || !stockData.byLocation || stockData.byLocation.length === 0)">
+            <mat-icon>inventory</mat-icon>
+            <p>Nenhum registro de estoque encontrado para este produto</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Stock Levels for VARIANT_PARENT (aggregated from variants) -->
+      <mat-card class="detail-card" *ngIf="product.controlsInventory && product.type === ProductType.VARIANT_PARENT">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>warehouse</mat-icon>
+            Estoque por Variante
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="loading-inline" *ngIf="loadingVariantStock">
+            <div class="spinner-small"></div>
+            <span>Carregando estoque das variantes...</span>
+          </div>
+
+          <!-- Aggregated Summary -->
+          <div class="info-grid stock-summary" *ngIf="!loadingVariantStock && !loadingVariants && variants.length > 0">
+            <div class="info-item">
+              <label>Total Disponível</label>
+              <span class="stock-value">{{ variantStockTotals.available | number:'1.0-2' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Total Reservado</label>
+              <span class="stock-reserved">{{ variantStockTotals.reserved | number:'1.0-2' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Total Disponível p/ Venda</label>
+              <span class="stock-for-sale">{{ variantStockTotals.forSale | number:'1.0-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Variant Stock Table -->
+          <div class="table-container" *ngIf="!loadingVariantStock && !loadingVariants && variants.length > 0">
+            <table class="variant-stock-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Nome</th>
+                  <th>Atributos</th>
+                  <th class="text-right">Disponível</th>
+                  <th class="text-right">Reservado</th>
+                  <th class="text-right">À Venda</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let variant of variants">
+                  <td class="sku-cell">{{ variant.sku }}</td>
+                  <td>{{ variant.name }}</td>
+                  <td class="attributes-cell">{{ formatAttributes(variant) }}</td>
+                  <td class="text-right">{{ (variantStockMap.get(variant.id)?.totalQuantityAvailable || 0) | number:'1.0-2' }}</td>
+                  <td class="text-right">{{ (variantStockMap.get(variant.id)?.totalReservedQuantity || 0) | number:'1.0-2' }}</td>
+                  <td class="text-right">{{ (variantStockMap.get(variant.id)?.totalQuantityForSale || 0) | number:'1.0-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingVariantStock && !loadingVariants && variants.length === 0">
+            <mat-icon>inventory</mat-icon>
+            <p>Nenhuma variante cadastrada para este produto</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Descriptive Attributes -->
+      <mat-card class="detail-card" *ngIf="!loadingAttributes && productAttributes.length > 0">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>label</mat-icon>
+            Atributos Descritivos
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="attributes-grid">
+            <div class="attribute-item" *ngFor="let attr of productAttributes">
+              <label>{{ attr.key }}</label>
+              <span>{{ attr.value }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
       <!-- Variants Section (VARIANT_PARENT) -->
       <mat-card class="detail-card" *ngIf="product.type === ProductType.VARIANT_PARENT">
         <mat-card-header>
@@ -174,6 +331,18 @@
                 <th mat-header-cell *matHeaderCellDef>Preço</th>
                 <td mat-cell *matCellDef="let variant">
                   {{ variant.price ? ('R$ ' + (variant.price | number:'1.2-2')) : '-' }}
+                </td>
+              </ng-container>
+
+              <!-- Stock Column -->
+              <ng-container matColumnDef="stock">
+                <th mat-header-cell *matHeaderCellDef>Estoque</th>
+                <td mat-cell *matCellDef="let variant">
+                  <span *ngIf="!loadingVariantStock && product?.controlsInventory">
+                    {{ getVariantStockTotal(variant.id) | number:'1.0-2' }}
+                  </span>
+                  <span *ngIf="!product?.controlsInventory">-</span>
+                  <span *ngIf="loadingVariantStock" class="loading-text">...</span>
                 </td>
               </ng-container>
 

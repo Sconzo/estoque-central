@@ -49,12 +49,18 @@ public class StockService {
     public StockByLocationResponse getStockByProduct(UUID tenantId, UUID productId) {
         List<Inventory> inventories = inventoryRepository.findAllByTenantIdAndProductId(tenantId, productId);
 
-        if (inventories.isEmpty()) {
-            throw new IllegalArgumentException("No stock found for product: " + productId);
-        }
-
         StockByLocationResponse response = new StockByLocationResponse();
         response.setProductId(productId);
+
+        if (inventories.isEmpty()) {
+            response.setTotalLocations(0);
+            response.setTotalQuantityAvailable(BigDecimal.ZERO);
+            response.setTotalReservedQuantity(BigDecimal.ZERO);
+            response.setTotalQuantityForSale(BigDecimal.ZERO);
+            response.setByLocation(new ArrayList<>());
+            enrichWithNames(response, tenantId);
+            return response;
+        }
 
         // Aggregate totals
         BigDecimal totalAvailable = BigDecimal.ZERO;
@@ -97,12 +103,18 @@ public class StockService {
     public StockByLocationResponse getStockByVariant(UUID tenantId, UUID variantId) {
         List<Inventory> inventories = inventoryRepository.findAllByTenantIdAndVariantId(tenantId, variantId);
 
-        if (inventories.isEmpty()) {
-            throw new IllegalArgumentException("No stock found for variant: " + variantId);
-        }
-
         StockByLocationResponse response = new StockByLocationResponse();
         response.setVariantId(variantId);
+
+        if (inventories.isEmpty()) {
+            response.setTotalLocations(0);
+            response.setTotalQuantityAvailable(BigDecimal.ZERO);
+            response.setTotalReservedQuantity(BigDecimal.ZERO);
+            response.setTotalQuantityForSale(BigDecimal.ZERO);
+            response.setByLocation(new ArrayList<>());
+            enrichWithNames(response, tenantId);
+            return response;
+        }
 
         // Aggregate totals
         BigDecimal totalAvailable = BigDecimal.ZERO;
@@ -346,8 +358,8 @@ public class StockService {
             LEFT JOIN products parent_p ON pv.parent_product_id = parent_p.id
             INNER JOIN locations l ON i.location_id = l.id
             WHERE i.tenant_id = ?
-              AND i.minimum_quantity IS NOT NULL
-              AND i.quantity_for_sale < i.minimum_quantity
+              AND i.min_quantity IS NOT NULL
+              AND i.available_quantity < i.min_quantity
             """;
 
         Map<UUID, Map<String, String>> namesMap = new java.util.HashMap<>();
