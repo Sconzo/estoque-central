@@ -112,7 +112,7 @@ class GlobalExceptionHandlerTest {
     @Test
     @WithMockUser
     void shouldReturn503WhenDatabaseConnectionFails() throws Exception {
-        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), any()))
                 .thenThrow(new DataAccessResourceFailureException("Database connection failed"));
 
         String validRequest = """
@@ -139,7 +139,7 @@ class GlobalExceptionHandlerTest {
     @Test
     @WithMockUser
     void shouldReturn500WhenSchemaProvisioningFails() throws Exception {
-        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), any()))
                 .thenThrow(new SchemaProvisioningException("Failed to create schema", null));
 
         String validRequest = """
@@ -169,7 +169,7 @@ class GlobalExceptionHandlerTest {
     void shouldAllowDuplicateCompanyNames() throws Exception {
         // This test verifies the behavior - no duplicate name validation should exist
         // If the service doesn't throw an exception, the test passes
-        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), anyString()))
+        when(companyService.createCompany(anyString(), anyString(), anyString(), anyString(), any()))
                 .thenReturn(any()); // Allow duplicate names
 
         String validRequest = """

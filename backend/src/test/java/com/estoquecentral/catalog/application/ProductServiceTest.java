@@ -399,6 +399,7 @@ class ProductServiceTest {
                 new BigDecimal("3300.00"),
                 "UN",
                 true,
+                ProductStatus.ACTIVE,
                 userId
         );
 

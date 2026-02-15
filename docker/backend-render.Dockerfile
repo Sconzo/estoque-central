@@ -35,7 +35,7 @@ RUN cd backend && mvn dependency:go-offline -B
 COPY backend/src backend/src
 
 # Build backend-only (skip frontend build)
-RUN cd backend && mvn clean package -DskipTests -Dskip.frontend=true -B
+RUN cd backend && mvn clean package -Dmaven.test.skip=true -Dskip.frontend=true -B
 
 # =============================================================================
 # Stage 2: Runtime
