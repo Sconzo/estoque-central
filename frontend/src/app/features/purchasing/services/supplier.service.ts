@@ -18,7 +18,7 @@ import {
 })
 export class SupplierService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/suppliers`;
+  private apiUrl = `${environment.apiUrl}/api/suppliers`;
 
   /**
    * Create a new supplier

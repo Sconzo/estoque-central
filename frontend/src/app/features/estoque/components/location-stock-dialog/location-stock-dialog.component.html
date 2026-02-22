@@ -1,0 +1,109 @@
+<h2 mat-dialog-title>
+  <mat-icon class="title-icon">inventory_2</mat-icon>
+  <div class="title-content">
+    <span>Estoque em {{ data.location.name }}</span>
+    <span class="title-subtitle">{{ data.location.code }} · {{ getTypeLabel(data.location.type) }}</span>
+  </div>
+</h2>
+
+<mat-dialog-content>
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando estoque...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    <mat-icon color="warn">warning</mat-icon>
+    <span>{{ error }}</span>
+    <button mat-stroked-button (click)="loadStock()">
+      <mat-icon>refresh</mat-icon>
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && stock.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">inventory</mat-icon>
+    <p>Nenhum produto armazenado neste local.</p>
+  </div>
+
+  <!-- Summary -->
+  <div *ngIf="!loading && !error && stock.length > 0" class="summary">
+    <div class="summary-item">
+      <span class="summary-label">Produtos</span>
+      <strong class="summary-value">{{ stock.length }}</strong>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Total em Estoque</span>
+      <strong class="summary-value">{{ getTotalQuantity() }}</strong>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading && !error && stock.length > 0" class="table-container">
+    <table mat-table [dataSource]="stock" class="stock-table">
+
+      <!-- Product Name -->
+      <ng-container matColumnDef="productName">
+        <th mat-header-cell *matHeaderCellDef>Produto</th>
+        <td mat-cell *matCellDef="let item">
+          <strong>{{ item.productName }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- SKU -->
+      <ng-container matColumnDef="sku">
+        <th mat-header-cell *matHeaderCellDef>SKU</th>
+        <td mat-cell *matCellDef="let item">
+          <span class="sku">{{ item.productSku }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Quantity Available -->
+      <ng-container matColumnDef="quantityAvailable">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Disponível</th>
+        <td mat-cell *matCellDef="let item" class="text-right">
+          <strong>{{ item.quantityAvailable }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Reserved -->
+      <ng-container matColumnDef="reserved">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Reservado</th>
+        <td mat-cell *matCellDef="let item" class="text-right text-muted">
+          {{ item.reservedQuantity }}
+        </td>
+      </ng-container>
+
+      <!-- Quantity For Sale -->
+      <ng-container matColumnDef="quantityForSale">
+        <th mat-header-cell *matHeaderCellDef class="text-right">À Venda</th>
+        <td mat-cell *matCellDef="let item" class="text-right">
+          {{ item.quantityForSale }}
+        </td>
+      </ng-container>
+
+      <!-- Status -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let item">
+          <mat-chip [class]="getStatusClass(item.stockStatus)">
+            {{ getStatusLabel(item.stockStatus) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">
+    <mat-icon>close</mat-icon>
+    Fechar
+  </button>
+</mat-dialog-actions>

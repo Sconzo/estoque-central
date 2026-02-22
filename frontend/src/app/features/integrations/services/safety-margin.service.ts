@@ -38,7 +38,7 @@ export interface UpdateSafetyMarginRuleRequest {
 })
 export class SafetyMarginService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/safety-margins`;
+  private apiUrl = `${environment.apiUrl}/api/safety-margins`;
 
   /**
    * List all safety margin rules

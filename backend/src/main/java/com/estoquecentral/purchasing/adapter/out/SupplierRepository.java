@@ -130,12 +130,12 @@ public interface SupplierRepository extends
     @Query("""
         SELECT * FROM suppliers
         WHERE tenant_id = :tenantId
-          AND (:searchTerm IS NULL OR
-               LOWER(company_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-               LOWER(trade_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-               cnpj LIKE CONCAT('%', :searchTerm, '%'))
-          AND (:status IS NULL OR status = :status)
-          AND (:ativo IS NULL OR ativo = :ativo)
+          AND (CAST(:searchTerm AS text) IS NULL OR
+               LOWER(company_name) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR
+               LOWER(trade_name) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR
+               cnpj LIKE CONCAT('%', CAST(:searchTerm AS text), '%'))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:ativo AS boolean) IS NULL OR ativo = CAST(:ativo AS boolean))
         ORDER BY company_name
         LIMIT :limit OFFSET :offset
         """)
@@ -151,12 +151,12 @@ public interface SupplierRepository extends
     @Query("""
         SELECT COUNT(*) FROM suppliers
         WHERE tenant_id = :tenantId
-          AND (:searchTerm IS NULL OR
-               LOWER(company_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-               LOWER(trade_name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-               cnpj LIKE CONCAT('%', :searchTerm, '%'))
-          AND (:status IS NULL OR status = :status)
-          AND (:ativo IS NULL OR ativo = :ativo)
+          AND (CAST(:searchTerm AS text) IS NULL OR
+               LOWER(company_name) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR
+               LOWER(trade_name) LIKE LOWER(CONCAT('%', CAST(:searchTerm AS text), '%')) OR
+               cnpj LIKE CONCAT('%', CAST(:searchTerm AS text), '%'))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:ativo AS boolean) IS NULL OR ativo = CAST(:ativo AS boolean))
         """)
     long countSearch(
         @Param("tenantId") UUID tenantId,

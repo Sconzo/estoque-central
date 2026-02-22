@@ -23,7 +23,7 @@ import {
 })
 export class StockMovementService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/stock-movements`;
+  private apiUrl = `${environment.apiUrl}/api/stock-movements`;
 
   // ============================================================
   // AC1: Create Stock Movement

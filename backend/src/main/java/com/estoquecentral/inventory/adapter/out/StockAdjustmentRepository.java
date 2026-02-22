@@ -45,13 +45,13 @@ public interface StockAdjustmentRepository extends
         SELECT *
         FROM stock_adjustments
         WHERE tenant_id = :tenantId
-          AND (:productId IS NULL OR product_id = :productId)
-          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
-          AND (:adjustmentType IS NULL OR adjustment_type = :adjustmentType)
-          AND (:reasonCode IS NULL OR reason_code = :reasonCode)
-          AND (:adjustmentDateFrom IS NULL OR adjustment_date >= :adjustmentDateFrom)
-          AND (:adjustmentDateTo IS NULL OR adjustment_date <= :adjustmentDateTo)
-          AND (:userId IS NULL OR adjusted_by_user_id = :userId)
+          AND (CAST(:productId AS uuid) IS NULL OR product_id = CAST(:productId AS uuid))
+          AND (CAST(:stockLocationId AS uuid) IS NULL OR stock_location_id = CAST(:stockLocationId AS uuid))
+          AND (CAST(:adjustmentType AS text) IS NULL OR adjustment_type = CAST(:adjustmentType AS text))
+          AND (CAST(:reasonCode AS text) IS NULL OR reason_code = CAST(:reasonCode AS text))
+          AND (CAST(:adjustmentDateFrom AS date) IS NULL OR adjustment_date >= CAST(:adjustmentDateFrom AS date))
+          AND (CAST(:adjustmentDateTo AS date) IS NULL OR adjustment_date <= CAST(:adjustmentDateTo AS date))
+          AND (CAST(:userId AS uuid) IS NULL OR adjusted_by_user_id = CAST(:userId AS uuid))
         ORDER BY adjustment_date DESC, created_at DESC
         LIMIT :limit OFFSET :offset
         """)
@@ -75,13 +75,13 @@ public interface StockAdjustmentRepository extends
         SELECT COUNT(*)
         FROM stock_adjustments
         WHERE tenant_id = :tenantId
-          AND (:productId IS NULL OR product_id = :productId)
-          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
-          AND (:adjustmentType IS NULL OR adjustment_type = :adjustmentType)
-          AND (:reasonCode IS NULL OR reason_code = :reasonCode)
-          AND (:adjustmentDateFrom IS NULL OR adjustment_date >= :adjustmentDateFrom)
-          AND (:adjustmentDateTo IS NULL OR adjustment_date <= :adjustmentDateTo)
-          AND (:userId IS NULL OR adjusted_by_user_id = :userId)
+          AND (CAST(:productId AS uuid) IS NULL OR product_id = CAST(:productId AS uuid))
+          AND (CAST(:stockLocationId AS uuid) IS NULL OR stock_location_id = CAST(:stockLocationId AS uuid))
+          AND (CAST(:adjustmentType AS text) IS NULL OR adjustment_type = CAST(:adjustmentType AS text))
+          AND (CAST(:reasonCode AS text) IS NULL OR reason_code = CAST(:reasonCode AS text))
+          AND (CAST(:adjustmentDateFrom AS date) IS NULL OR adjustment_date >= CAST(:adjustmentDateFrom AS date))
+          AND (CAST(:adjustmentDateTo AS date) IS NULL OR adjustment_date <= CAST(:adjustmentDateTo AS date))
+          AND (CAST(:userId AS uuid) IS NULL OR adjusted_by_user_id = CAST(:userId AS uuid))
         """)
     long countSearch(
             @Param("tenantId") UUID tenantId,

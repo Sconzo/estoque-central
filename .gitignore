@@ -61,3 +61,6 @@ frontend/.angular/
 *.db
 *.sqlite
 *.sqlite3
+
+# Claude Code local settings
+.claude/settings.local.json

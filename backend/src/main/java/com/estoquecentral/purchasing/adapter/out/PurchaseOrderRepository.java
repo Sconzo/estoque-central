@@ -116,11 +116,11 @@ public interface PurchaseOrderRepository extends
     @Query("""
         SELECT * FROM purchase_orders
         WHERE tenant_id = :tenantId
-          AND (:supplierId IS NULL OR supplier_id = :supplierId)
-          AND (:status IS NULL OR status = :status)
-          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
-          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
-          AND (:poNumber IS NULL OR po_number = :poNumber)
+          AND (CAST(:supplierId AS uuid) IS NULL OR supplier_id = CAST(:supplierId AS uuid))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:orderDateFrom AS date) IS NULL OR order_date >= CAST(:orderDateFrom AS date))
+          AND (CAST(:orderDateTo AS date) IS NULL OR order_date <= CAST(:orderDateTo AS date))
+          AND (CAST(:poNumber AS text) IS NULL OR po_number = CAST(:poNumber AS text))
         ORDER BY created_at DESC
         LIMIT :limit OFFSET :offset
         """)
@@ -141,11 +141,11 @@ public interface PurchaseOrderRepository extends
     @Query("""
         SELECT COUNT(*) FROM purchase_orders
         WHERE tenant_id = :tenantId
-          AND (:supplierId IS NULL OR supplier_id = :supplierId)
-          AND (:status IS NULL OR status = :status)
-          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
-          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
-          AND (:poNumber IS NULL OR po_number = :poNumber)
+          AND (CAST(:supplierId AS uuid) IS NULL OR supplier_id = CAST(:supplierId AS uuid))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:orderDateFrom AS date) IS NULL OR order_date >= CAST(:orderDateFrom AS date))
+          AND (CAST(:orderDateTo AS date) IS NULL OR order_date <= CAST(:orderDateTo AS date))
+          AND (CAST(:poNumber AS text) IS NULL OR po_number = CAST(:poNumber AS text))
         """)
     long countSearch(
         @Param("tenantId") UUID tenantId,

@@ -17,7 +17,7 @@ import {
 })
 export class StockTransferService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/stock-transfers`;
+  private apiUrl = `${environment.apiUrl}/api/stock-transfers`;
 
   /**
    * Create a stock transfer

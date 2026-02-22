@@ -100,7 +100,7 @@ export interface OrderPreview {
 })
 export class MercadoLivreService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/integrations/mercadolivre`;
+  private apiUrl = `${environment.apiUrl}/api/integrations/mercadolivre`;
 
   /**
    * Initialize OAuth2 flow - Get authorization URL

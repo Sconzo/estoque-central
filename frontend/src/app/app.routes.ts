@@ -71,6 +71,72 @@ export const routes: Routes = [
         path: 'estoque/locais/:id/editar',
         loadComponent: () => import('./features/estoque/components/location-form/location-form.component').then(m => m.LocationFormComponent)
       },
+      // Estoque - Transferências (Epic 3.5)
+      {
+        path: 'estoque/transferencias',
+        loadComponent: () => import('./features/catalog/stock-transfer-history/stock-transfer-history.component').then(m => m.StockTransferHistoryComponent)
+      },
+      {
+        path: 'estoque/transferencias/nova',
+        loadComponent: () => import('./features/catalog/stock-transfer-form/stock-transfer-form.component').then(m => m.StockTransferFormComponent)
+      },
+      // Compras - Fornecedores (Epic 3.1)
+      {
+        path: 'compras/fornecedores',
+        loadComponent: () => import('./features/purchasing/supplier-list/supplier-list.component').then(m => m.SupplierListComponent)
+      },
+      {
+        path: 'compras/fornecedores/novo',
+        loadComponent: () => import('./features/purchasing/supplier-form/supplier-form.component').then(m => m.SupplierFormComponent)
+      },
+      {
+        path: 'compras/fornecedores/:id/editar',
+        loadComponent: () => import('./features/purchasing/supplier-form/supplier-form.component').then(m => m.SupplierFormComponent)
+      },
+      // Compras - Ordens de Compra (Epic 3.2)
+      {
+        path: 'compras/ordens',
+        loadComponent: () => import('./features/purchasing/purchase-order-list/purchase-order-list.component').then(m => m.PurchaseOrderListComponent)
+      },
+      {
+        path: 'compras/ordens/nova',
+        loadComponent: () => import('./features/purchasing/purchase-order-form/purchase-order-form.component').then(m => m.PurchaseOrderFormComponent)
+      },
+      {
+        path: 'compras/ordens/:id/editar',
+        loadComponent: () => import('./features/purchasing/purchase-order-form/purchase-order-form.component').then(m => m.PurchaseOrderFormComponent)
+      },
+      // Compras - Recebimento Mobile (Epic 3.3 / 3.4)
+      {
+        path: 'compras/recebimento',
+        loadComponent: () => import('./features/receiving/components/receiving-order-selection/receiving-order-selection.component').then(m => m.ReceivingOrderSelectionComponent)
+      },
+      {
+        path: 'compras/recebimento/scan/:id',
+        loadComponent: () => import('./features/receiving/components/barcode-scanning/barcode-scanning.component').then(m => m.BarcodeScanningComponent)
+      },
+      {
+        path: 'compras/recebimento/summary/:id',
+        loadComponent: () => import('./features/receiving/components/receiving-summary/receiving-summary.component').then(m => m.ReceivingSummaryComponent)
+      },
+      // Vendas - Ordens de Venda B2B (Epic 4.5)
+      {
+        path: 'vendas/ordens',
+        loadComponent: () => import('./features/sales/sales-order-list/sales-order-list.component').then(m => m.SalesOrderListComponent)
+      },
+      {
+        path: 'vendas/ordens/nova',
+        loadComponent: () => import('./features/sales/sales-order-form/sales-order-form.component').then(m => m.SalesOrderFormComponent)
+      },
+      {
+        path: 'vendas/ordens/:id/editar',
+        loadComponent: () => import('./features/sales/sales-order-form/sales-order-form.component').then(m => m.SalesOrderFormComponent)
+      },
+      // Vendas - NFCe Pendentes (Epic 4.4)
+      {
+        path: 'vendas/pendentes',
+        loadComponent: () => import('./features/sales/components/pending-sales/pending-sales.component').then(m => m.PendingSalesComponent)
+      },
       {
         path: 'clientes',
         loadComponent: () => import('./features/vendas/components/customer-list/customer-list.component').then(m => m.CustomerListComponent)

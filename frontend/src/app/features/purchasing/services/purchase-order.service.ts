@@ -19,7 +19,7 @@ import {
 })
 export class PurchaseOrderService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/purchase-orders`;
+  private apiUrl = `${environment.apiUrl}/api/purchase-orders`;
 
   /**
    * Get purchase orders with pagination and filters

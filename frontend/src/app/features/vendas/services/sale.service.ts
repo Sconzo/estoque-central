@@ -9,7 +9,7 @@ import { SaleResponse } from '../models/sale.model';
   providedIn: 'root'
 })
 export class SaleService {
-  private apiUrl = `${environment.apiUrl}/sales`;
+  private apiUrl = `${environment.apiUrl}/api/sales`;
 
   constructor(private http: HttpClient) {}
 

@@ -7,6 +7,8 @@ import com.estoquecentral.shared.security.CryptoService;
 import com.estoquecentral.shared.tenant.TenantContext;
 import com.estoquecentral.shared.validator.CnpjValidator;
 import com.estoquecentral.shared.validator.CpfValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +37,8 @@ import java.util.UUID;
 @Service
 @Transactional
 public class CustomerService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
 
     private final CustomerRepository customerRepository;
     private final CryptoService cryptoService;
@@ -333,13 +337,29 @@ public class CustomerService {
 
     private Customer decryptCustomer(Customer customer) {
         if (customer.getCpf() != null && !customer.getCpf().isEmpty()) {
-            customer.setCpf(cryptoService.decrypt(customer.getCpf()));
+            try {
+                customer.setCpf(cryptoService.decrypt(customer.getCpf()));
+            } catch (Exception e) {
+                logger.warn("Failed to decrypt CPF for customer {}, setting to null. " +
+                    "Run migration to fix plain-text encrypted fields.", customer.getId());
+                customer.setCpf(null);
+            }
         }
         if (customer.getCnpj() != null && !customer.getCnpj().isEmpty()) {
-            customer.setCnpj(cryptoService.decrypt(customer.getCnpj()));
+            try {
+                customer.setCnpj(cryptoService.decrypt(customer.getCnpj()));
+            } catch (Exception e) {
+                logger.warn("Failed to decrypt CNPJ for customer {}, setting to null.", customer.getId());
+                customer.setCnpj(null);
+            }
         }
         if (customer.getEmail() != null && !customer.getEmail().isEmpty()) {
-            customer.setEmail(cryptoService.decrypt(customer.getEmail()));
+            try {
+                customer.setEmail(cryptoService.decrypt(customer.getEmail()));
+            } catch (Exception e) {
+                logger.warn("Failed to decrypt email for customer {}, setting to null.", customer.getId());
+                customer.setEmail(null);
+            }
         }
         return customer;
     }

@@ -8,13 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chip';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
 import { SalesOrderService, SalesOrderResponse, SalesOrderStatus } from '../services/sales-order.service';
 import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
 
@@ -40,7 +41,8 @@ import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.se
     MatSnackBarModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatDialogModule
+    MatDialogModule,
+    MatCardModule
   ],
   templateUrl: './sales-order-list.component.html',
   styleUrls: ['./sales-order-list.component.css']

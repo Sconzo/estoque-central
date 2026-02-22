@@ -80,7 +80,18 @@ export class MainLayoutComponent implements OnInit {
       label: 'Estoque',
       route: '/estoque',
       children: [
-        { label: 'Locais', route: '/estoque/locais' }
+        { label: 'Locais', route: '/estoque/locais' },
+        { label: 'Transferências', route: '/estoque/transferencias' }
+      ]
+    },
+    {
+      icon: 'shopping_bag',
+      label: 'Compras',
+      route: '/compras',
+      children: [
+        { label: 'Fornecedores', route: '/compras/fornecedores' },
+        { label: 'Ordens de Compra', route: '/compras/ordens' },
+        { label: 'Recebimento', route: '/compras/recebimento' }
       ]
     },
     {
@@ -93,7 +104,9 @@ export class MainLayoutComponent implements OnInit {
       label: 'Vendas',
       route: '/vendas',
       children: [
-        { label: 'PDV', route: '/pdv' }
+        { label: 'PDV', route: '/pdv' },
+        { label: 'Ordens de Venda', route: '/vendas/ordens' },
+        { label: 'NFCe Pendentes', route: '/vendas/pendentes' }
       ]
     },
     {

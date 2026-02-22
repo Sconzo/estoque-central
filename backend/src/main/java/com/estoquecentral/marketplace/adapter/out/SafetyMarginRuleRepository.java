@@ -114,8 +114,8 @@ public interface SafetyMarginRuleRepository extends CrudRepository<SafetyMarginR
      */
     @Query("SELECT DISTINCT ml.product_id FROM marketplace_listings ml " +
            "WHERE ml.tenant_id = :tenantId AND ml.marketplace = :marketplace " +
-           "AND (:categoryId IS NULL OR ml.product_id IN (" +
-           "    SELECT p.id FROM products p WHERE p.category_id = :categoryId" +
+           "AND (CAST(:categoryId AS uuid) IS NULL OR ml.product_id IN (" +
+           "    SELECT p.id FROM products p WHERE p.category_id = CAST(:categoryId AS uuid)" +
            "))")
     List<UUID> findAffectedProducts(
         @Param("tenantId") UUID tenantId,

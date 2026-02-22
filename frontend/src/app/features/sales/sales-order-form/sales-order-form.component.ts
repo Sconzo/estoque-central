@@ -13,7 +13,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipsModule } from '@angular/material/chip';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Observable, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 import { SalesOrderService, PaymentTerms, SalesOrderStatus } from '../services/sales-order.service';
 import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.service';
@@ -46,7 +47,8 @@ import { ConfirmDialogService } from '../../../shared/services/confirm-dialog.se
     MatCardModule,
     MatSnackBarModule,
     MatAutocompleteModule,
-    MatChipsModule
+    MatChipsModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './sales-order-form.component.html',
   styleUrls: ['./sales-order-form.component.css']

@@ -12,9 +12,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { StockTransferService } from '../services/stock-transfer.service';
-import { LocationService } from '../services/location.service';
+import { LocationService } from '../../estoque/services/location.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import { StockTransferResponse, StockTransferFilters } from '../../../shared/models/stock.model';
-import { LocationResponse } from '../../../shared/models/location.model';
+import { Location } from '../../estoque/models/location.model';
 
 /**
  * StockTransferHistoryComponent - Display transfer history with filters
@@ -44,11 +45,12 @@ export class StockTransferHistoryComponent implements OnInit {
   private fb = inject(FormBuilder);
   private transferService = inject(StockTransferService);
   private locationService = inject(LocationService);
+  private tenantService = inject(TenantService);
 
   filterForm!: FormGroup;
   loading = signal(false);
   transfers = signal<StockTransferResponse[]>([]);
-  locations = signal<LocationResponse[]>([]);
+  locations = signal<Location[]>([]);
 
   displayedColumns: string[] = [
     'createdAt',
@@ -79,7 +81,9 @@ export class StockTransferHistoryComponent implements OnInit {
   }
 
   loadLocations(): void {
-    this.locationService.getAllLocations().subscribe({
+    const tenantId = this.tenantService.currentTenant$();
+    if (!tenantId) return;
+    this.locationService.listAll(tenantId, false).subscribe({
       next: (locations) => this.locations.set(locations),
       error: (err) => console.error('Error loading locations:', err)
     });

@@ -67,11 +67,11 @@ public interface ReceivingRepository extends
     @Query("""
         SELECT * FROM receivings
         WHERE tenant_id = :tenantId
-          AND (:purchaseOrderId IS NULL OR purchase_order_id = :purchaseOrderId)
-          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
-          AND (:receivingDateFrom IS NULL OR receiving_date >= :receivingDateFrom)
-          AND (:receivingDateTo IS NULL OR receiving_date <= :receivingDateTo)
-          AND (:status IS NULL OR status = :status)
+          AND (CAST(:purchaseOrderId AS uuid) IS NULL OR purchase_order_id = CAST(:purchaseOrderId AS uuid))
+          AND (CAST(:stockLocationId AS uuid) IS NULL OR stock_location_id = CAST(:stockLocationId AS uuid))
+          AND (CAST(:receivingDateFrom AS date) IS NULL OR receiving_date >= CAST(:receivingDateFrom AS date))
+          AND (CAST(:receivingDateTo AS date) IS NULL OR receiving_date <= CAST(:receivingDateTo AS date))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
         ORDER BY receiving_date DESC, created_at DESC
         LIMIT :limit OFFSET :offset
         """)
@@ -89,11 +89,11 @@ public interface ReceivingRepository extends
     @Query("""
         SELECT COUNT(*) FROM receivings
         WHERE tenant_id = :tenantId
-          AND (:purchaseOrderId IS NULL OR purchase_order_id = :purchaseOrderId)
-          AND (:stockLocationId IS NULL OR stock_location_id = :stockLocationId)
-          AND (:receivingDateFrom IS NULL OR receiving_date >= :receivingDateFrom)
-          AND (:receivingDateTo IS NULL OR receiving_date <= :receivingDateTo)
-          AND (:status IS NULL OR status = :status)
+          AND (CAST(:purchaseOrderId AS uuid) IS NULL OR purchase_order_id = CAST(:purchaseOrderId AS uuid))
+          AND (CAST(:stockLocationId AS uuid) IS NULL OR stock_location_id = CAST(:stockLocationId AS uuid))
+          AND (CAST(:receivingDateFrom AS date) IS NULL OR receiving_date >= CAST(:receivingDateFrom AS date))
+          AND (CAST(:receivingDateTo AS date) IS NULL OR receiving_date <= CAST(:receivingDateTo AS date))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
         """)
     long countSearch(
         @Param("tenantId") UUID tenantId,

@@ -12,7 +12,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class SalesOrderService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/sales-orders`;
+  private apiUrl = `${environment.apiUrl}/api/sales-orders`;
 
   /**
    * Create a new sales order
@@ -218,7 +218,7 @@ export interface ExpiringSalesOrder {
  * @param days Days until expiration threshold (default: 2)
  */
 export function getExpiringSoon(http: HttpClient, days: number = 2): Observable<ExpiringSalesOrder[]> {
-  const apiUrl = `${environment.apiUrl}/sales-orders`;
+  const apiUrl = `${environment.apiUrl}/api/sales-orders`;
   return http.get<ExpiringSalesOrder[]>(`${apiUrl}/expiring-soon`, {
     params: { days: days.toString() }
   });
@@ -235,7 +235,7 @@ export function extendOrderExpiration(
   orderId: string,
   days: number = 7
 ): Observable<{ message: string }> {
-  const apiUrl = `${environment.apiUrl}/sales-orders`;
+  const apiUrl = `${environment.apiUrl}/api/sales-orders`;
   return http.put<{ message: string }>(`${apiUrl}/${orderId}/extend`, null, {
     params: { days: days.toString() }
   });

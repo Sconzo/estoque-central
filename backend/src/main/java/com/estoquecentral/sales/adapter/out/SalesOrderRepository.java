@@ -82,11 +82,11 @@ public interface SalesOrderRepository extends
     @Query("""
         SELECT * FROM sales_orders
         WHERE tenant_id = :tenantId
-          AND (:customerId IS NULL OR customer_id = :customerId)
-          AND (:status IS NULL OR status = :status)
-          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
-          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
-          AND (:orderNumber IS NULL OR order_number ILIKE CONCAT('%', :orderNumber, '%'))
+          AND (CAST(:customerId AS uuid) IS NULL OR customer_id = CAST(:customerId AS uuid))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:orderDateFrom AS date) IS NULL OR order_date >= CAST(:orderDateFrom AS date))
+          AND (CAST(:orderDateTo AS date) IS NULL OR order_date <= CAST(:orderDateTo AS date))
+          AND (CAST(:orderNumber AS text) IS NULL OR order_number ILIKE CONCAT('%', CAST(:orderNumber AS text), '%'))
         ORDER BY data_criacao DESC
         LIMIT :limit OFFSET :offset
         """)
@@ -107,11 +107,11 @@ public interface SalesOrderRepository extends
     @Query("""
         SELECT COUNT(*) FROM sales_orders
         WHERE tenant_id = :tenantId
-          AND (:customerId IS NULL OR customer_id = :customerId)
-          AND (:status IS NULL OR status = :status)
-          AND (:orderDateFrom IS NULL OR order_date >= :orderDateFrom)
-          AND (:orderDateTo IS NULL OR order_date <= :orderDateTo)
-          AND (:orderNumber IS NULL OR order_number ILIKE CONCAT('%', :orderNumber, '%'))
+          AND (CAST(:customerId AS uuid) IS NULL OR customer_id = CAST(:customerId AS uuid))
+          AND (CAST(:status AS text) IS NULL OR status = CAST(:status AS text))
+          AND (CAST(:orderDateFrom AS date) IS NULL OR order_date >= CAST(:orderDateFrom AS date))
+          AND (CAST(:orderDateTo AS date) IS NULL OR order_date <= CAST(:orderDateTo AS date))
+          AND (CAST(:orderNumber AS text) IS NULL OR order_number ILIKE CONCAT('%', CAST(:orderNumber AS text), '%'))
         """)
     long countSearch(
         @Param("tenantId") UUID tenantId,

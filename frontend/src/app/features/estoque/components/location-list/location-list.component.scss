@@ -29,29 +29,22 @@
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
-// ==================== Results Summary ====================
-.results-summary {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: var(--mat-sys-surface-container);
-  border-radius: 8px;
-
-  p {
-    margin: 0;
-    color: var(--mat-sys-on-surface-variant);
-    font-size: 14px;
-
-    strong {
-      color: var(--mat-sys-on-surface);
-    }
-  }
+.filter-search {
+  flex: 2;
+  min-width: 300px;
 }
 
-// ==================== Loading & Error ====================
-.loading-spinner {
+.filter-select {
+  flex: 1;
+  min-width: 200px;
+}
+
+// ==================== Loading ====================
+.loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,26 +57,16 @@
   }
 }
 
+// ==================== Error ====================
 .error-message {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   padding: 48px;
   background: var(--mat-sys-error-container);
   border-radius: 8px;
-  gap: 16px;
-
-  .error-icon {
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
-  }
-
-  p {
-    color: var(--mat-sys-on-error-container);
-    margin: 0;
-  }
+  color: var(--mat-sys-on-error-container);
 }
 
 // ==================== Table ====================
@@ -108,13 +91,8 @@
   }
 
   p {
-    margin: 8px 0;
-  }
-
-  .hint {
-    font-size: 14px;
-    color: var(--mat-sys-outline);
-    margin-bottom: 24px;
+    margin: 16px 0;
+    font-size: 16px;
   }
 }
 
@@ -192,14 +170,14 @@
 }
 
 // ==================== Status Badges ====================
-.badge-success {
+.badge-active {
   background-color: #e8f5e9 !important;
   color: #2e7d32 !important;
 }
 
-.badge-secondary {
-  background-color: var(--mat-sys-surface-container-high) !important;
-  color: var(--mat-sys-on-surface-variant) !important;
+.badge-inactive {
+  background-color: var(--mat-sys-error-container) !important;
+  color: var(--mat-sys-on-error-container) !important;
 }
 
 // ==================== Type Badges ====================
@@ -242,6 +220,15 @@
 @media (max-width: 768px) {
   .location-list-container {
     padding: 12px;
+  }
+
+  .filters {
+    flex-direction: column;
+
+    .filter-search,
+    .filter-select {
+      width: 100%;
+    }
   }
 
   .header {
